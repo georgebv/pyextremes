@@ -1,0 +1,13 @@
+# Pycharm files
+.idea/
+
+# Python general
+__pycache__/
+
+# pytest
+.pytest_cache/
+
+# Documentation
+docs/build/
+docs/source/_static/
+docs/source/_templates/
