@@ -21,24 +21,31 @@ import pandas as pd
 
 # Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
 
-def get_extremes(method: str, **kwargs) -> pd.Series:
+def get_extremes(
+        method: str,
+        **kwargs
+) -> pd.Series:
+    logger.debug(f'calling get_extremes with method={method}')
     if method == 'BM':
         return _get_extremes_bm(**kwargs)
     elif method == 'POT':
         return _get_extremes_pot(**kwargs)
     else:
-        logger.error(f'{method} is not a valid <method> value')
-        raise ValueError(f'{method} is not a valid <method> value')
+        raise ValueError(f'{method} is not a valid method value')
 
 
-def _get_extremes_bm(ts: pd.Series, block_size: pd.Timedelta, extremes_type: str, errors: str) -> pd.Series:
+def _get_extremes_bm(
+        ts: pd.Series,
+        block_size: pd.Timedelta,
+        extremes_type: str,
+        errors: str
+) -> pd.Series:
     """
     Get extreme events from a signal time series using the Block Maxima method.
 
@@ -63,42 +70,51 @@ def _get_extremes_bm(ts: pd.Series, block_size: pd.Timedelta, extremes_type: str
         Time series of extreme events.
     """
 
-    extremes_func = {
-        'high': pd.Series.idxmax,
-        'low': pd.Series.idxmin
-    }[extremes_type]
+    logger.debug(f'getting extreme extraction function for extremes_type={extremes_type}')
+    if extremes_type == 'high':
+        extremes_func = pd.Series.idxmax
+    elif extremes_type == 'low':
+        extremes_func = pd.Series.idxmin
+    else:
+        raise ValueError(f'{extremes_type} is not a valid extremes_type value')
 
-    logger.info('preparing date_time_intervals')
+    logger.debug('preparing date_time_intervals')
     periods = (ts.index[-1] - ts.index[0]) / block_size
-    if np.isclose(periods % 1, 0):
+    if periods % 1 == 0:
         periods = int(periods)
     else:
         periods = int(periods) + 1
     date_time_intervals = pd.interval_range(start=ts.index[0], freq=block_size, periods=periods, closed='left')
 
-    logger.info('collecting extreme events')
+    logger.debug('collecting extreme events')
+    empty_intervals = 0
     extreme_indices, extreme_values = [], []
     for i, interval in enumerate(date_time_intervals):
+        logger.debug(f'processing block [{interval.left} ; {interval.right})')
         ts_slice = ts.loc[
             (ts.index >= interval.left) &
             (ts.index < interval.right)
-        ]
+        ].dropna()
         if len(ts_slice) > 0:
             extreme_indices.append(extremes_func(ts_slice, skipna=True))
             extreme_values.append(ts_slice.loc[extreme_indices[-1]])
         else:
+            empty_intervals += 1
             if errors == 'coerce':
+                logger.debug(f'coerced error in block [{interval.left} ; {interval.right})')
                 extreme_indices.append(interval.mid)
                 extreme_values.append(np.nan)
             elif errors == 'ignore':
-                pass
+                logger.debug(f'ignored error in block [{interval.left} ; {interval.right})')
             elif errors == 'raise':
-                logger.error(f'no data in interval [{interval.left} ; {interval.right})')
-                raise ValueError(f'no data in interval [{interval.left} ; {interval.right})')
+                raise ValueError(f'no data in block [{interval.left} ; {interval.right})')
             else:
-                logger.error(f'{errors} is not a valid <errors> value')
-                raise ValueError(f'{errors} is not a valid <errors> value')
-    logger.info('successfully collected extreme events, returning the series')
+                raise ValueError(f'{errors} is not a valid errors value')
+
+    if empty_intervals > 0:
+        logger.warning(f'{empty_intervals} blocks contained no data')
+
+    logger.debug('successfully collected extreme events, returning the series')
     return pd.Series(
         data=extreme_values,
         index=pd.Index(data=extreme_indices, name='date-time'),
@@ -106,17 +122,22 @@ def _get_extremes_bm(ts: pd.Series, block_size: pd.Timedelta, extremes_type: str
     ).fillna(np.nanmean(extreme_values))
 
 
-def _get_extremes_pot(ts: pd.Series) -> pd.Series:
+def _get_extremes_pot(
+        ts: pd.Series
+) -> pd.Series:
     raise NotImplementedError
 
 
-def get_return_period(extremes: pd.Series) -> list:
+def get_return_period(
+        extremes: pd.Series
+) -> list:
     raise NotImplementedError
 
 
 if __name__ == '__main__':
-    import os
-    import pathlib
+    pass
+    # import os
+    # import pathlib
 
     # ts = pd.read_csv(
     #     pathlib.Path(os.getcwd()) / r'tests/data/battery_wl.csv',
