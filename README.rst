@@ -1,3 +1,5 @@
+|Build Status| |Coverage Status|
+
 pyextremes
 ==========
 **pyextremes** is a Python library dedicated to solving problems related to the discipline of `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools to extract extreme events from time series, to fit models such as GEV and GPD, and to provide estimates of extreme events and corresponding confidence intervals. Fitting is done using MCMC and MLE methods.
@@ -8,4 +10,10 @@ pyextremes
 
 **E-Mail:** bocharovgeorgii@gmail.com
 
-**Documentation:** WIP
+**Documentation:** work in progress
+
+.. |Build Status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
+   :target: https://travis-ci.org/georgebv/pyextremes
+
+.. |Coverage Status| image:: https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/georgebv/pyextremes

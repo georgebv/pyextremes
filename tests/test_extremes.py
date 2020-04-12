@@ -27,7 +27,10 @@ from pyextremes.extremes import get_extremes
 logger = logging.getLogger('pyextremes.extremes')
 logger.setLevel(logging.CRITICAL)
 
-test_data = pd.read_csv(os.getcwd() + './data/battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
+test_data = pd.read_csv(
+    os.sep.join([*os.path.realpath(__file__).split(os.sep)[:-1], 'data', 'battery_wl.csv']),
+    index_col=0, parse_dates=True, squeeze=True
+)
 
 
 def test_get_extremes():
