@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyextremes.extremes import get_extremes
+from pyextremes.extremes import get_extremes, get_return_periods
 
 # Set up logging
 logger = logging.getLogger('pyextremes.extremes')
@@ -162,3 +162,108 @@ def test_get_extremes():
     )
     assert len(extremes_pot_low) == 109
     assert np.isclose(extremes_pot_low.min(), extremes_bm_low.min())
+
+
+def test_return_periods():
+    extremes = get_extremes(
+        method='BM',
+        ts=test_data,
+        extremes_type='high',
+        errors='ignore'
+    )
+
+    # Test bad extremes_method
+    with pytest.raises(ValueError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='BAD EXTREMES METHOD',
+            extremes_type='high',
+            plotting_position='weibull'
+        )
+
+    # Test bad extremes_type
+    with pytest.raises(ValueError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='BM',
+            extremes_type='BAD EXTREMES TYPE',
+            plotting_position='weibull'
+        )
+
+    # Test bad plotting_position
+    with pytest.raises(ValueError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='BM',
+            extremes_type='high',
+            plotting_position='BAD PLOTTING POSITION'
+        )
+
+    # Test for BM
+    for extremes_type in ['high', 'low']:
+        extremes = get_extremes(
+            method='BM',
+            ts=test_data,
+            block_size='1Y',
+            extremes_type=extremes_type,
+            errors='ignore'
+        )
+        for plotting_position in [
+            'ecdf', 'hazen', 'weibull', 'tukey', 'blom', 'median', 'cunnane', 'gringorten', 'beard'
+        ]:
+            return_periods = get_return_periods(
+                ts=test_data,
+                extremes=extremes,
+                extremes_method='BM',
+                extremes_type=extremes_type,
+                plotting_position=plotting_position
+            )
+            if extremes_type == 'high':
+                assert np.argmax(
+                    return_periods.loc[:, extremes.name].values
+                ) == np.argmax(
+                    return_periods.loc[:, 'return period [yr]'].values
+                )
+            else:
+                assert np.argmin(
+                    return_periods.loc[:, extremes.name].values
+                ) == np.argmax(
+                    return_periods.loc[:, 'return period [yr]'].values
+                )
+
+    # Test for POT
+    for extremes_type in ['high', 'low']:
+        extremes = get_extremes(
+            method='POT',
+            ts=test_data,
+            threshold={
+                'high': 1.35,
+                'low': -1.65
+            }[extremes_type],
+            r='24H'
+        )
+        for plotting_position in [
+            'ecdf', 'hazen', 'weibull', 'tukey', 'blom', 'median', 'cunnane', 'gringorten', 'beard'
+        ]:
+            return_periods = get_return_periods(
+                ts=test_data,
+                extremes=extremes,
+                extremes_method='POT',
+                extremes_type=extremes_type,
+                plotting_position=plotting_position
+            )
+            if extremes_type == 'high':
+                assert np.argmax(
+                    return_periods.loc[:, extremes.name].values
+                ) == np.argmax(
+                    return_periods.loc[:, 'return period [yr]'].values
+                )
+            else:
+                assert np.argmin(
+                    return_periods.loc[:, extremes.name].values
+                ) == np.argmax(
+                    return_periods.loc[:, 'return period [yr]'].values
+                )

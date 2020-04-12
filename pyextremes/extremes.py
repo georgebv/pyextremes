@@ -19,6 +19,7 @@ import typing
 
 import numpy as np
 import pandas as pd
+import scipy.stats
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -132,11 +133,7 @@ def _get_extremes_bm(
         logger.warning(f'block_size {block_size} is too small, consider changing')
 
     logger.info('preparing date_time_intervals')
-    periods = (ts.index[-1] - ts.index[0]) / block_size
-    if periods % 1 == 0:
-        periods = int(periods)
-    else:
-        periods = int(periods) + 1
+    periods = int(np.ceil((ts.index[-1] - ts.index[0]) / block_size))
     date_time_intervals = pd.interval_range(start=ts.index[0], freq=block_size, periods=periods, closed='left')
 
     logger.info('collecting extreme events')
@@ -243,10 +240,88 @@ def _get_extremes_pot(
     )
 
 
-def get_return_period(
-        extremes: pd.Series
-) -> list:
-    raise NotImplementedError
+def get_return_periods(
+        ts: pd.Series,
+        extremes: pd.Series,
+        extremes_method: str,
+        extremes_type: str,
+        plotting_position: str = 'weibull',
+) -> pd.DataFrame:
+    """
+    Calculate return periods in years for given extreme values and plotting position.
+    Plotting positions taken from https://matplotlib.org/mpl-probscale/tutorial/closer_look_at_plot_pos.html
+
+    Parameters
+    ----------
+    ts : pd.Series
+        Time series of the signal.
+    extremes : pd.Series
+        Time series of extreme events.
+    extremes_method : str
+        Extreme value extraction method.
+        Supported values: BM or POT.
+    extremes_type : str
+        high - get extreme high values
+        low - get extreme low values
+    plotting_position : str, optional
+        Plotting position name (default='weibull'), not case-sensitive.
+        Supported plotting positions:
+            ecdf, hazen, weibull, tukey, blom, median, cunnane, gringorten, beard
+
+    Returns
+    -------
+    extreme_events : pd.DataFrame
+        A DataFrame with extreme values and corresponding return periods.
+    """
+
+    logger.info('calculating rate of extreme events [events per year]')
+    if extremes_method == 'BM':
+        extremes_rate = 1
+        logger.debug('calculated rate for BM method')
+    elif extremes_method == 'POT':
+        n_years = (ts.index[-1] - ts.index[0]) / pd.to_timedelta('1Y')
+        extremes_rate = len(extremes) / n_years
+        logger.debug('calculated rate for POT method')
+    else:
+        raise ValueError(f'{extremes_method} is not a valid extremes_method value')
+
+    logger.info('ranking the extreme values')
+    if extremes_type == 'high':
+        ranks = len(extremes) + 1 - scipy.stats.rankdata(extremes.values, method='average')
+    elif extremes_type == 'low':
+        ranks = scipy.stats.rankdata(extremes.values, method='average')
+    else:
+        raise ValueError(f'{extremes_type} is not a valid extremes_type value')
+
+    logger.info('getting plotting position parameters')
+    plotting_positions = {
+        'ecdf': (0, 1),
+        'hazen': (0.5, 0.5),
+        'weibull': (0, 0),
+        'tukey': (1/3, 1/3),
+        'blom': (3/8, 3/8),
+        'median': (0.3175, 0.3175),
+        'cunnane': (0.4, 0.4),
+        'gringorten': (0.44, 0.44),
+        'beard': (0.31, 0.31)
+    }
+    try:
+        alpha = plotting_positions[plotting_position.lower()][0]
+        beta = plotting_positions[plotting_position.lower()][1]
+    except KeyError:
+        raise ValueError(f'{plotting_position} is not a valid plotting_position value')
+
+    logger.info('caclucating exceedance probabilities')
+    exceedance_probability = (ranks - alpha) / (len(extremes) + 1 - alpha - beta)
+
+    logger.info('successfully calculated return periods, returning the DataFrame')
+    return pd.DataFrame(
+        data={
+            extremes.name: extremes.values,
+            'return period [yr]': 1 / exceedance_probability / extremes_rate
+        },
+        index=extremes.index
+    )
 
 
 if __name__ == '__main__':
@@ -264,3 +339,13 @@ if __name__ == '__main__':
     #
     # threshold = 1
     # r = '24H'
+    #
+    # method = 'POT'
+    # extremes_type = 'high'
+    # extremes = get_extremes(
+    #     ts=ts,
+    #     method=method,
+    #     threshold=1.35,
+    #     r='24H',
+    #     extremes_type=extremes_type
+    # )
