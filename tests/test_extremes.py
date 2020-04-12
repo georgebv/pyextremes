@@ -34,41 +34,62 @@ test_data = pd.read_csv(
 
 
 def test_get_extremes():
-    with pytest.raises(ValueError):
-        get_extremes('BAD METHOD')
-
+    # Test bad method value
     with pytest.raises(ValueError):
         get_extremes(
-            method='BM',
+            method='BAD METHOD',
             ts=test_data,
-            block_size=pd.Timedelta('365.2425D'),
             extremes_type='BAD TYPE',
+            block_size='1Y',
             errors='coerce'
         )
 
+    # Test BM with wrong extremes_type value
     with pytest.raises(ValueError):
         get_extremes(
             method='BM',
             ts=test_data,
-            block_size=pd.Timedelta('365.2425D'),
+            extremes_type='BAD TYPE',
+            block_size='1Y',
+            errors='coerce'
+        )
+
+    # Test BM with wrong block_size type
+    with pytest.raises(TypeError):
+        get_extremes(
+            method='BM',
+            ts=test_data,
             extremes_type='high',
+            block_size=1,
+            errors='coerce'
+        )
+
+    # Test wrong errors value
+    with pytest.raises(ValueError):
+        get_extremes(
+            method='BM',
+            ts=test_data,
+            extremes_type='high',
+            block_size='1Y',
             errors='BAD ERROR'
         )
 
+    # Test errorrs raise
     with pytest.raises(ValueError):
         get_extremes(
             method='BM',
             ts=test_data,
-            block_size=pd.Timedelta('365.2425D'),
             extremes_type='high',
+            block_size='1Y',
             errors='raise'
         )
 
+    # Test BM with extremes_type=high/low and errors=ignore/coerce
     for extremes_type in ['high', 'low']:
         extremes_ignored = get_extremes(
             method='BM',
             ts=test_data,
-            block_size=pd.Timedelta('365.2425D'),
+            block_size='1Y',
             extremes_type=extremes_type,
             errors='ignore'
         )
@@ -77,7 +98,7 @@ def test_get_extremes():
         extremes_coerced = get_extremes(
             method='BM',
             ts=test_data,
-            block_size=pd.Timedelta('365.2425D'),
+            block_size='1Y',
             extremes_type=extremes_type,
             errors='coerce'
         )
@@ -85,3 +106,59 @@ def test_get_extremes():
 
         assert np.isclose(extremes_ignored.max(), extremes_coerced.max())
         assert np.isclose(extremes_ignored.mean(), extremes_coerced.mean())
+
+    # Test POT with wrong extremes_type value
+    with pytest.raises(ValueError):
+        get_extremes(
+            method='POT',
+            ts=test_data,
+            extremes_type='BAD TYPE',
+            threshold=2,
+            r='24H'
+        )
+
+    # Test POT with wrong r type
+    with pytest.raises(TypeError):
+        get_extremes(
+            method='POT',
+            ts=test_data,
+            extremes_type='high',
+            threshold=2,
+            r=1
+        )
+
+    # Test POT with extremes_type=high
+    extremes_bm_high = get_extremes(
+        method='BM',
+        ts=test_data,
+        block_size='1Y',
+        extremes_type='high',
+        errors='coerce'
+    )
+    extremes_pot_high = get_extremes(
+        method='POT',
+        ts=test_data,
+        extremes_type='high',
+        threshold=1.35,
+        r='24H'
+    )
+    assert len(extremes_pot_high) == 127
+    assert np.isclose(extremes_pot_high.max(), extremes_bm_high.max())
+
+    # Test POT with extremes_type=low
+    extremes_bm_low = get_extremes(
+        method='BM',
+        ts=test_data,
+        block_size='1Y',
+        extremes_type='low',
+        errors='coerce'
+    )
+    extremes_pot_low = get_extremes(
+        method='POT',
+        ts=test_data,
+        extremes_type='low',
+        threshold=-1.65,
+        r='24H'
+    )
+    assert len(extremes_pot_low) == 109
+    assert np.isclose(extremes_pot_low.min(), extremes_bm_low.min())
