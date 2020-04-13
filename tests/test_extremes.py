@@ -44,6 +44,8 @@ def test_get_extremes():
             errors='coerce'
         )
 
+
+def test_get_extremes_bmt():
     # Test BM with wrong extremes_type value
     with pytest.raises(ValueError):
         get_extremes(
@@ -107,6 +109,8 @@ def test_get_extremes():
         assert np.isclose(extremes_ignored.max(), extremes_coerced.max())
         assert np.isclose(extremes_ignored.mean(), extremes_coerced.mean())
 
+
+def test_get_extremes_pot():
     # Test POT with wrong extremes_type value
     with pytest.raises(ValueError):
         get_extremes(
@@ -164,13 +168,73 @@ def test_get_extremes():
     assert np.isclose(extremes_pot_low.min(), extremes_bm_low.min())
 
 
-def test_return_periods():
+def test_get_return_periods():
     extremes = get_extremes(
         method='BM',
         ts=test_data,
         extremes_type='high',
+        block_size='1Y',
         errors='ignore'
     )
+
+    # Test bad block_size type
+    with pytest.raises(TypeError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='BM',
+            extremes_type='high',
+            block_size=1,
+            period_size='1Y',
+            plotting_position='weibull',
+        )
+
+    # Test automatic block_size type
+    extremes_30d = get_extremes(
+        method='BM',
+        ts=test_data,
+        extremes_type='high',
+        block_size='30D',
+        errors='ignore'
+    )
+    return_periods_automatic = get_return_periods(
+        ts=test_data,
+        extremes=extremes_30d,
+        extremes_method='BM',
+        extremes_type='high',
+        block_size=None,
+        period_size='1Y',
+        plotting_position='weibull',
+    )
+    return_periods = get_return_periods(
+        ts=test_data,
+        extremes=extremes_30d,
+        extremes_method='BM',
+        extremes_type='high',
+        block_size=None,
+        period_size='1Y',
+        plotting_position='weibull',
+    )
+    assert np.abs(
+        np.diff(
+            [
+                return_periods_automatic.loc[:, 'return period'].values.max(),
+                return_periods.loc[:, 'return period'].values.max()
+            ]
+        )[0]
+    ) <= 1
+
+    # Test bad period_size type
+    with pytest.raises(TypeError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='BM',
+            extremes_type='high',
+            block_size='1Y',
+            period_size=1,
+            plotting_position='weibull',
+        )
 
     # Test bad extremes_method
     with pytest.raises(ValueError):
@@ -179,8 +243,9 @@ def test_return_periods():
             extremes=extremes,
             extremes_method='BAD EXTREMES METHOD',
             extremes_type='high',
+            block_size='1Y',
+            period_size='BAD PERIOD SIZE',
             plotting_position='weibull',
-            block_size='1Y'
         )
 
     # Test bad extremes_type
@@ -205,6 +270,8 @@ def test_return_periods():
             block_size='1Y'
         )
 
+
+def test_get_return_periods_bm():
     # Test for BM
     for extremes_type in ['high', 'low']:
         extremes = get_extremes(
@@ -223,21 +290,24 @@ def test_return_periods():
                 extremes_method='BM',
                 extremes_type=extremes_type,
                 plotting_position=plotting_position,
-                block_size='1Y'
+                block_size='1Y',
+                period_size='1Y'
             )
             if extremes_type == 'high':
                 assert np.argmax(
                     return_periods.loc[:, extremes.name].values
                 ) == np.argmax(
-                    return_periods.loc[:, 'return period [yr]'].values
+                    return_periods.loc[:, 'return period'].values
                 )
             else:
                 assert np.argmin(
                     return_periods.loc[:, extremes.name].values
                 ) == np.argmax(
-                    return_periods.loc[:, 'return period [yr]'].values
+                    return_periods.loc[:, 'return period'].values
                 )
 
+
+def test_get_return_period_pot():
     # Test for POT
     for extremes_type in ['high', 'low']:
         extremes = get_extremes(
@@ -257,17 +327,18 @@ def test_return_periods():
                 extremes=extremes,
                 extremes_method='POT',
                 extremes_type=extremes_type,
-                plotting_position=plotting_position
+                plotting_position=plotting_position,
+                period_size='1Y'
             )
             if extremes_type == 'high':
                 assert np.argmax(
                     return_periods.loc[:, extremes.name].values
                 ) == np.argmax(
-                    return_periods.loc[:, 'return period [yr]'].values
+                    return_periods.loc[:, 'return period'].values
                 )
             else:
                 assert np.argmin(
                     return_periods.loc[:, extremes.name].values
                 ) == np.argmax(
-                    return_periods.loc[:, 'return period [yr]'].values
+                    return_periods.loc[:, 'return period'].values
                 )

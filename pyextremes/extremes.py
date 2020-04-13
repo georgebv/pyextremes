@@ -266,11 +266,11 @@ def get_return_periods(
         high - get extreme high values
         low - get extreme low values
     block_size : str or pd.Timedelta, optional
-        Block size (default=None). Used if extremes_method is 'BM' to convert return periods from block_size
-        to period_size. If None, determined as average distance between extreme events.
+        Block size in the 'BM' extremes_method (default=None).
+        If None, then is calculated as average distance between extreme events.
     period_size : str or pd.Timedelta, optional
         Unit of return periods (default='1Y').
-        If set to '30D', would be equivalent to return period of 12 being approximately equal to 1 year.
+        If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
     plotting_position : str, optional
         Plotting position name (default='weibull'), not case-sensitive.
         Supported plotting positions:
@@ -285,7 +285,12 @@ def get_return_periods(
     logger.info('parsing block_size')
     if extremes_method == 'BM':
         if block_size is None:
+            logger.info('calculating block_size as mean of distances between extremes')
             block_size = pd.to_timedelta(np.diff(extremes.index).mean())
+            if block_size <= pd.to_timedelta('1D'):
+                logger.warning(
+                    f'calculated block_size {block_size} is too small, consider manually providing the value'
+                )
         else:
             if not isinstance(block_size, pd.Timedelta):
                 if isinstance(block_size, str):
@@ -344,7 +349,8 @@ def get_return_periods(
     return pd.DataFrame(
         data={
             extremes.name: extremes.values,
-            'return period [yr]': 1 / exceedance_probability / extremes_rate
+            'exceedance probability': exceedance_probability,
+            'return period': 1 / exceedance_probability / extremes_rate
         },
         index=extremes.index
     )
