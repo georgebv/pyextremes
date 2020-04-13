@@ -245,7 +245,9 @@ def get_return_periods(
         extremes: pd.Series,
         extremes_method: str,
         extremes_type: str,
-        plotting_position: str = 'weibull',
+        block_size: typing.Union[str, pd.Timedelta] = None,
+        period_size: typing.Union[str, pd.Timedelta] = '1Y',
+        plotting_position: str = 'weibull'
 ) -> pd.DataFrame:
     """
     Calculate return periods in years for given extreme values and plotting position.
@@ -263,6 +265,12 @@ def get_return_periods(
     extremes_type : str
         high - get extreme high values
         low - get extreme low values
+    block_size : str or pd.Timedelta, optional
+        Block size (default=None). Used if extremes_method is 'BM' to convert return periods from block_size
+        to period_size. If None, determined as average distance between extreme events.
+    period_size : str or pd.Timedelta, optional
+        Unit of return periods (default='1Y').
+        If set to '30D', would be equivalent to return period of 12 being approximately equal to 1 year.
     plotting_position : str, optional
         Plotting position name (default='weibull'), not case-sensitive.
         Supported plotting positions:
@@ -274,13 +282,31 @@ def get_return_periods(
         A DataFrame with extreme values and corresponding return periods.
     """
 
+    logger.info('parsing block_size')
+    if extremes_method == 'BM':
+        if block_size is None:
+            block_size = pd.to_timedelta(np.diff(extremes.index).mean())
+        else:
+            if not isinstance(block_size, pd.Timedelta):
+                if isinstance(block_size, str):
+                    block_size = pd.to_timedelta(block_size)
+                else:
+                    raise TypeError(f'invalid type in {type(block_size)} for the block_size argument')
+
+    logger.info('parsing period_size')
+    if not isinstance(period_size, pd.Timedelta):
+        if isinstance(period_size, str):
+            period_size = pd.to_timedelta(period_size)
+        else:
+            raise TypeError(f'invalid type in {type(period_size)} for the period_size argument')
+
     logger.info('calculating rate of extreme events [events per year]')
     if extremes_method == 'BM':
-        extremes_rate = 1
+        extremes_rate = period_size / block_size
         logger.debug('calculated rate for BM method')
     elif extremes_method == 'POT':
-        n_years = (ts.index[-1] - ts.index[0]) / pd.to_timedelta('1Y')
-        extremes_rate = len(extremes) / n_years
+        n_periods = (ts.index[-1] - ts.index[0]) / period_size
+        extremes_rate = len(extremes) / n_periods
         logger.debug('calculated rate for POT method')
     else:
         raise ValueError(f'{extremes_method} is not a valid extremes_method value')
@@ -340,8 +366,15 @@ if __name__ == '__main__':
     # threshold = 1
     # r = '24H'
     #
-    # method = 'POT'
+    # method = 'BM'
     # extremes_type = 'high'
+    # extremes = get_extremes(
+    #     ts=ts,
+    #     method=method,
+    #     extremes_type=extremes_type,
+    #     block_size='30D',
+    #     errors='ignore'
+    # )
     # extremes = get_extremes(
     #     ts=ts,
     #     method=method,

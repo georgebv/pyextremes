@@ -179,7 +179,8 @@ def test_return_periods():
             extremes=extremes,
             extremes_method='BAD EXTREMES METHOD',
             extremes_type='high',
-            plotting_position='weibull'
+            plotting_position='weibull',
+            block_size='1Y'
         )
 
     # Test bad extremes_type
@@ -189,7 +190,8 @@ def test_return_periods():
             extremes=extremes,
             extremes_method='BM',
             extremes_type='BAD EXTREMES TYPE',
-            plotting_position='weibull'
+            plotting_position='weibull',
+            block_size='1Y'
         )
 
     # Test bad plotting_position
@@ -199,7 +201,8 @@ def test_return_periods():
             extremes=extremes,
             extremes_method='BM',
             extremes_type='high',
-            plotting_position='BAD PLOTTING POSITION'
+            plotting_position='BAD PLOTTING POSITION',
+            block_size='1Y'
         )
 
     # Test for BM
@@ -219,7 +222,8 @@ def test_return_periods():
                 extremes=extremes,
                 extremes_method='BM',
                 extremes_type=extremes_type,
-                plotting_position=plotting_position
+                plotting_position=plotting_position,
+                block_size='1Y'
             )
             if extremes_type == 'high':
                 assert np.argmax(
