@@ -244,7 +244,7 @@ def test_get_return_periods():
             extremes_method='BAD EXTREMES METHOD',
             extremes_type='high',
             block_size='1Y',
-            period_size='BAD PERIOD SIZE',
+            period_size='1Y',
             plotting_position='weibull',
         )
 
