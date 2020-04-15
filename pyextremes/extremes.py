@@ -44,14 +44,14 @@ def get_extremes(
     method : str
         Extreme value extraction method.
         Supported values: BM or POT.
-    ts : pd.Series
+    ts : pandas.Series
         Time series of the signal.
     extremes_type : str, optional
         high (default) - get extreme high values
         low - get extreme low values
     kwargs
         if method is BM:
-            block_size : str or pd.Timedelta, optional
+            block_size : str or pandas.Timedelta, optional
                 Block size (default='1Y').
             errors : str, optional
                 raise (default) - raise error for blocks with no data
@@ -61,12 +61,12 @@ def get_extremes(
         if method is POT:
             threshold : int or float
                 Threshold used to find exceedances.
-            r : str or pd.Timedelta, optional
+            r : str or pandas.Timedelta, optional
                 Duration of window used to decluster the exceedances (default='24H').
 
     Returns
     -------
-    extremes : pd.Series
+    extremes : pandas.Series
         Time series of extreme events.
     """
 
@@ -96,12 +96,12 @@ def _get_extremes_bm(
 
     Parameters
     ----------
-    ts : pd.Series
+    ts : pandas.Series
         Time series of the signal.
     extremes_type : str
         high - get extreme high values
         low - get extreme low values
-    block_size : str or pd.Timedelta
+    block_size : str or pandas.Timedelta
         Block size.
     errors : str
         raise - raise error for blocks with no data
@@ -111,7 +111,7 @@ def _get_extremes_bm(
 
     Returns
     -------
-    extremes : pd.Series
+    extremes : pandas.Series
         Time series of extreme events.
     """
 
@@ -170,7 +170,7 @@ def _get_extremes_bm(
     logger.info('successfully collected extreme events, returning the series')
     return pd.Series(
         data=extreme_values,
-        index=pd.Index(data=extreme_indices, name='date-time'),
+        index=pd.Index(data=extreme_indices, name=ts.index.name or 'date-time'),
         name=ts.name
     ).fillna(np.nanmean(extreme_values))
 
@@ -186,7 +186,7 @@ def _get_extremes_pot(
 
     Parameters
     ----------
-    ts : pd.Series
+    ts : pandas.Series
         Time series of the signal.
     extremes_type : str
         high - get extreme high values
@@ -198,7 +198,7 @@ def _get_extremes_pot(
 
     Returns
     -------
-    extremes : pd.Series
+    extremes : pandas.Series
         Time series of extreme events.
     """
 
@@ -235,7 +235,7 @@ def _get_extremes_pot(
     logger.info('successfully collected extreme events, returning the series')
     return pd.Series(
         data=extreme_values,
-        index=pd.Index(data=extreme_indices, name='date-time'),
+        index=pd.Index(data=extreme_indices, name=ts.index.name or 'date-time'),
         name=ts.name
     )
 
@@ -255,9 +255,9 @@ def get_return_periods(
 
     Parameters
     ----------
-    ts : pd.Series
+    ts : pandas.Series
         Time series of the signal.
-    extremes : pd.Series
+    extremes : pandas.Series
         Time series of extreme events.
     extremes_method : str
         Extreme value extraction method.
@@ -265,10 +265,10 @@ def get_return_periods(
     extremes_type : str
         high - get extreme high values
         low - get extreme low values
-    block_size : str or pd.Timedelta, optional
+    block_size : str or pandas.Timedelta, optional
         Block size in the 'BM' extremes_method (default=None).
         If None, then is calculated as average distance between extreme events.
-    period_size : str or pd.Timedelta, optional
+    period_size : str or pandas.Timedelta, optional
         Unit of return periods (default='1Y').
         If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
     plotting_position : str, optional
@@ -278,7 +278,7 @@ def get_return_periods(
 
     Returns
     -------
-    extreme_events : pd.DataFrame
+    extreme_events : pandas.DataFrame
         A DataFrame with extreme values and corresponding return periods.
     """
 
