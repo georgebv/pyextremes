@@ -36,7 +36,10 @@ Coming soon.
 
 Illustrations
 =============
-Coming soon.
+Extreme event extraction
+
+|extreme events image|
+
 
 .. |build status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
    :target: https://travis-ci.org/georgebv/pyextremes
@@ -46,3 +49,5 @@ Coming soon.
 
 .. |pypi package| image:: https://badge.fury.io/py/pyextremes.svg
     :target: https://badge.fury.io/py/pyextremes
+
+.. |extreme events image| image:: ./docs/source/example_images/extremes.png
