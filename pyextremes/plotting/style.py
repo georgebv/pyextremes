@@ -1,6 +1,6 @@
 import matplotlib
 
-theme_color = '#454545'
+theme_color = '#231F20'
 pyextremes_rc = {
     'font.family': 'arial',
     'font.size': 10,
@@ -10,6 +10,7 @@ pyextremes_rc = {
     'axes.grid': True,
     'axes.labelsize': 10,
     'axes.labelweight': 'normal',
+    'axes.labelcolor': theme_color,
     'axes.prop_cycle': matplotlib.cycler(
         'color',
         [

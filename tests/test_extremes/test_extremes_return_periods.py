@@ -103,7 +103,7 @@ def test_get_return_periods():
             extremes=extremes,
             extremes_method='BAD EXTREMES METHOD',
             extremes_type='high',
-            block_size='1Y',
+            block_size=None,
             return_period_size='1Y',
             plotting_position='weibull'
         )
