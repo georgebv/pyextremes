@@ -21,31 +21,25 @@ import pandas as pd
 from pyextremes.extremes.block_maxima import get_extremes_block_maxima
 from pyextremes.extremes.peaks_over_threshold import get_extremes_peaks_over_threshold
 
-# Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 
 
 def get_extremes(
-        method: str,
         ts: pd.Series,
+        method: str,
         extremes_type: str = 'high',
         **kwargs
 ) -> pd.Series:
     """
-    Get extreme events from a signal time series using specified method.
+    Get extreme events from a signal time series using a specified extreme value extraction method.
 
     Parameters
     ----------
+    ts : pandas.Series
+        Time series of the signal.
     method : str
         Extreme value extraction method.
         Supported values: BM or POT.
-    ts : pandas.Series
-        Time series of the signal.
     extremes_type : str, optional
         high (default) - get extreme high values
         low - get extreme low values
@@ -54,7 +48,7 @@ def get_extremes(
             block_size : str or pandas.Timedelta, optional
                 Block size (default='1Y').
             errors : str, optional
-                raise (default) - raise error for blocks with no data
+                raise (default) - raise an exception when encountering a block with no data
                 ignore - ignore blocks with no data
                 coerce - get extreme values for blocks with no data as mean of all other extreme events
                     in the series with index being the middle point of corresponding interval
@@ -70,7 +64,7 @@ def get_extremes(
         Time series of extreme events.
     """
 
-    logger.debug(f'calling get_extremes with method={method}')
+    logger.info(f'calling get_extremes with method={method}')
     if method == 'BM':
         block_size = kwargs.pop('block_size', '1Y')
         errors = kwargs.pop('errors', 'raise')
@@ -82,4 +76,34 @@ def get_extremes(
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
         return get_extremes_peaks_over_threshold(ts=ts, extremes_type=extremes_type, threshold=threshold, r=r)
     else:
-        raise ValueError(f'{method} is not a valid method value')
+        raise ValueError(f'\'{method}\' is not a valid \'method\' value')
+
+
+if __name__ == '__main__':
+    # Crete extreme value files to be used for tests
+    import os
+    import pathlib
+    test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent.parent / 'tests' / 'data'
+    test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
+    for et in ['high', 'low']:
+        bm_file = test_data_folder / f'extremes_bm_{et}.csv'
+        if not bm_file.exists():
+            get_extremes(
+                ts=test_data,
+                method='BM',
+                extremes_type=et,
+                block_size='1Y',
+                errors='ignore'
+            ).to_csv(bm_file)
+        pot_file = test_data_folder / f'extremes_pot_{et}.csv'
+        if not pot_file.exists():
+            get_extremes(
+                ts=test_data,
+                method='POT',
+                extremes_type=et,
+                threshold={
+                    'high': 1.35,
+                    'low': -1.65
+                }[et],
+                r='24H'
+            ).to_csv(pot_file)

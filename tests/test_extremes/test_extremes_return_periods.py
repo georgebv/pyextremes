@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import os
+import pathlib
 
 import numpy as np
 import pandas as pd
@@ -23,20 +23,14 @@ import pytest
 
 from pyextremes.extremes import get_extremes, get_return_periods
 
-# Set up logging
-logger = logging.getLogger('pyextremes.extremes')
-logger.setLevel(logging.CRITICAL)
-
-test_data = pd.read_csv(
-    os.sep.join([*os.path.realpath(__file__).split(os.sep)[:-2], 'data', 'battery_wl.csv']),
-    index_col=0, parse_dates=True, squeeze=True
-)
+test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'data'
+test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
 def test_get_return_periods():
     extremes = get_extremes(
-        method='BM',
         ts=test_data,
+        method='BM',
         extremes_type='high',
         block_size='1Y',
         errors='ignore'
@@ -50,46 +44,47 @@ def test_get_return_periods():
             extremes_method='BM',
             extremes_type='high',
             block_size=1,
-            period_size='1Y',
-            plotting_position='weibull',
+            return_period_size='1Y',
+            plotting_position='weibull'
+        )
+
+    # Test block_size for POT
+    with pytest.raises(ValueError):
+        get_return_periods(
+            ts=test_data,
+            extremes=extremes,
+            extremes_method='POT',
+            extremes_type='high',
+            block_size='1Y',
+            return_period_size='1Y',
+            plotting_position='weibull'
         )
 
     # Test automatic block_size type
-    extremes_30d = get_extremes(
-        method='BM',
-        ts=test_data,
-        extremes_type='high',
-        block_size='30D',
-        errors='ignore'
-    )
     return_periods_automatic = get_return_periods(
         ts=test_data,
-        extremes=extremes_30d,
+        extremes=extremes,
         extremes_method='BM',
         extremes_type='high',
         block_size=None,
-        period_size='1Y',
-        plotting_position='weibull',
+        return_period_size='1Y',
+        plotting_position='weibull'
     )
     return_periods = get_return_periods(
         ts=test_data,
-        extremes=extremes_30d,
+        extremes=extremes,
         extremes_method='BM',
         extremes_type='high',
-        block_size=None,
-        period_size='1Y',
-        plotting_position='weibull',
+        block_size='1Y',
+        return_period_size='1Y',
+        plotting_position='weibull'
     )
     assert np.abs(
-        np.diff(
-            [
-                return_periods_automatic.loc[:, 'return period'].values.max(),
-                return_periods.loc[:, 'return period'].values.max()
-            ]
-        )[0]
+        return_periods_automatic.loc[:, 'return period'].values.max() -
+        return_periods.loc[:, 'return period'].values.max()
     ) <= 1
 
-    # Test bad period_size type
+    # Test bad return_period_size type
     with pytest.raises(TypeError):
         get_return_periods(
             ts=test_data,
@@ -97,8 +92,8 @@ def test_get_return_periods():
             extremes_method='BM',
             extremes_type='high',
             block_size='1Y',
-            period_size=1,
-            plotting_position='weibull',
+            return_period_size=1,
+            plotting_position='weibull'
         )
 
     # Test bad extremes_method
@@ -109,8 +104,8 @@ def test_get_return_periods():
             extremes_method='BAD EXTREMES METHOD',
             extremes_type='high',
             block_size='1Y',
-            period_size='1Y',
-            plotting_position='weibull',
+            return_period_size='1Y',
+            plotting_position='weibull'
         )
 
     # Test bad extremes_type
@@ -120,8 +115,9 @@ def test_get_return_periods():
             extremes=extremes,
             extremes_method='BM',
             extremes_type='BAD EXTREMES TYPE',
-            plotting_position='weibull',
-            block_size='1Y'
+            block_size='1Y',
+            return_period_size='1Y',
+            plotting_position='weibull'
         )
 
     # Test bad plotting_position
@@ -131,20 +127,17 @@ def test_get_return_periods():
             extremes=extremes,
             extremes_method='BM',
             extremes_type='high',
-            plotting_position='BAD PLOTTING POSITION',
-            block_size='1Y'
+            block_size='1Y',
+            return_period_size='1Y',
+            plotting_position='BAD PLOTTING POSITION'
         )
 
 
-def test_get_return_periods_bm():
-    # Test for BM
+def test_extremes_method_bm():
     for extremes_type in ['high', 'low']:
-        extremes = get_extremes(
-            method='BM',
-            ts=test_data,
-            block_size='1Y',
-            extremes_type=extremes_type,
-            errors='ignore'
+        extremes = pd.read_csv(
+            test_data_folder/f'extremes_bm_{extremes_type}.csv',
+            index_col=0, parse_dates=True, squeeze=True
         )
         for plotting_position in [
             'ecdf', 'hazen', 'weibull', 'tukey', 'blom', 'median', 'cunnane', 'gringorten', 'beard'
@@ -154,9 +147,9 @@ def test_get_return_periods_bm():
                 extremes=extremes,
                 extremes_method='BM',
                 extremes_type=extremes_type,
-                plotting_position=plotting_position,
                 block_size='1Y',
-                period_size='1Y'
+                return_period_size='1Y',
+                plotting_position=plotting_position
             )
             if extremes_type == 'high':
                 assert np.argmax(
@@ -172,17 +165,11 @@ def test_get_return_periods_bm():
                 )
 
 
-def test_get_return_period_pot():
-    # Test for POT
+def test_extremes_method_pot():
     for extremes_type in ['high', 'low']:
-        extremes = get_extremes(
-            method='POT',
-            ts=test_data,
-            threshold={
-                'high': 1.35,
-                'low': -1.65
-            }[extremes_type],
-            r='24H'
+        extremes = pd.read_csv(
+            test_data_folder/f'extremes_pot_{extremes_type}.csv',
+            index_col=0, parse_dates=True, squeeze=True
         )
         for plotting_position in [
             'ecdf', 'hazen', 'weibull', 'tukey', 'blom', 'median', 'cunnane', 'gringorten', 'beard'
@@ -192,8 +179,9 @@ def test_get_return_period_pot():
                 extremes=extremes,
                 extremes_method='POT',
                 extremes_type=extremes_type,
-                plotting_position=plotting_position,
-                period_size='1Y'
+                block_size=None,
+                return_period_size='1Y',
+                plotting_position=plotting_position
             )
             if extremes_type == 'high':
                 assert np.argmax(

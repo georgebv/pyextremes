@@ -30,7 +30,10 @@ def plot_extremes(
     axes : matplotlib.pyplot.Axes
         Axes object
     """
-
+    # TODO - ask or infer block size, ask or infer threshold
+    #   for block show thin dashed lines in the background
+    #   for threshold show thin horizontal line
+    #   remove grid
     with plt.rc_context(rc=pyextremes_rc):
         fig, ax = plt.subplots(figsize=figsize)
 

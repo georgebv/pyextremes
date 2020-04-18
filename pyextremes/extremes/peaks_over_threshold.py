@@ -20,13 +20,7 @@ import typing
 import numpy as np
 import pandas as pd
 
-# Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 
 
 def get_extremes_peaks_over_threshold(
@@ -58,20 +52,20 @@ def get_extremes_peaks_over_threshold(
 
     logger.info(f'collecting exceedances for extremes_type={extremes_type}')
     if extremes_type == 'high':
-        exceedances = ts.loc[ts.values > threshold].dropna()
         comparison_function = np.greater
     elif extremes_type == 'low':
-        exceedances = ts.loc[ts.values < threshold].dropna()
         comparison_function = np.less
     else:
-        raise ValueError(f'{extremes_type} is not a valid extremes_type value')
+        raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
+    exceedances = ts.loc[comparison_function(ts.values, threshold)]
 
     logger.info('parsing r')
     if not isinstance(r, pd.Timedelta):
         if isinstance(r, str):
+            logger.info('converting r to timedelta')
             r = pd.to_timedelta(r)
         else:
-            raise TypeError(f'invalid type in {type(r)} for the r argument')
+            raise TypeError(f'invalid type in {type(r)} for the \'r\' argument')
 
     logger.info('declustering exceedances')
     extreme_indices, extreme_values = [exceedances.index[0]], [exceedances.values[0]]

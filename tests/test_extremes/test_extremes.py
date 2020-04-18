@@ -14,31 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import os
+import pathlib
 
 import pandas as pd
 import pytest
 
 from pyextremes.extremes import get_extremes
 
-# Set up logging
-logger = logging.getLogger('pyextremes.extremes')
-logger.setLevel(logging.CRITICAL)
-
-test_data = pd.read_csv(
-    os.sep.join([*os.path.realpath(__file__).split(os.sep)[:-2], 'data', 'battery_wl.csv']),
-    index_col=0, parse_dates=True, squeeze=True
-)
+test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'data'
+test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
 def test_get_extremes():
     # Test bad method value
     with pytest.raises(ValueError):
         get_extremes(
-            method='BAD METHOD',
             ts=test_data,
+            method='BAD METHOD',
             extremes_type='BAD TYPE',
             block_size='1Y',
-            errors='coerce'
+            errors='ignore'
         )
