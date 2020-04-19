@@ -19,23 +19,17 @@ import typing
 
 import pandas as pd
 
-from pyextremes.models.base import AbstractDistributionFittingModel
+from pyextremes.models.base import AbstractModelBaseClass
 
-# Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 
 
-class MLE(AbstractDistributionFittingModel):
+class MLE(AbstractModelBaseClass):
 
     def fit(self):
         raise NotImplementedError
 
-    def get_return_value(
+    def __get_return_value(
             self,
             return_period: typing.Union[str, pd.Timedelta] = '1Y'
     ):

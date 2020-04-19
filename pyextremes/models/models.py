@@ -16,19 +16,13 @@
 
 import logging
 
-from pyextremes.models.mcmc import MCMC
 from pyextremes.models.mle import MLE
+from pyextremes.models.pymc import PyMC
 
-# Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 
 
-def get_fitting_model(
+def get_model(
         model: str
 ) -> type:
     """
@@ -37,10 +31,10 @@ def get_fitting_model(
     Parameters
     ----------
     model : str
-        Fitting model name.
+        Name of an extreme value distribution fitting model.
         Supported names:
-            MLE - Maximum Likelihood Estimate model
-            MCMC - Markov Chanin Monte Carlo model
+            MLE - Maximum Likelihood Estimate model (based on scipy)
+            PyMC - PyMC3 Hamiltonian Monte Carlo model
 
     Returns
     -------
@@ -48,10 +42,10 @@ def get_fitting_model(
         An extreme value model.
     """
 
-    logger.debug(f'calling get_fitting_model with model={model}')
+    logger.info(f'calling get_fitting_model with model={model}')
     if model == 'MLE':
         return MLE
-    elif model == 'MCMC':
-        return MCMC
+    elif model == 'PyMC':
+        return PyMC
     else:
-        raise ValueError(f'{model} is not a valid model value')
+        raise ValueError(f'\'{model}\' is not a valid \'model\' value')

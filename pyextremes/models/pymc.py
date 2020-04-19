@@ -16,17 +16,11 @@
 
 import logging
 
-from pyextremes.models.base import AbstractDistributionFittingModel
+from pyextremes.models.base import AbstractModelBaseClass
 
-# Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
 
 
-class MCMC(AbstractDistributionFittingModel):
+class PyMC(AbstractModelBaseClass):
 
     pass
