@@ -15,16 +15,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
+
+import pandas as pd
+import scipy.stats
 
 from pyextremes.models.mle import MLE
-from pyextremes.models.pymc import PyMC
+from pyextremes.models.emcee import Emcee
 
 logger = logging.getLogger(__name__)
 
 
 def get_model(
-        model: str
-) -> type:
+        model: str,
+        extremes: pd.Series,
+        distribution: typing.Union[str, scipy.stats.rv_continuous]
+) -> typing.Union[MLE, Emcee]:
     """
     Get an extreme value model.
 
@@ -34,7 +40,11 @@ def get_model(
         Name of an extreme value distribution fitting model.
         Supported names:
             MLE - Maximum Likelihood Estimate model (based on scipy)
-            PyMC - PyMC3 Hamiltonian Monte Carlo model
+            MCMC - PyMC3 Hamiltonian Monte Carlo model
+    extremes : pandas.Series
+        Time series of extreme events.
+    distribution : str or scipy.stats.rv_continuous
+        Name of scipy.stats distribution or the distribution object itself (e.g. scipy.stats.genextreme).
 
     Returns
     -------
@@ -44,8 +54,8 @@ def get_model(
 
     logger.info(f'calling get_fitting_model with model={model}')
     if model == 'MLE':
-        return MLE
-    elif model == 'PyMC':
-        return PyMC
+        return MLE(extremes=extremes, distribution=distribution)
+    elif model == 'MCMC':
+        return Emcee(extremes=extremes, distribution=distribution)
     else:
         raise ValueError(f'\'{model}\' is not a valid \'model\' value')

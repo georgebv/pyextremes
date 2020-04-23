@@ -19,15 +19,19 @@ import typing
 
 import pandas as pd
 
-from pyextremes.models.base import AbstractModelBaseClass
+from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
 
 
 class MLE(AbstractModelBaseClass):
 
-    def fit(self):
-        raise NotImplementedError
+    def fit(
+            self,
+            extremes: pd.Series,
+            **kwargs
+    ) -> tuple:
+        return self.distribution.fit(extremes)
 
     def __get_return_value(
             self,

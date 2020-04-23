@@ -16,11 +16,21 @@
 
 import logging
 
-from pyextremes.models.base import AbstractModelBaseClass
+import pandas as pd
+
+from pyextremes.models.emcee.genextreme import Genextreme
+from pyextremes.models.emcee.genpareto import Genpareto
 
 logger = logging.getLogger(__name__)
 
 
-class PyMC(AbstractModelBaseClass):
-
-    pass
+def get_distribution(
+        distribution: str,
+        extremes: pd.Series,
+):
+    if distribution == 'genextreme':
+        return Genextreme(extremes=extremes)
+    elif distribution == 'genpareto':
+        return Genpareto(extremes=extremes)
+    else:
+        raise NotImplementedError(f'\'{distribution}\' distribution is not implemented for the \'emcee\' model')

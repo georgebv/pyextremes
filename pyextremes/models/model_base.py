@@ -45,16 +45,17 @@ class AbstractModelBaseClass(abc.ABC):
             raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
 
         logger.info('calling the self.__fit function from the model base model class __init__ method')
-        self.__fit(extremes=extremes)
+        self.fit_parameters = self.fit(extremes=extremes)
 
         logger.info('initializing the return value hash')
         self.__return_value_hash = {}
 
     @abc.abstractmethod
-    def __fit(
+    def fit(
             self,
-            extremes: pd.Series
-    ) -> None:
+            extremes: pd.Series,
+            **kwargs: dict
+    ) -> typing.Union[tuple, dict]:
         pass
 
     def get_return_value(
