@@ -63,6 +63,6 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
 
         # Calculate log-likelihood
         if condition:
-            return scipy.stats.genextreme.logpdf(x=self.extremes, c=shape, loc=location, scale=scale)
+            return sum(scipy.stats.genextreme.logpdf(x=self.extremes, c=shape, loc=location, scale=scale))
         else:
             return -np.inf

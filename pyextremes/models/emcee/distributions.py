@@ -28,6 +28,7 @@ def get_distribution(
         distribution: str,
         extremes: pd.Series,
 ):
+    logger.info(f'fetching \'{distribution}\' distribution')
     if distribution == 'genextreme':
         return Genextreme(extremes=extremes)
     elif distribution == 'genpareto':

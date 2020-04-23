@@ -62,6 +62,6 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
 
         # Calculate log-likelihood
         if condition:
-            return scipy.stats.genpareto.logpdf(x=self.extremes, c=shape, loc=0, scale=scale)
+            return sum(scipy.stats.genpareto.logpdf(x=self.extremes, c=shape, loc=0, scale=scale))
         else:
             return -np.inf

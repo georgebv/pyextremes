@@ -18,8 +18,8 @@ import abc
 import logging
 import typing
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import scipy.stats
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class AbstractModelBaseClass(abc.ABC):
 
     def get_return_value(
             self,
-            return_period: typing.Union[np.ndarray, typing.List[str, pd.Timedelta], str, pd.Timedelta],
+            return_period: typing.Union[np.ndarray, str, typing.List[str], pd.Timedelta, typing.List[pd.Timedelta]],
             alpha: float = None,
             n_samples: int = None
     ) -> typing.Union[tuple, np.ndarray]:

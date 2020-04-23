@@ -68,7 +68,7 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
     ) -> np.ndarray:
         return np.transpose(
             [
-                scipy.stats.norm.rvs(loc=parameter, scale=1, size=n_walkers)
+                scipy.stats.norm.rvs(loc=parameter, scale=0.01, size=n_walkers)
                 for parameter in self.mle_parameters
             ]
         )
