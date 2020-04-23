@@ -34,6 +34,12 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
     def number_of_parameters(self) -> int:
         return 2
 
+    def get_full_parameters(
+            self,
+            parameters: tuple
+    ) -> tuple:
+        return parameters[0], 0, parameters[1]
+
     def log_prior(
             self,
             theta: tuple
@@ -41,7 +47,7 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
         shape, scale = theta
         shape_prior = scipy.stats.norm.logpdf(x=shape, loc=self.mle_parameters[0], scale=100)
         location_prior = 0
-        scale_prior = scipy.stats.norm.logpdf(x=scale, loc=self.mle_parameters[2], scale=100) if scale > 0 else -np.inf
+        scale_prior = scipy.stats.norm.logpdf(x=scale, loc=self.mle_parameters[1], scale=100) if scale > 0 else -np.inf
         return shape_prior + location_prior + scale_prior
 
     def log_likelihood(
@@ -56,12 +62,12 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
 
         # Support constraint
         if shape >= 0:
-            condition = np.all(self.extremes >= 0)
+            condition = np.all(self.extremes.values >= 0)
         else:
-            condition = np.all(self.extremes >= 0) and np.all(self.extremes >= scale / shape)
+            condition = np.all(self.extremes.values >= 0) and np.all(self.extremes.values >= scale / shape)
 
         # Calculate log-likelihood
         if condition:
-            return sum(scipy.stats.genpareto.logpdf(x=self.extremes, c=shape, loc=0, scale=scale))
+            return sum(scipy.stats.genpareto.logpdf(x=self.extremes.values, c=shape, loc=0, scale=scale))
         else:
             return -np.inf

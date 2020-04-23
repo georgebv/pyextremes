@@ -31,15 +31,30 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
             extremes: pd.Series
     ) -> None:
         self.extremes = extremes
+        logger.info('calling the fit method')
         self.mle_parameters = self.fit()
 
     @abc.abstractmethod
     def fit(self) -> tuple:
+        """
+        Find model parameters using scipy MLE fit method.
+
+        Returns
+        -------
+        Model parameters.
+        """
         pass
 
     @property
     @abc.abstractmethod
     def number_of_parameters(self) -> int:
+        pass
+
+    @abc.abstractmethod
+    def get_full_parameters(
+            self,
+            parameters: tuple
+    ) -> tuple:
         pass
 
     @abc.abstractmethod
@@ -66,6 +81,24 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
             self,
             n_walkers: int
     ) -> np.ndarray:
+        """
+        Get initial positions of emcee sampler walkers.
+        Positions are sampled from a normal distribution for each of the model parameters
+        (e.g. shape, location, and scale) with location being derived from scipy MLE fit
+        and standard deviation being 0.01.
+
+        Parameters
+        ----------
+        n_walkers : int
+            Number of walkers used by the emcee sampler.
+
+        Returns
+        -------
+        initial_positions : numpy.ndarray
+            Array with initial positions of emcee sampler walkers.
+        """
+
+        logger.info(f'getting initial positions for {n_walkers} walkers')
         return np.transpose(
             [
                 scipy.stats.norm.rvs(loc=parameter, scale=0.01, size=n_walkers)

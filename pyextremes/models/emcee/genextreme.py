@@ -33,6 +33,12 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
     def number_of_parameters(self) -> int:
         return 3
 
+    def get_full_parameters(
+            self,
+            parameters: tuple
+    ) -> tuple:
+        return parameters
+
     def log_prior(
             self,
             theta: tuple
@@ -55,14 +61,14 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
 
         # Support constraint (scipy.stats version of genextreme has inverted shape parameter)
         if shape < 0:
-            condition = np.all(self.extremes >= location + scale / shape)
+            condition = np.all(self.extremes.values >= location + scale / shape)
         elif shape == 0:
             condition = True
         else:
-            condition = np.all(self.extremes <= location + scale / shape)
+            condition = np.all(self.extremes.values <= location + scale / shape)
 
         # Calculate log-likelihood
         if condition:
-            return sum(scipy.stats.genextreme.logpdf(x=self.extremes, c=shape, loc=location, scale=scale))
+            return sum(scipy.stats.genextreme.logpdf(x=self.extremes.values, c=shape, loc=location, scale=scale))
         else:
             return -np.inf

@@ -18,20 +18,42 @@ import logging
 
 import pandas as pd
 
+from pyextremes.models.emcee.distribution_base import AbstractEmceeDistributionBaseClass
 from pyextremes.models.emcee.genextreme import Genextreme
 from pyextremes.models.emcee.genpareto import Genpareto
 
 logger = logging.getLogger(__name__)
 
+distributions = {
+    'genextreme': Genextreme,
+    'genpareto': Genpareto
+}
+
 
 def get_distribution(
         distribution: str,
         extremes: pd.Series,
-):
+) -> AbstractEmceeDistributionBaseClass:
+    """
+    Get a distribution object to be used within the emcee fitting model.
+
+    Parameters
+    ----------
+    distribution : str
+        Distribution name compatible with scipy.stats.
+    extremes : pandas.Series
+        Time series of extreme events.
+
+    Returns
+    -------
+    emcee-compatible distribution object
+    """
+
     logger.info(f'fetching \'{distribution}\' distribution')
-    if distribution == 'genextreme':
-        return Genextreme(extremes=extremes)
-    elif distribution == 'genpareto':
-        return Genpareto(extremes=extremes)
-    else:
-        raise NotImplementedError(f'\'{distribution}\' distribution is not implemented for the \'emcee\' model')
+    try:
+        return distributions[distribution](extremes=extremes)
+    except KeyError:
+        raise NotImplementedError(
+            f'\'{distribution}\' distribution is not implemented for the \'emcee\' model\n'
+            f'Available \'emcee\' distributions: {", ".join(distributions.keys())}'
+        )

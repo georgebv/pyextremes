@@ -26,9 +26,22 @@ from pyextremes.models.emcee.distributions import get_distribution
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
+import sys
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.DEBUG)
+logger.addHandler(stream_handler)
 
 
 class Emcee(AbstractModelBaseClass):
+
+    def __init__(
+            self,
+            extremes: pd.Series,
+            extremes_rate: float,
+            distribution: typing.Union[str, scipy.stats.rv_continuous]
+    ) -> None:
+        self.emcee_distribution = None
+        super().__init__(extremes=extremes, extremes_rate=extremes_rate, distribution=distribution)
 
     def fit(
             self,
@@ -40,18 +53,18 @@ class Emcee(AbstractModelBaseClass):
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
         logger.info(f'getting distribution \'{self.distribution.name}\'')
-        distribution = get_distribution(self.distribution.name, extremes=extremes)
+        self.emcee_distribution = get_distribution(self.distribution.name, extremes=extremes)
 
         logger.info('defining emcee ensemble sampler')
         sampler = emcee.EnsembleSampler(
             nwalkers=n_walkers,
-            ndim=distribution.number_of_parameters,
-            log_prob_fn=distribution.log_probability
+            ndim=self.emcee_distribution.number_of_parameters,
+            log_prob_fn=self.emcee_distribution.log_probability
         )
 
         logger.info(f'running the sampler with {n_walkers} walkers and {n_samples} samples')
         sampler.run_mcmc(
-            initial_state=distribution.get_initial_state(n_walkers=n_walkers),
+            initial_state=self.emcee_distribution.get_initial_state(n_walkers=n_walkers),
             nsteps=n_samples
         )
 
@@ -59,8 +72,8 @@ class Emcee(AbstractModelBaseClass):
             'calculating maximum aposteriori values of distribution paramters '
             'using kernel density estimation of peak'
         )
-        map_estimate = np.zeros(distribution.mle_parameters)
-        for i in range(distribution.number_of_parameters):
+        map_estimate = np.zeros(self.emcee_distribution.number_of_parameters)
+        for i in range(self.emcee_distribution.number_of_parameters):
             kde = scipy.stats.gaussian_kde(sampler.get_chain()[:, :, i].flatten())
             support = np.linspace(*np.quantile(sampler.get_chain()[:, :, i].flatten(), [0.025, 0.975]), 1000)
             density = kde.evaluate(support)
@@ -71,13 +84,85 @@ class Emcee(AbstractModelBaseClass):
             'trace': sampler.get_chain().transpose((1, 0, 2))
         }
 
+    def retrieve_return_value(
+            self,
+            return_period: typing.Union[str, pd.Timedelta],
+            alpha: float,
+            **kwargs: dict
+    ) -> tuple:
+        burn_in = kwargs.pop('burn_in')
+        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+
+        logger.debug('checking if the result has been previously hashed in self.hashed_return_values')
+        flag = False
+        if return_period not in self.hashed_return_values:
+            logger.debug(f'return_period {return_period} not hashed')
+            flag = True
+        elif alpha not in self.hashed_return_values['return value']:
+            logger.debug(f'alpha {alpha} not hashed')
+            flag = True
+        elif burn_in not in self.hashed_return_values['return value'][alpha]:
+            logger.debug(f'burn_in {burn_in} not hashed')
+            flag = True
+
+        if flag:
+            logger.debug('calculating return value for new parameters and adding it to hashed results')
+            rv = self.__get_return_value(return_period=return_period, alpha=alpha, burn_in=burn_in)
+            self.hashed_return_values[return_period] = {
+                'return value': rv[0],
+                alpha: {
+                    burn_in: rv[1]
+                }
+            }
+
+        logger.debug('retrieving hashed entry and returning results')
+        hashed_entry = self.hashed_return_values[return_period]
+        return hashed_entry['return value'], hashed_entry[alpha]
+
+    def __get_return_value(
+            self,
+            return_period: typing.Union[str, pd.Timedelta],
+            alpha: float,
+            burn_in: int
+    ) -> tuple:
+
+        if not isinstance(burn_in, int):
+            raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
+        if burn_in < 0:
+            raise ValueError(f'\'{burn_in}\' is not a valid \'burn_in\' value')
+        if burn_in >= burn_in >= self.fit_parameters['trace'].shape[1]:
+            raise ValueError(
+                f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {self.fit_parameters["trace"].shape[1]}'
+            )
+
+        # TODO - return period is a timedelta
+        logger.debug('calculating exceedance probability')
+        exceedance_probability = 1 / return_period / self.extremes_rate
+
+        return_value = self.distribution.isf(
+            exceedance_probability,
+            *self.emcee_distribution.get_full_parameters(self.fit_parameters['map'])
+        )
+        rv_sample = []
+        for walker_trace in self.fit_parameters['trace']:
+            for parameters in walker_trace[burn_in:]:
+                rv_sample.append(
+                    self.distribution.isf(
+                        exceedance_probability,
+                        *self.emcee_distribution.get_full_parameters(parameters)
+                    )
+                )
+        confidence_interval = np.quantile(a=rv_sample, q=np.array([(1-alpha)/2, (1+alpha)/2]))
+        return (return_value, *confidence_interval)
+
 
 if __name__ == '__main__':
     # Crete extreme value files to be used for tests
     pass
-    # import os
-    # import pathlib
-    # test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent / 'tests' / 'data'
-    # extremes = pd.read_csv(test_data_folder / 'extremes_bm_high.csv', index_col=0, parse_dates=True, squeeze=True)
-    # kwargs = {}
-    # distribution = get_distribution('genextreme', extremes=extremes)
+    import os
+    import pathlib
+    test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent / 'tests' / 'data'
+    extremes = pd.read_csv(test_data_folder / 'extremes_bm_high.csv', index_col=0, parse_dates=True, squeeze=True)
+    kwargs = {}
+
+    self = Emcee(extremes=extremes, distribution='genextreme', extremes_rate=1)
