@@ -16,6 +16,7 @@
 
 import abc
 import logging
+import typing
 
 import numpy as np
 import pandas as pd
@@ -48,13 +49,6 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
     @property
     @abc.abstractmethod
     def number_of_parameters(self) -> int:
-        pass
-
-    @abc.abstractmethod
-    def get_full_parameters(
-            self,
-            parameters: tuple
-    ) -> tuple:
         pass
 
     @abc.abstractmethod
@@ -105,3 +99,11 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
                 for parameter in self.mle_parameters
             ]
         )
+
+    @abc.abstractmethod
+    def isf(
+            self,
+            q: typing.Union[float, np.ndarray],
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        pass

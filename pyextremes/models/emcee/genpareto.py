@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
 
 import numpy as np
 import scipy.stats
@@ -33,12 +34,6 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
     @property
     def number_of_parameters(self) -> int:
         return 2
-
-    def get_full_parameters(
-            self,
-            parameters: tuple
-    ) -> tuple:
-        return parameters[0], 0, parameters[1]
 
     def log_prior(
             self,
@@ -71,3 +66,10 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
             return sum(scipy.stats.genpareto.logpdf(x=self.extremes.values, c=shape, loc=0, scale=scale))
         else:
             return -np.inf
+
+    def isf(
+            self,
+            q: typing.Union[float, np.ndarray],
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return scipy.stats.genpareto.isf(q, c=parameters[0], loc=0, scale=parameters[1])

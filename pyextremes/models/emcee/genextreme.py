@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
 
 import numpy as np
 import scipy.stats
@@ -32,12 +33,6 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
     @property
     def number_of_parameters(self) -> int:
         return 3
-
-    def get_full_parameters(
-            self,
-            parameters: tuple
-    ) -> tuple:
-        return parameters
 
     def log_prior(
             self,
@@ -72,3 +67,10 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
             return sum(scipy.stats.genextreme.logpdf(x=self.extremes.values, c=shape, loc=location, scale=scale))
         else:
             return -np.inf
+
+    def isf(
+            self,
+            q: typing.Union[float, np.ndarray],
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return scipy.stats.genextreme.isf(q=q, c=parameters[0], loc=parameters[1], scale=parameters[2])

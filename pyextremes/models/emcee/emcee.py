@@ -26,10 +26,6 @@ from pyextremes.models.emcee.distributions import get_distribution
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
-import sys
-stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setLevel(logging.DEBUG)
-logger.addHandler(stream_handler)
 
 
 class Emcee(AbstractModelBaseClass):
@@ -37,11 +33,10 @@ class Emcee(AbstractModelBaseClass):
     def __init__(
             self,
             extremes: pd.Series,
-            extremes_rate: float,
             distribution: typing.Union[str, scipy.stats.rv_continuous]
     ) -> None:
         self.emcee_distribution = None
-        super().__init__(extremes=extremes, extremes_rate=extremes_rate, distribution=distribution)
+        super().__init__(extremes=extremes, distribution=distribution)
 
     def fit(
             self,
@@ -86,7 +81,7 @@ class Emcee(AbstractModelBaseClass):
 
     def retrieve_return_value(
             self,
-            return_period: typing.Union[str, pd.Timedelta],
+            exceedance_probability: float,
             alpha: float,
             **kwargs: dict
     ) -> tuple:
@@ -94,38 +89,48 @@ class Emcee(AbstractModelBaseClass):
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
         logger.debug('checking if the result has been previously hashed in self.hashed_return_values')
-        flag = False
-        if return_period not in self.hashed_return_values:
-            logger.debug(f'return_period {return_period} not hashed')
-            flag = True
-        elif alpha not in self.hashed_return_values['return value']:
-            logger.debug(f'alpha {alpha} not hashed')
-            flag = True
-        elif burn_in not in self.hashed_return_values['return value'][alpha]:
-            logger.debug(f'burn_in {burn_in} not hashed')
-            flag = True
-
-        if flag:
-            logger.debug('calculating return value for new parameters and adding it to hashed results')
-            rv = self.__get_return_value(return_period=return_period, alpha=alpha, burn_in=burn_in)
-            self.hashed_return_values[return_period] = {
-                'return value': rv[0],
-                alpha: {
+        condition_1 = exceedance_probability not in self.hashed_return_values
+        if condition_1:
+            condition_2 = True
+        else:
+            condition_2 = alpha not in self.hashed_return_values[exceedance_probability]
+        if condition_2:
+            condition_3 = True
+        else:
+            condition_3 = burn_in not in self.hashed_return_values[exceedance_probability][alpha]
+        if condition_1 or condition_2 or condition_3:
+            logger.debug('full entry not hashed, calculating return value')
+            rv = self.__get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, burn_in=burn_in)
+            if condition_1:
+                logger.debug(f'creating a new entry for exceedance_probability {exceedance_probability}')
+                self.hashed_return_values[exceedance_probability] = {
+                    'return value': rv[0],
+                    alpha: {
+                        burn_in: rv[1]
+                    }
+                }
+            elif condition_2:
+                logger.debug(f'updating entry for exceedance_probability {exceedance_probability} with alpha {alpha}')
+                self.hashed_return_values[exceedance_probability][alpha] = {
                     burn_in: rv[1]
                 }
-            }
+            elif condition_3:
+                logger.debug(
+                    f'updating entry for exceedance_probability {exceedance_probability} and alpha {alpha} '
+                    f'with burn_in {burn_in}'
+                )
+                self.hashed_return_values[exceedance_probability][alpha][burn_in] = rv[1]
 
         logger.debug('retrieving hashed entry and returning results')
-        hashed_entry = self.hashed_return_values[return_period]
-        return hashed_entry['return value'], hashed_entry[alpha]
+        hashed_entry = self.hashed_return_values[exceedance_probability]
+        return (hashed_entry['return value'], *hashed_entry[alpha][burn_in])
 
     def __get_return_value(
             self,
-            return_period: typing.Union[str, pd.Timedelta],
+            exceedance_probability: float,
             alpha: float,
             burn_in: int
     ) -> tuple:
-
         if not isinstance(burn_in, int):
             raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
         if burn_in < 0:
@@ -135,25 +140,18 @@ class Emcee(AbstractModelBaseClass):
                 f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {self.fit_parameters["trace"].shape[1]}'
             )
 
-        # TODO - return period is a timedelta
-        logger.debug('calculating exceedance probability')
-        exceedance_probability = 1 / return_period / self.extremes_rate
-
-        return_value = self.distribution.isf(
-            exceedance_probability,
-            *self.emcee_distribution.get_full_parameters(self.fit_parameters['map'])
-        )
-        rv_sample = []
-        for walker_trace in self.fit_parameters['trace']:
-            for parameters in walker_trace[burn_in:]:
-                rv_sample.append(
-                    self.distribution.isf(
-                        exceedance_probability,
-                        *self.emcee_distribution.get_full_parameters(parameters)
+        return_value = self.emcee_distribution.isf(q=exceedance_probability, parameters=self.fit_parameters['map'])
+        if alpha is None:
+            confidence_interval = (None, None)
+        else:
+            rv_sample = []
+            for walker_trace in self.fit_parameters['trace']:
+                for parameters in walker_trace[burn_in:]:
+                    rv_sample.append(
+                        self.emcee_distribution.isf(q=exceedance_probability, parameters=parameters)
                     )
-                )
-        confidence_interval = np.quantile(a=rv_sample, q=np.array([(1-alpha)/2, (1+alpha)/2]))
-        return (return_value, *confidence_interval)
+            confidence_interval = tuple(np.quantile(a=rv_sample, q=np.array([(1-alpha)/2, (1+alpha)/2])))
+        return return_value, confidence_interval
 
 
 if __name__ == '__main__':
@@ -162,7 +160,6 @@ if __name__ == '__main__':
     import os
     import pathlib
     test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent / 'tests' / 'data'
-    extremes = pd.read_csv(test_data_folder / 'extremes_bm_high.csv', index_col=0, parse_dates=True, squeeze=True)
-    kwargs = {}
+    test_extremes = pd.read_csv(test_data_folder / 'extremes_bm_high.csv', index_col=0, parse_dates=True, squeeze=True)
 
-    self = Emcee(extremes=extremes, distribution='genextreme', extremes_rate=1)
+    self = Emcee(extremes=test_extremes, distribution='genextreme')

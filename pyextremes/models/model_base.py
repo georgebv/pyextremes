@@ -30,7 +30,6 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
-            extremes_rate: float,
             distribution: typing.Union[str, scipy.stats.rv_continuous]
     ) -> None:
         logger.info('getting extreme value distribution')
@@ -44,8 +43,6 @@ class AbstractModelBaseClass(abc.ABC):
             self.distribution = distribution
         else:
             raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
-
-        self.extremes_rate = extremes_rate
 
         logger.info('calling the self.fit method')
         self.fit_parameters = self.fit(extremes=extremes)
@@ -63,17 +60,17 @@ class AbstractModelBaseClass(abc.ABC):
 
     def get_return_value(
             self,
-            return_period: typing.Union[np.ndarray, str, typing.List[str], pd.Timedelta, typing.List[pd.Timedelta]],
+            exceedance_probability: float,
             alpha: float = None,
             **kwargs: dict
     ) -> typing.Union[tuple, np.ndarray]:
         """
-        Get return value and confidence interval for a given return period.
+        Get return value and confidence interval for a given exceedance probability.
 
         Parameters
         ----------
-        return_period : str or pandas.Timedelta or array-like
-            Return period or array of return periods.
+        exceedance_probability : float or array-like
+            Exceedance probability or array of exceedance probabilities.
         alpha : float, optional
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
@@ -90,61 +87,27 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
-        logger.info('calling the self.get_return_value method')
-        if isinstance(return_period, (np.ndarray, list)):
+        if isinstance(exceedance_probability, (np.ndarray, list)):
             logger.info('getting a list of return values')
             return np.transpose(
-                [self.retrieve_return_value(rp, alpha=alpha, **kwargs) for rp in return_period]
+                [
+                    self.retrieve_return_value(exceedance_probability=ep, alpha=alpha, **kwargs)
+                    for ep in exceedance_probability
+                ]
             ).astype(float)
-        elif isinstance(return_period, (str, pd.Timedelta)):
+        elif isinstance(exceedance_probability, float):
             logger.info('getting a single return value')
-            return self.retrieve_return_value(return_period, alpha=alpha, **kwargs)
+            return self.retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
         else:
-            raise TypeError(f'invalid type in {type(return_period)} for the \'return_period\' argument')
+            raise TypeError(
+                f'invalid type in {type(exceedance_probability)} for the \'exceedance_probability\' argument'
+            )
 
     @abc.abstractmethod
     def retrieve_return_value(
             self,
-            return_period: typing.Union[str, pd.Timedelta],
+            exceedance_probability: float,
             alpha: float,
             **kwargs: dict
     ) -> tuple:
-        """
-
-        Parameters
-        ----------
-        return_period
-        alpha
-        kwargs
-
-        Returns
-        -------
-
-        """
         pass
-
-        # logger.debug('checking if the result has been previously hashed in self.__return_value_hash')
-        # flag = False
-        # if return_period not in self.hashed_return_values:
-        #     logger.debug(f'return_period {return_period} not hashed')
-        #     flag = True
-        # elif alpha not in self.hashed_return_values['return value']:
-        #     logger.debug(f'alpha {alpha} not hashed')
-        #     flag = True
-        # elif n_samples not in self.hashed_return_values['return value'][alpha]:
-        #     logger.debug(f'n_samples {n_samples} not hashed')
-        #     flag = True
-        #
-        # if flag:
-        #     logger.debug('calculating return value for new parameters and adding it to hashed results')
-        #     rv = self.__get_return_value(return_period=return_period, alpha=alpha, n_samples=n_samples)
-        #     self.hashed_return_values[return_period] = {
-        #         'return value': rv[0],
-        #         alpha: {
-        #             n_samples: rv[1]
-        #         }
-        #     }
-        #
-        # logger.debug('retrieving hashed entry and returning results')
-        # hashed_entry = self.__return_value_hash[return_period]
-        # return hashed_entry['return value'], hashed_entry[alpha]
