@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 from pyextremes.models.emcee.distributions import get_distribution
 from pyextremes.models.model_base import AbstractModelBaseClass
 
@@ -33,16 +33,16 @@ class Emcee(AbstractModelBaseClass):
     This is an MCMC model based on the emcee package by Daniel Foreman-Mackey.
     """
 
-    def __get_distribution(
+    def _get_distribution(
             self,
             distribution: str
     ) -> AbstractEmceeDistributionBaseClass:
         return get_distribution(distribution=distribution, extremes=self.extremes)
 
-    def __fit(
+    def _fit(
             self,
             extremes: pd.Series,
-            **kwargs: dict
+            **kwargs
     ) -> dict:
         n_walkers = kwargs.pop('n_walkers')
         n_samples = kwargs.pop('n_samples')
@@ -78,12 +78,10 @@ class Emcee(AbstractModelBaseClass):
         }
 
     @staticmethod
-    def __decode_kwargs(kwargs: dict) -> str:
-        burn_in = kwargs.pop('burn_in')
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        return f'{burn_in:d}'
+    def _decode_kwargs(kwargs: dict) -> str:
+        return f'{kwargs["burn_in"]:d}'
 
-    def __get_return_value(
+    def _get_return_value(
             self,
             exceedance_probability: float,
             alpha: float,
@@ -104,7 +102,7 @@ class Emcee(AbstractModelBaseClass):
         logger.debug('calculating return value')
         return_value = self.distribution.isf(q=exceedance_probability, parameters=self.fit_parameters['map'])
         if alpha is None:
-            logger.debug('skipping confidence interval calculation')
+            logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
         else:
             logger.debug('calculating confidence interval')

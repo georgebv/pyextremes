@@ -18,10 +18,9 @@ import logging
 import typing
 
 import pandas as pd
-import scipy.stats
 
-from pyextremes.models.mle import MLE
 from pyextremes.models.emcee import Emcee
+from pyextremes.models.mle import MLE
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,8 @@ logger = logging.getLogger(__name__)
 def get_model(
         model: str,
         extremes: pd.Series,
-        distribution: str
+        distribution: str,
+        **kwargs
 ) -> typing.Union[MLE, Emcee]:
     """
     Get an extreme value model.
@@ -45,6 +45,15 @@ def get_model(
         Time series of transformed extreme events.
     distribution : str
         Name of scipy.stats distribution.
+    kwargs
+        Keyword arguments passed to a model ._fit method.
+        MLE model:
+            TODO
+        Emcee model:
+            n_walkers : int
+                The number of walkers in the ensemble.
+            n_samples : int
+                The number of steps to run.
 
     Returns
     -------
@@ -54,8 +63,8 @@ def get_model(
 
     logger.info(f'calling get_fitting_model with model={model}')
     if model == 'MLE':
-        return MLE(extremes=extremes, distribution=distribution)
+        return MLE(extremes=extremes, distribution=distribution, **kwargs)
     elif model == 'Emcee':
-        return Emcee(extremes=extremes, distribution=distribution)
+        return Emcee(extremes=extremes, distribution=distribution, **kwargs)
     else:
         raise ValueError(f'\'{model}\' is not a valid \'model\' value')

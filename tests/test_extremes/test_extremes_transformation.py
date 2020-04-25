@@ -27,7 +27,7 @@ test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'dat
 test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
-def test_transformer():
+def test_extremes_transformer():
     extremes = pd.Series([1, 2, 3])
 
     # Test bad extremes_method

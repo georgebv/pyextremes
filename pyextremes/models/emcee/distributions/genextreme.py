@@ -20,50 +20,51 @@ import typing
 import numpy as np
 import scipy.stats
 
-from pyextremes.models.emcee.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 
 logger = logging.getLogger(__name__)
 
 
-class Genpareto(AbstractEmceeDistributionBaseClass):
+class Genextreme(AbstractEmceeDistributionBaseClass):
 
-    def fit(self) -> tuple:
-        shape, location, scale = scipy.stats.genpareto.fit(self.extremes, floc=0)
-        return shape, scale
+    def _fit(self) -> tuple:
+        return scipy.stats.genextreme.fit(self.extremes)
 
     @property
     def number_of_parameters(self) -> int:
-        return 2
+        return 3
 
     def log_prior(
             self,
             theta: tuple
     ) -> float:
-        shape, scale = theta
+        shape, location, scale = theta
         shape_prior = scipy.stats.norm.logpdf(x=shape, loc=self.mle_parameters[0], scale=100)
-        location_prior = 0
-        scale_prior = scipy.stats.norm.logpdf(x=scale, loc=self.mle_parameters[1], scale=100) if scale > 0 else -np.inf
+        location_prior = scipy.stats.norm.logpdf(x=location, loc=self.mle_parameters[1], scale=100)
+        scale_prior = scipy.stats.norm.logpdf(x=scale, loc=self.mle_parameters[2], scale=100) if scale > 0 else -np.inf
         return shape_prior + location_prior + scale_prior
 
     def log_likelihood(
             self,
             theta: tuple
     ) -> float:
-        shape, scale = theta
+        shape, location, scale = theta
 
         # Parameter constraint
         if scale <= 0:
             return -np.inf
 
-        # Support constraint
-        if shape >= 0:
-            condition = np.all(self.extremes.values >= 0)
+        # Support constraint (scipy.stats version of genextreme has inverted shape parameter)
+        if shape < 0:
+            condition = np.all(self.extremes.values >= location + scale / shape)
+        elif shape == 0:
+            condition = True
         else:
-            condition = np.all(self.extremes.values >= 0) and np.all(self.extremes.values >= scale / shape)
+            condition = np.all(self.extremes.values <= location + scale / shape)
 
         # Calculate log-likelihood
         if condition:
-            return sum(scipy.stats.genpareto.logpdf(x=self.extremes.values, c=shape, loc=0, scale=scale))
+            return sum(scipy.stats.genextreme.logpdf(x=self.extremes.values, c=shape, loc=location, scale=scale))
         else:
             return -np.inf
 
@@ -72,4 +73,4 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
             q: float,
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
-        return scipy.stats.genpareto.isf(q, c=parameters[0], loc=0, scale=parameters[1])
+        return scipy.stats.genextreme.isf(q=q, c=parameters[0], loc=parameters[1], scale=parameters[2])

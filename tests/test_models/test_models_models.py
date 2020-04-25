@@ -14,4 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from pyextremes.models.emcee.emcee import Emcee
+import os
+import pathlib
+
+import pandas as pd
+import pytest
+
+from pyextremes.models import get_model
+
+test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'data'
+test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
+
+
+def test_get_model():
+    # Test bad model
+    with pytest.raises(ValueError):
+        get_model(
+            model='BAD MODEL',
+            extremes=pd.Series([1, 2, 3]),
+            distribution='genextreme'
+        )

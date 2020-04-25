@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,8 @@ class AbstractModelBaseClass(abc.ABC):
             Time series of transformed extreme events.
         distribution : str
             Name of scipy.stats distribution.
-        kwargs : dict
-            Keyword arguments passed to a model .__fit method.
+        kwargs
+            Keyword arguments passed to a model ._fit method.
             MLE model:
                 TODO
             Emcee model:
@@ -58,39 +58,39 @@ class AbstractModelBaseClass(abc.ABC):
         self.extremes = extremes
 
         logger.info('getting extreme value distribution')
-        self.distribution = self.__get_distribution(distribution=distribution)
+        self.distribution = self._get_distribution(distribution=distribution)
 
         logger.info('fitting the distribution to extremes')
-        self.fit_parameters = self.__fit(extremes=extremes, **kwargs)
+        self.fit_parameters = self._fit(extremes=extremes, **kwargs)
 
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
 
     @abc.abstractmethod
-    def __get_distribution(
+    def _get_distribution(
             self,
             distribution: str
     ) -> typing.Union[scipy.stats.rv_continuous, AbstractEmceeDistributionBaseClass]:
         pass
 
     @abc.abstractmethod
-    def __fit(
+    def _fit(
             self,
             extremes: pd.Series,
-            **kwargs: dict
+            **kwargs
     ) -> typing.Union[tuple, dict]:
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def __decode_kwargs(kwargs: dict) -> str:
+    def _decode_kwargs(kwargs: dict) -> str:
         pass
 
     def get_return_value(
             self,
             exceedance_probability: typing.Union[float, typing.Iterable[float]],
             alpha: float = None,
-            **kwargs: dict
+            **kwargs
     ) -> tuple:
         """
         Get return value and confidence interval for a given exceedance probability.
@@ -102,8 +102,8 @@ class AbstractModelBaseClass(abc.ABC):
         alpha : float, optional
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
-        kwargs : dict
-            Keyword arguments passed to a model .__get_return_value method.
+        kwargs
+            Keyword arguments passed to a model ._get_return_value method.
             MLE model:
                 TODO
             Emcee model:
@@ -125,24 +125,24 @@ class AbstractModelBaseClass(abc.ABC):
             return tuple(
                 np.transpose(
                     [
-                        self.__retrieve_return_value(exceedance_probability=ep, alpha=alpha, **kwargs)
+                        self._retrieve_return_value(exceedance_probability=ep, alpha=alpha, **kwargs)
                         for ep in exceedance_probability
                     ]
                 ).astype(float)
             )
         elif isinstance(exceedance_probability, float):
             logger.info('getting a single return value')
-            return self.__retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
+            return self._retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
         else:
             raise TypeError(
                 f'invalid type in {type(exceedance_probability)} for the \'exceedance_probability\' argument'
             )
 
-    def __retrieve_return_value(
+    def _retrieve_return_value(
             self,
             exceedance_probability: float,
             alpha: float,
-            **kwargs: dict
+            **kwargs
     ) -> tuple:
         """
         Retrieve return value and confidence interval from hashed results dictionary.
@@ -155,13 +155,8 @@ class AbstractModelBaseClass(abc.ABC):
         alpha : float
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
-        kwargs : dict
-            Keyword arguments passed to a model .__get_return_value method.
-            MLE model:
-                TODO
-            Emcee model:
-                burn_in : int
-                    Burn-in value (number of first steps to discard for each walker).
+        kwargs
+            Keyword arguments passed to a model ._get_return_value method.
 
         Returns
         -------
@@ -171,7 +166,7 @@ class AbstractModelBaseClass(abc.ABC):
         """
 
         logger.debug('decoding kwargs')
-        decoded_kwargs = self.__decode_kwargs(kwargs=kwargs)
+        decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
 
         try:
             logger.debug(
@@ -188,7 +183,7 @@ class AbstractModelBaseClass(abc.ABC):
                 f'calculating new results for exceedance_probability {exceedance_probability:.6f}, '
                 f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
             )
-            rv = self.__get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
+            rv = self._get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
             if f'{exceedance_probability:.6f}' in self.hashed_return_values:
                 if f'{alpha:.6f}' in self.hashed_return_values[f'{exceedance_probability:.6f}']:
                     logger.debug(
@@ -215,17 +210,17 @@ class AbstractModelBaseClass(abc.ABC):
                         decoded_kwargs: rv[1]
                     }
                 }
-            return self.__retrieve_return_value(
+            return self._retrieve_return_value(
                 exceedance_probability=exceedance_probability,
                 alpha=alpha,
                 **kwargs
             )
 
     @abc.abstractmethod
-    def __get_return_value(
+    def _get_return_value(
             self,
             exceedance_probability: float,
             alpha: float,
-            **kwargs: dict
+            **kwargs
     ) -> tuple:
         pass

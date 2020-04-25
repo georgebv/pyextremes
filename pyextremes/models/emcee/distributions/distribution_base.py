@@ -31,18 +31,28 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
             self,
             extremes: pd.Series
     ) -> None:
+        """
+        Distribution to be used within the Emcee model.
+
+        Parameters
+        ----------
+        extremes : pandas.Series
+            Time series of transformed extreme events.
+        """
+
         self.extremes = extremes
-        logger.info('calling the fit method')
-        self.mle_parameters = self.fit()
+        logger.info('calling the _fit method')
+        self.mle_parameters = self._fit()
 
     @abc.abstractmethod
-    def fit(self) -> tuple:
+    def _fit(self) -> tuple:
         """
         Find model parameters using scipy MLE fit method.
 
         Returns
         -------
-        Model parameters.
+        parameters : tuple
+            Model parameters.
         """
         pass
 
@@ -93,12 +103,7 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
         """
 
         logger.info(f'getting initial positions for {n_walkers} walkers')
-        return np.transpose(
-            [
-                scipy.stats.norm.rvs(loc=parameter, scale=0.01, size=n_walkers)
-                for parameter in self.mle_parameters
-            ]
-        )
+        return scipy.stats.norm.rvs(loc=self.mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters))
 
     @abc.abstractmethod
     def isf(

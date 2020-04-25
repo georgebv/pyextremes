@@ -121,28 +121,3 @@ def plot_extremes(
             raise ValueError(f'\'{extremes_method}\' is not a valid \'extremes_method\' value')
 
         return fig, ax
-
-
-if __name__ == '__main__':
-    import os
-    import pathlib
-    test_data_folder = pathlib.Path(os.getcwd()) / 'tests' / 'data'
-    test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
-
-    em = 'BM'
-    et = 'high'
-    test_extremes = pd.read_csv(
-        test_data_folder/f'extremes_{em.lower()}_{et}.csv',
-        index_col=0, parse_dates=True, squeeze=True
-    )
-    plot_extremes(
-        ts=test_data,
-        extremes=test_extremes,
-        extremes_method=em,
-        extremes_type=et,
-        block_size={
-            'BM': '1Y',
-            'POT': None
-        }[em],
-        figsize=(8, 5)
-    )

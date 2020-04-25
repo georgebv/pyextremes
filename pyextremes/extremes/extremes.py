@@ -77,33 +77,3 @@ def get_extremes(
         return get_extremes_peaks_over_threshold(ts=ts, extremes_type=extremes_type, threshold=threshold, r=r)
     else:
         raise ValueError(f'\'{method}\' is not a valid \'method\' value')
-
-
-if __name__ == '__main__':
-    # Crete extreme value files to be used for tests
-    import os
-    import pathlib
-    test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent.parent / 'tests' / 'data'
-    test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
-    for et in ['high', 'low']:
-        bm_file = test_data_folder / f'extremes_bm_{et}.csv'
-        if not bm_file.exists():
-            get_extremes(
-                ts=test_data,
-                method='BM',
-                extremes_type=et,
-                block_size='1Y',
-                errors='ignore'
-            ).to_csv(bm_file)
-        pot_file = test_data_folder / f'extremes_pot_{et}.csv'
-        if not pot_file.exists():
-            get_extremes(
-                ts=test_data,
-                method='POT',
-                extremes_type=et,
-                threshold={
-                    'high': 1.35,
-                    'low': -1.65
-                }[et],
-                r='24H'
-            ).to_csv(pot_file)
