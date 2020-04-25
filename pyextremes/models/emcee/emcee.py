@@ -77,9 +77,19 @@ class Emcee(AbstractModelBaseClass):
             'trace': sampler.get_chain().transpose((1, 0, 2))
         }
 
-    @staticmethod
-    def _decode_kwargs(kwargs: dict) -> str:
+    def _decode_kwargs(self, kwargs: dict) -> str:
         return f'{kwargs["burn_in"]:d}'
+
+    def _test_kwargs(self, kwargs: dict):
+        burn_in = kwargs['burn_in']
+        if not isinstance(burn_in, int):
+            raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
+        if burn_in < 0:
+            raise ValueError(f'\'{burn_in}\' is not a valid \'burn_in\' value, it must be a positive integer')
+        if burn_in >= self.fit_parameters['trace'].shape[1]:
+            raise ValueError(
+                f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {self.fit_parameters["trace"].shape[1]}'
+            )
 
     def _get_return_value(
             self,
@@ -89,15 +99,6 @@ class Emcee(AbstractModelBaseClass):
     ) -> tuple:
         burn_in = kwargs.pop('burn_in')
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-
-        if not isinstance(burn_in, int):
-            raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
-        if burn_in < 0:
-            raise ValueError(f'\'{burn_in}\' is not a valid \'burn_in\' value, it must be a positive integer')
-        if burn_in >= self.fit_parameters['trace'].shape[1]:
-            raise ValueError(
-                f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {self.fit_parameters["trace"].shape[1]}'
-            )
 
         logger.debug('calculating return value')
         return_value = self.distribution.isf(q=exceedance_probability, parameters=self.fit_parameters['map'])

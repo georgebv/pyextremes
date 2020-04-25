@@ -41,9 +41,19 @@ def test_emcee():
     )
     assert model.fit_parameters['trace'].shape == (20, 100, 3)
 
-    # Test return value
+    # Test bad exceedance_probability type
+    with pytest.raises(TypeError):
+        model.get_return_value(exceedance_probability='0.1', alpha=0.95, burn_in=20)
+
+    # Test bad burn_in values
     with pytest.raises(KeyError):
         model.get_return_value(exceedance_probability=0.1, alpha=0.95)
+    with pytest.raises(TypeError):
+        model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=1.1)
+    with pytest.raises(ValueError):
+        model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=100)
+
+    # Test return value
     return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=20)
     assert len(return_value) == 3
     assert return_value[1] < return_value[0] < return_value[2]
@@ -52,3 +62,18 @@ def test_emcee():
     hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=20)
     assert len(model.hashed_return_values) == 1
     assert return_value == hashed_rv
+
+    # Test update hashed values
+    model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=40)
+    assert len(model.hashed_return_values) == 1
+    assert len(model.hashed_return_values['0.100000']) == 2
+    assert len(model.hashed_return_values['0.100000']['0.950000']) == 2
+    model.get_return_value(exceedance_probability=0.1, alpha=0.5, burn_in=20)
+    assert len(model.hashed_return_values) == 1
+    assert len(model.hashed_return_values['0.100000']) == 3
+    assert len(model.hashed_return_values['0.100000']['0.500000']) == 1
+
+    # Get multiple return values
+    return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, burn_in=20)
+    assert len(return_values) == 3
+    assert len(model.hashed_return_values) == 9

@@ -86,6 +86,10 @@ class AbstractModelBaseClass(abc.ABC):
     def _decode_kwargs(kwargs: dict) -> str:
         pass
 
+    @abc.abstractmethod
+    def _test_kwargs(self, kwargs: dict) -> None:
+        pass
+
     def get_return_value(
             self,
             exceedance_probability: typing.Union[float, typing.Iterable[float]],
@@ -120,6 +124,8 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
+        logger.debug('testing kwargs validity')
+        self._test_kwargs(kwargs=kwargs)
         if hasattr(exceedance_probability, '__iter__') and not isinstance(exceedance_probability, str):
             logger.info('getting a list of return values')
             return tuple(
