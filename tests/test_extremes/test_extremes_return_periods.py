@@ -21,19 +21,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyextremes.extremes import get_extremes, get_return_periods
+from pyextremes.extremes import get_return_periods
 
 test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'data'
 test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
 def test_get_return_periods():
-    extremes = get_extremes(
-        ts=test_data,
-        method='BM',
-        extremes_type='high',
-        block_size='1Y',
-        errors='ignore'
+    extremes = pd.read_csv(
+        test_data_folder / 'extremes_bm_high.csv',
+        index_col=0, parse_dates=True, squeeze=True
     )
 
     # Test bad block_size type

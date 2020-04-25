@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def get_model(
         model: str,
         extremes: pd.Series,
-        distribution: typing.Union[str, scipy.stats.rv_continuous]
+        distribution: str
 ) -> typing.Union[MLE, Emcee]:
     """
     Get an extreme value model.
@@ -42,9 +42,9 @@ def get_model(
             MLE - Maximum Likelihood Estimate model (based on scipy)
             Emcee - Markov Chain Monte Carlo model based on the emcee package by Daniel Foreman-Mackey
     extremes : pandas.Series
-        Time series of extreme events.
-    distribution : str or scipy.stats.rv_continuous
-        Name of scipy.stats distribution or the distribution object itself (e.g. scipy.stats.genextreme).
+        Time series of transformed extreme events.
+    distribution : str
+        Name of scipy.stats distribution.
 
     Returns
     -------

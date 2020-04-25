@@ -40,10 +40,12 @@ class AbstractModelBaseClass(abc.ABC):
 
         Parameters
         ----------
-        extremes
-        distribution
+        extremes : pandas.Series
+            Time series of transformed extreme events.
+        distribution : str
+            Name of scipy.stats distribution.
         kwargs : dict
-            Keyword arguments passed to a model.
+            Keyword arguments passed to a model .__fit method.
             MLE model:
                 TODO
             Emcee model:
@@ -101,12 +103,12 @@ class AbstractModelBaseClass(abc.ABC):
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs : dict
-            Keyword arguments passed to a model.
+            Keyword arguments passed to a model .__get_return_value method.
             MLE model:
                 TODO
             Emcee model:
-               burn_in : int
-                Burn-in value (number of first steps to discard for each walker).
+                burn_in : int
+                    Burn-in value (number of first steps to discard for each walker).
 
         Returns
         -------
@@ -154,12 +156,12 @@ class AbstractModelBaseClass(abc.ABC):
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs : dict
-            Keyword arguments passed to a model.
+            Keyword arguments passed to a model .__get_return_value method.
             MLE model:
                 TODO
             Emcee model:
-               burn_in : int
-                Burn-in value (number of first steps to discard for each walker).
+                burn_in : int
+                    Burn-in value (number of first steps to discard for each walker).
 
         Returns
         -------
