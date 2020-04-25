@@ -22,6 +22,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
+from pyextremes.models.emcee.distribution_base import AbstractEmceeDistributionBaseClass
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,40 +32,64 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
-            distribution: typing.Union[str, scipy.stats.rv_continuous]
+            distribution: str,
+            **kwargs
     ) -> None:
-        logger.info('getting extreme value distribution')
-        if isinstance(distribution, str):
-            try:
-                logger.info(f'getting distribution object with name \'{distribution}\' from scipy.stats')
-                self.distribution = getattr(scipy.stats, distribution)
-            except AttributeError:
-                raise ValueError(f'\'{distribution}\' is not a valid \'distribution\' value')
-        elif isinstance(distribution, scipy.stats.rv_continuous):
-            self.distribution = distribution
-        else:
-            raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
+        """
+        Distribution model base class.
 
-        logger.info('calling the self.fit method')
-        self.fit_parameters = self.fit(extremes=extremes)
+        Parameters
+        ----------
+        extremes
+        distribution
+        kwargs : dict
+            Keyword arguments passed to a model.
+            MLE model:
+                TODO
+            Emcee model:
+                n_walkers : int
+                    The number of walkers in the ensemble.
+                n_samples : int
+                    The number of steps to run.
+        """
+
+        self.extremes = extremes
+
+        logger.info('getting extreme value distribution')
+        self.distribution = self.__get_distribution(distribution=distribution)
+
+        logger.info('fitting the distribution to extremes')
+        self.fit_parameters = self.__fit(extremes=extremes, **kwargs)
 
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
 
     @abc.abstractmethod
-    def fit(
+    def __get_distribution(
+            self,
+            distribution: str
+    ) -> typing.Union[scipy.stats.rv_continuous, AbstractEmceeDistributionBaseClass]:
+        pass
+
+    @abc.abstractmethod
+    def __fit(
             self,
             extremes: pd.Series,
             **kwargs: dict
-    ) -> typing.Union[typing.Tuple[float], typing.Dict[str, np.ndarray]]:
+    ) -> typing.Union[tuple, dict]:
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def __decode_kwargs(kwargs: dict) -> str:
         pass
 
     def get_return_value(
             self,
-            exceedance_probability: float,
+            exceedance_probability: typing.Union[float, typing.Iterable[float]],
             alpha: float = None,
             **kwargs: dict
-    ) -> typing.Union[tuple, np.ndarray]:
+    ) -> tuple:
         """
         Get return value and confidence interval for a given exceedance probability.
 
@@ -75,7 +101,12 @@ class AbstractModelBaseClass(abc.ABC):
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs : dict
-            Optional keyword arguments passed to a model.
+            Keyword arguments passed to a model.
+            MLE model:
+                TODO
+            Emcee model:
+               burn_in : int
+                Burn-in value (number of first steps to discard for each walker).
 
         Returns
         -------
@@ -87,24 +118,109 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
-        if isinstance(exceedance_probability, (np.ndarray, list)):
+        if hasattr(exceedance_probability, '__iter__') and not isinstance(exceedance_probability, str):
             logger.info('getting a list of return values')
-            return np.transpose(
-                [
-                    self.retrieve_return_value(exceedance_probability=ep, alpha=alpha, **kwargs)
-                    for ep in exceedance_probability
-                ]
-            ).astype(float)
+            return tuple(
+                np.transpose(
+                    [
+                        self.__retrieve_return_value(exceedance_probability=ep, alpha=alpha, **kwargs)
+                        for ep in exceedance_probability
+                    ]
+                ).astype(float)
+            )
         elif isinstance(exceedance_probability, float):
             logger.info('getting a single return value')
-            return self.retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
+            return self.__retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
         else:
             raise TypeError(
                 f'invalid type in {type(exceedance_probability)} for the \'exceedance_probability\' argument'
             )
 
+    def __retrieve_return_value(
+            self,
+            exceedance_probability: float,
+            alpha: float,
+            **kwargs: dict
+    ) -> tuple:
+        """
+        Retrieve return value and confidence interval from hashed results dictionary.
+        If the return value has not been previously hashed, calculate it, add it to hash, and return.
+
+        Parameters
+        ----------
+        exceedance_probability : float
+            Exceedance probability.
+        alpha : float
+            Width of confidence interval, from 0 to 1 (default=None).
+            If None, return None for upper and lower confidence interval bounds.
+        kwargs : dict
+            Keyword arguments passed to a model.
+            MLE model:
+                TODO
+            Emcee model:
+               burn_in : int
+                Burn-in value (number of first steps to discard for each walker).
+
+        Returns
+        -------
+        return_value : float
+        lower_confidence_interval_bound : float
+        upper_confidence_interval_bound : float
+        """
+
+        logger.debug('decoding kwargs')
+        decoded_kwargs = self.__decode_kwargs(kwargs=kwargs)
+
+        try:
+            logger.debug(
+                f'trying to retrieve result from hash for exceedance_probability {exceedance_probability:.6f}, '
+                f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+            )
+            hashed_entry = self.hashed_return_values[f'{exceedance_probability:.6f}']
+            return_value = hashed_entry['return value']
+            confidence_interval = hashed_entry[f'{alpha:.6f}'][decoded_kwargs]
+            logger.debug('successfully retrieved result from has - returning values')
+            return (return_value, *confidence_interval)
+        except KeyError:
+            logger.debug(
+                f'calculating new results for exceedance_probability {exceedance_probability:.6f}, '
+                f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+            )
+            rv = self.__get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
+            if f'{exceedance_probability:.6f}' in self.hashed_return_values:
+                if f'{alpha:.6f}' in self.hashed_return_values[f'{exceedance_probability:.6f}']:
+                    logger.debug(
+                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
+                        f'and alpha {alpha:.6f} with kwargs {decoded_kwargs}'
+                    )
+                    self.hashed_return_values[f'{exceedance_probability:.6f}'][f'{alpha:.6f}'][decoded_kwargs] = rv[1]
+                else:
+                    logger.debug(
+                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
+                        f'with alpha {alpha:.6f} and kwargs {decoded_kwargs}'
+                    )
+                    self.hashed_return_values[f'{exceedance_probability:.6f}'][f'{alpha:.6f}'] = {
+                        decoded_kwargs: rv[1]
+                    }
+            else:
+                logger.debug(
+                    f'creating a new entry for exceedance_probability {exceedance_probability:.6f}, '
+                    f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+                )
+                self.hashed_return_values[f'{exceedance_probability:.6f}'] = {
+                    'return value': rv[0],
+                    f'{alpha:.6f}': {
+                        decoded_kwargs: rv[1]
+                    }
+                }
+            return self.__retrieve_return_value(
+                exceedance_probability=exceedance_probability,
+                alpha=alpha,
+                **kwargs
+            )
+
     @abc.abstractmethod
-    def retrieve_return_value(
+    def __get_return_value(
             self,
             exceedance_probability: float,
             alpha: float,

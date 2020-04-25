@@ -35,7 +35,7 @@ def get_distribution(
         extremes: pd.Series,
 ) -> AbstractEmceeDistributionBaseClass:
     """
-    Get a distribution object to be used within the emcee fitting model.
+    Get a distribution object to be used within the Emcee fitting model.
 
     Parameters
     ----------
@@ -54,6 +54,6 @@ def get_distribution(
         return distributions[distribution](extremes=extremes)
     except KeyError:
         raise NotImplementedError(
-            f'\'{distribution}\' distribution is not implemented for the \'emcee\' model\n'
-            f'Available \'emcee\' distributions: {", ".join(distributions.keys())}'
+            f'\'{distribution}\' distribution is not implemented for the \'Emcee\' model\n'
+            f'Available \'Emcee\' distributions: {", ".join(distributions.keys())}'
         )

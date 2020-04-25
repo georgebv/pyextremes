@@ -40,7 +40,7 @@ def get_model(
         Name of an extreme value distribution fitting model.
         Supported names:
             MLE - Maximum Likelihood Estimate model (based on scipy)
-            MCMC - PyMC3 Hamiltonian Monte Carlo model
+            Emcee - Markov Chain Monte Carlo model based on the emcee package by Daniel Foreman-Mackey
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
@@ -55,7 +55,7 @@ def get_model(
     logger.info(f'calling get_fitting_model with model={model}')
     if model == 'MLE':
         return MLE(extremes=extremes, distribution=distribution)
-    elif model == 'MCMC':
+    elif model == 'Emcee':
         return Emcee(extremes=extremes, distribution=distribution)
     else:
         raise ValueError(f'\'{model}\' is not a valid \'model\' value')

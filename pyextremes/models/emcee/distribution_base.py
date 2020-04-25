@@ -103,7 +103,7 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
     @abc.abstractmethod
     def isf(
             self,
-            q: typing.Union[float, np.ndarray],
+            q: float,
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
         pass

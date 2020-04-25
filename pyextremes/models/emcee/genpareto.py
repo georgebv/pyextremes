@@ -69,7 +69,7 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
 
     def isf(
             self,
-            q: typing.Union[float, np.ndarray],
+            q: float,
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
         return scipy.stats.genpareto.isf(q, c=parameters[0], loc=0, scale=parameters[1])
