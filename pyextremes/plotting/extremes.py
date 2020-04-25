@@ -32,7 +32,7 @@ def plot_extremes(
         extremes_method: str,
         extremes_type: str,
         block_size: typing.Union[str, pd.Timedelta] = None,
-        figsize: typing.Union[tuple, list] = (8, 5)
+        figsize: tuple = (8, 5)
 ):
     """
     Plot time series of extreme events.
@@ -52,7 +52,7 @@ def plot_extremes(
     block_size : str or pandas.Timedelta, optional
         Block size in the 'BM' extremes_method (default=None).
         If None, then is calculated as median distance between extreme events.
-    figsize : list or tuple, optional
+    figsize : tuple, optional
         Figure size in inches (default=(8, 5)).
 
     Returns
