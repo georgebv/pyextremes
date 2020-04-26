@@ -100,6 +100,9 @@ class EVA:
             extremes_type=extremes_type
         )
 
+        logger.info('removing any previously declared models')
+        self.model = None
+
     def plot_extremes(
             self,
             figsize: tuple = (8, 5)
@@ -133,7 +136,19 @@ class EVA:
             distribution: str,
             **kwargs
     ) -> None:
-        logger.info(f'getting model {model} with distribution {distribution}')
+        logger.info('checking if distribution is valid for extremes type')
+        if distribution in ['genextreme', 'gumbel_r']:
+            if self.extremes_method != 'BM':
+                raise ValueError(
+                    f'{distribution} distribution is only applicable to extremes extracted using the BM model'
+                )
+        elif distribution in ['genpareto', 'expon']:
+            if self.extremes_method != 'POT':
+                raise ValueError(
+                    f'{distribution} distribution is only applicable to extremes extracted using the POT model'
+                )
+
+        logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
             extremes=self.extremes_transformer.transformed_extremes,

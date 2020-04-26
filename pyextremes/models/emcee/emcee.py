@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 class Emcee(AbstractModelBaseClass):
     """
-    This is an MCMC model based on the emcee package by Daniel Foreman-Mackey.
+    This is Markov Chain Monte Carlo (MCMC) model built around the emcee package by Daniel Foreman-Mackey.
     """
 
     def _get_distribution(
@@ -63,12 +63,16 @@ class Emcee(AbstractModelBaseClass):
 
         logger.info(
             'calculating maximum aposteriori values of distribution paramters '
-            'by finding peaks of corresponding PDF\'s using gaussian kernel density estimation'
+            'by finding peaks of corresponding PDF\'s using gaussian kernel density estimation. '
+            'One third of samples as discarded as burn-in.'
         )
         map_estimate = np.zeros(self.distribution.number_of_parameters)
         for i in range(self.distribution.number_of_parameters):
-            kde = scipy.stats.gaussian_kde(sampler.get_chain()[:, :, i].flatten())
-            support = np.linspace(*np.quantile(sampler.get_chain()[:, :, i].flatten(), [0.025, 0.975]), 1000)
+            kde = scipy.stats.gaussian_kde(sampler.get_chain()[n_samples//3:, :, i].flatten())
+            support = np.linspace(
+                *np.quantile(sampler.get_chain()[n_samples//3:, :, i].flatten(), [0.025, 0.975]),
+                1000
+            )
             density = kde.evaluate(support)
             map_estimate[i] = support[density.argmax()]
 
@@ -77,10 +81,16 @@ class Emcee(AbstractModelBaseClass):
             'trace': sampler.get_chain().transpose((1, 0, 2))
         }
 
-    def _decode_kwargs(self, kwargs: dict) -> str:
+    def _decode_kwargs(
+            self,
+            kwargs: dict
+    ) -> str:
         return f'{kwargs["burn_in"]:d}'
 
-    def _test_kwargs(self, kwargs: dict):
+    def _test_kwargs(
+            self,
+            kwargs: dict
+    ) -> None:
         burn_in = kwargs['burn_in']
         if not isinstance(burn_in, int):
             raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')

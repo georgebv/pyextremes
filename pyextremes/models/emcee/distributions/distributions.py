@@ -19,14 +19,18 @@ import logging
 import pandas as pd
 
 from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.emcee.distributions.expon import Expon
 from pyextremes.models.emcee.distributions.genextreme import Genextreme
 from pyextremes.models.emcee.distributions.genpareto import Genpareto
+from pyextremes.models.emcee.distributions.gumbel_r import GumbelR
 
 logger = logging.getLogger(__name__)
 
 distributions = {
     'genextreme': Genextreme,
-    'genpareto': Genpareto
+    'genpareto': Genpareto,
+    'gumbel_r': GumbelR,
+    'expon': Expon
 }
 
 

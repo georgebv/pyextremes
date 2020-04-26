@@ -47,7 +47,7 @@ class AbstractModelBaseClass(abc.ABC):
         kwargs
             Keyword arguments passed to a model ._fit method.
             MLE model:
-                TODO
+                MLE model takes no additional arguments.
             Emcee model:
                 n_walkers : int
                     The number of walkers in the ensemble.
@@ -81,13 +81,18 @@ class AbstractModelBaseClass(abc.ABC):
     ) -> typing.Union[tuple, dict]:
         pass
 
-    @staticmethod
     @abc.abstractmethod
-    def _decode_kwargs(kwargs: dict) -> str:
+    def _decode_kwargs(
+            self,
+            kwargs: dict
+    ) -> str:
         pass
 
     @abc.abstractmethod
-    def _test_kwargs(self, kwargs: dict) -> None:
+    def _test_kwargs(
+            self,
+            kwargs: dict
+    ) -> None:
         pass
 
     def get_return_value(
@@ -173,6 +178,7 @@ class AbstractModelBaseClass(abc.ABC):
 
         logger.debug('decoding kwargs')
         decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
+        alpha = alpha or np.nan
 
         try:
             logger.debug(
