@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 def get_extremes_block_maxima(
         ts: pd.Series,
         extremes_type: str,
-        block_size: typing.Union[str, pd.Timedelta],
-        errors: str
+        block_size: typing.Union[str, pd.Timedelta] = '1Y',
+        errors: str = 'raise'
 ) -> pd.Series:
     """
     Get extreme events from a signal time series using the Block Maxima method.
@@ -39,10 +39,10 @@ def get_extremes_block_maxima(
     extremes_type : str
         high - get extreme high values
         low - get extreme low values
-    block_size : str or pandas.Timedelta
-        Block size.
-    errors : str
-        raise - raise an exception when encountering a block with no data
+    block_size : str or pandas.Timedelta, optional
+        Block size (default='1Y').
+    errors : str, optional
+        raise (default) - raise an exception when encountering a block with no data
         ignore - ignore blocks with no data
         coerce - get extreme values for blocks with no data as mean of all other extreme events
             in the series with index being the middle point of corresponding interval

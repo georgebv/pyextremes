@@ -114,7 +114,8 @@ class AbstractModelBaseClass(abc.ABC):
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
             MLE model:
-                TODO
+                n_samples : int
+                    Number of samles used to get confidence interval.
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).

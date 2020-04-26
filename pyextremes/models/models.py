@@ -24,6 +24,11 @@ from pyextremes.models.mle import MLE
 
 logger = logging.getLogger(__name__)
 
+models = {
+    'MLE': MLE,
+    'Emcee': Emcee
+}
+
 
 def get_model(
         model: str,
@@ -48,7 +53,7 @@ def get_model(
     kwargs
         Keyword arguments passed to a model ._fit method.
         MLE model:
-            TODO
+            MLE model takes no additional arguments.
         Emcee model:
             n_walkers : int
                 The number of walkers in the ensemble.
@@ -61,10 +66,11 @@ def get_model(
         An extreme value model.
     """
 
-    logger.info(f'calling get_fitting_model with model={model}')
-    if model == 'MLE':
-        return MLE(extremes=extremes, distribution=distribution, **kwargs)
-    elif model == 'Emcee':
-        return Emcee(extremes=extremes, distribution=distribution, **kwargs)
-    else:
-        raise ValueError(f'\'{model}\' is not a valid \'model\' value')
+    logger.info(f'calling get_fitting_model with {model} model')
+    try:
+        return models[model](extremes=extremes, distribution=distribution, **kwargs)
+    except KeyError:
+        raise ValueError(
+            f'\'{model}\' is not a valid \'model\' value\n'
+            f'Available models: {", ".join(models.keys())}'
+        )

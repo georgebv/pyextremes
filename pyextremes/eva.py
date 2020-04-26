@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+import calendar
 import logging
 import typing
 
@@ -33,8 +34,13 @@ class EVA:
             self,
             data: pd.Series
     ) -> None:
+        logger.info('ensuring data has correct types')
         if not isinstance(data, pd.Series):
             raise TypeError(f'invalid type in {type(data)} for the \'data\' argument')
+        if not data.index.is_all_dates:
+            raise TypeError('index of data must be a sequence of date-time objects')
+
+        logger.info('ensuring that data is sorted and has no invalid entries')
         self.data = data.copy(deep=True)
         if not data.index.is_monotonic_increasing:
             logger.warning('data index is not sorted - sorting data by index')
@@ -52,6 +58,80 @@ class EVA:
 
         # Attributes related to model
         self.model = None
+
+    def __repr__(self) -> str:
+        # Repre parameters
+        sep = 6
+        width = 100
+
+        def center_text(text: str) -> str:
+            lwidth = (width - len(text)) // 2
+            rwidth = width - lwidth - len(text)
+            return ''.join(
+                [
+                    ' ' * lwidth,
+                    text,
+                    ' ' * rwidth
+                ]
+            )
+
+        def align_text(text: str, value: str) -> str:
+            value_width = int((width - sep) / 2 - (len(text) + 1))
+            return f'{text}:{value:>{value_width:d}}'
+
+        def align_pair(text: tuple, value: tuple) -> str:
+            lwidth = int((width - sep) / 2)
+            rwidth = width - (lwidth + sep)
+            ltext = f'{text[0]}:{value[0]:>{lwidth - len(text[0]) - 1:d}}'
+            rtext = f'{text[1]}:{value[1]:>{rwidth - len(text[1]) - 1:d}}'
+            return ''.join([ltext, ' ' * sep, rtext])
+
+        # Summary header
+        start_date = f'{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}'
+        end_date = f'{calendar.month_name[self.data.index[-1].month]} {self.data.index[-1].year}'
+        summary = [
+            center_text('Extreme Value Analysis'),
+            '=' * width,
+            center_text('Original Data'),
+            '-' * width,
+            align_pair(
+                ('Data label', 'Data range'),
+                (str(self.data.name), f'{start_date} to {end_date}')
+            ),
+            '=' * width,
+            center_text('Extreme Values'),
+            '-' * width
+        ]
+
+        # Extremes section
+        if self.extremes is None:
+            summary.extend(
+                [
+                    'Extreme values have not been extracted',
+                    '=' * width
+                ]
+            )
+        else:
+            if self.extremes_method == 'BM':
+                ev_parameters = ('Block size', str(self.extremes_kwargs['block_size']))
+            elif self.extremes_method == 'POT':
+                ev_parameters = ('Threshold', str(self.extremes_kwargs['threshold']))
+            else:
+                raise RuntimeError
+            summary.extend(
+                [
+                    align_pair(
+                        ('Number of extreme events', 'Extraction method'),
+                        (f'{len(self.extremes):d}', str(self.extremes_method))
+                    ),
+                    align_pair(
+                        ('Type of extreme events', ev_parameters[0]),
+                        (str(self.extremes_type), ev_parameters[1])
+                    ),
+                    '=' * width
+                ]
+            )
+        return '\n'.join(summary)
 
     def get_extremes(
             self,
@@ -92,6 +172,9 @@ class EVA:
         self.extremes_method = method
         self.extremes_type = extremes_type
         self.extremes_kwargs = kwargs.copy()
+        if 'block_size' in self.extremes_kwargs:
+            if isinstance(self.extremes_kwargs['block_size'], str):
+                self.extremes_kwargs['block_size'] = pd.to_timedelta(self.extremes_kwargs['block_size'])
 
         logger.info('preparing extremes transformer object')
         self.extremes_transformer = ExtremesTransformer(

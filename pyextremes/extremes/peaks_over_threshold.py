@@ -27,7 +27,7 @@ def get_extremes_peaks_over_threshold(
         ts: pd.Series,
         extremes_type: str,
         threshold: typing.Union[int, float],
-        r: typing.Union[str, pd.Timedelta]
+        r: typing.Union[str, pd.Timedelta] = '24H'
 ) -> pd.Series:
     """
     Get extreme events from a signal time series using the Peaks Over Threshold method.
@@ -41,8 +41,8 @@ def get_extremes_peaks_over_threshold(
         low - get extreme low values
     threshold : int or float
         Threshold used to find exceedances.
-    r : str or pd.Timedelta
-        Duration of window used to decluster the exceedances.
+    r : str or pandas.Timedelta, optional
+        Duration of window used to decluster the exceedances (default='24H').
 
     Returns
     -------

@@ -23,6 +23,11 @@ from pyextremes.extremes.peaks_over_threshold import get_extremes_peaks_over_thr
 
 logger = logging.getLogger(__name__)
 
+methods = {
+    'BM': get_extremes_block_maxima,
+    'POT': get_extremes_peaks_over_threshold
+}
+
 
 def get_extremes(
         ts: pd.Series,
@@ -64,16 +69,11 @@ def get_extremes(
         Time series of extreme events.
     """
 
-    logger.info(f'calling get_extremes with method={method}')
-    if method == 'BM':
-        block_size = kwargs.pop('block_size', '1Y')
-        errors = kwargs.pop('errors', 'raise')
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        return get_extremes_block_maxima(ts=ts, extremes_type=extremes_type, block_size=block_size, errors=errors)
-    elif method == 'POT':
-        threshold = kwargs.pop('threshold')
-        r = kwargs.pop('r', '24H')
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        return get_extremes_peaks_over_threshold(ts=ts, extremes_type=extremes_type, threshold=threshold, r=r)
-    else:
-        raise ValueError(f'\'{method}\' is not a valid \'method\' value')
+    logger.info(f'calling get_extremes with {method} method')
+    try:
+        return methods[method](ts=ts, extremes_type=extremes_type, **kwargs)
+    except KeyError:
+        raise ValueError(
+            f'\'{method}\' is not a valid \'method\' value\n'
+            f'Available methods: {", ".join(methods.keys())}'
+        )
