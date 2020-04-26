@@ -32,6 +32,41 @@ test_data_folder = module_path.parent / 'data'
 test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
+def test_plot_extremes_errors():
+    # Test block size for POT
+    with pytest.raises(ValueError):
+        plot_extremes(
+            ts=test_data,
+            extremes=test_data,
+            extremes_method='POT',
+            extremes_type='high',
+            block_size='1Y',
+            figsize=(8, 5)
+        )
+
+    # Test bad extremes_type for POT
+    with pytest.raises(ValueError):
+        plot_extremes(
+            ts=test_data,
+            extremes=test_data,
+            extremes_method='POT',
+            extremes_type='BAD TYPE',
+            block_size='1Y',
+            figsize=(8, 5)
+        )
+
+    # Test bad extremes_method
+    with pytest.raises(ValueError):
+        plot_extremes(
+            ts=test_data,
+            extremes=test_data,
+            extremes_method='BAD METHOD',
+            extremes_type='high',
+            block_size='1Y',
+            figsize=(8, 5)
+        )
+
+
 @pytest.mark.parametrize('extremes_method, extremes_type', list(itertools.product(['BM', 'POT'], ['high', 'low'])))
 def test_plot_extremes(extremes_method, extremes_type):
     test_extremes = pd.read_csv(

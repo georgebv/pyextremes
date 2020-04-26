@@ -92,7 +92,7 @@ class MLE(AbstractModelBaseClass):
                 return self.distribution.isf(exceedance_probability, *sample_fit_parameters)
 
             logger.info('drawing return value samples from the extremes')
-            rv_sample = np.array([draw_sample() for _ in n_samples])
+            rv_sample = np.array([draw_sample() for _ in range(n_samples)])
 
             logger.debug('calculating confidence interval')
             confidence_interval = tuple(

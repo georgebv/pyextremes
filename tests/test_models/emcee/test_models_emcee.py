@@ -35,10 +35,8 @@ def test_emcee():
         n_walkers=20,
         n_samples=100
     )
-    assert np.greater_equal(
-        model.distribution.log_probability(theta=model.fit_parameters['map']),
-        model.distribution.log_probability(theta=parameters)
-    )
+    assert isinstance(model.fit_parameters, dict)
+    assert len(model.fit_parameters['map']) == len(parameters)
     assert model.fit_parameters['trace'].shape == (20, 100, 3)
 
     # Test bad exceedance_probability type
@@ -50,6 +48,8 @@ def test_emcee():
         model.get_return_value(exceedance_probability=0.1, alpha=0.95)
     with pytest.raises(TypeError):
         model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=1.1)
+    with pytest.raises(ValueError):
+        model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=-1)
     with pytest.raises(ValueError):
         model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=100)
 
@@ -63,14 +63,18 @@ def test_emcee():
     assert len(model.hashed_return_values) == 1
     assert return_value == hashed_rv
 
+    # Test alpha being None
+    return_value = model.get_return_value(exceedance_probability=0.1, alpha=None, burn_in=20)
+    assert return_value[1:] == (None, None)
+
     # Test update hashed values
     model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=40)
     assert len(model.hashed_return_values) == 1
-    assert len(model.hashed_return_values['0.100000']) == 2
+    assert len(model.hashed_return_values['0.100000']) == 3
     assert len(model.hashed_return_values['0.100000']['0.950000']) == 2
     model.get_return_value(exceedance_probability=0.1, alpha=0.5, burn_in=20)
     assert len(model.hashed_return_values) == 1
-    assert len(model.hashed_return_values['0.100000']) == 3
+    assert len(model.hashed_return_values['0.100000']) == 4
     assert len(model.hashed_return_values['0.100000']['0.500000']) == 1
 
     # Get multiple return values
