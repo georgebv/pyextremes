@@ -178,47 +178,50 @@ class AbstractModelBaseClass(abc.ABC):
 
         logger.debug('decoding kwargs')
         decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
-        alpha = alpha or np.nan
+        try:
+            decoded_alpha = f'{alpha:.6f}'
+        except TypeError:
+            decoded_alpha = 'None'
 
         try:
             logger.debug(
                 f'trying to retrieve result from hash for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
             )
             hashed_entry = self.hashed_return_values[f'{exceedance_probability:.6f}']
             return_value = hashed_entry['return value']
-            confidence_interval = hashed_entry[f'{alpha:.6f}'][decoded_kwargs]
+            confidence_interval = hashed_entry[decoded_alpha][decoded_kwargs]
             logger.debug('successfully retrieved result from has - returning values')
             return (return_value, *confidence_interval)
         except KeyError:
             logger.debug(
                 f'calculating new results for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
             )
             rv = self._get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
             if f'{exceedance_probability:.6f}' in self.hashed_return_values:
-                if f'{alpha:.6f}' in self.hashed_return_values[f'{exceedance_probability:.6f}']:
+                if decoded_alpha in self.hashed_return_values[f'{exceedance_probability:.6f}']:
                     logger.debug(
                         f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'and alpha {alpha:.6f} with kwargs {decoded_kwargs}'
+                        f'and alpha {decoded_alpha} with kwargs {decoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][f'{alpha:.6f}'][decoded_kwargs] = rv[1]
+                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha][decoded_kwargs] = rv[1]
                 else:
                     logger.debug(
                         f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'with alpha {alpha:.6f} and kwargs {decoded_kwargs}'
+                        f'with alpha {decoded_alpha} and kwargs {decoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][f'{alpha:.6f}'] = {
+                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha] = {
                         decoded_kwargs: rv[1]
                     }
             else:
                 logger.debug(
                     f'creating a new entry for exceedance_probability {exceedance_probability:.6f}, '
-                    f'alpha {alpha:.6f}, and kwargs {decoded_kwargs}'
+                    f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
                 )
                 self.hashed_return_values[f'{exceedance_probability:.6f}'] = {
                     'return value': rv[0],
-                    f'{alpha:.6f}': {
+                    decoded_alpha: {
                         decoded_kwargs: rv[1]
                     }
                 }
