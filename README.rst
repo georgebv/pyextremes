@@ -8,9 +8,9 @@
 
 pyextremes
 ==========
-**pyextremes** is a Python library dedicated to solving problems from the area of `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools to extract extreme events from time series using Block Maxima or Peaks Over Threshold methods, to fit models such as GEV and GPD, and to provide estimates of extreme events and corresponding confidence intervals for given return periods. Models are fitted to the data using the Maximum Likelihood Estimate (MLE, via `scipy <https://www.scipy.org/>`_) or the Markov Chain Monte Calro (MCMC, via `pymc3 <https://docs.pymc.io/nb_tutorials/index.html>`_).
+**pyextremes** is a Python library dedicated to solving problems from the area of `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools to extract extreme events from time series using Block Maxima or Peaks Over Threshold methods, to fit models such as GEV and GPD to the extracted extreme values, and to provide estimates of extreme events and corresponding confidence intervals for given return periods. Models are fitted to the data using the Maximum Likelihood Estimate (MLE, via `scipy <https://www.scipy.org/>`_) or the Markov Chain Monte Calro (MCMC, via `emcee <https://emcee.readthedocs.io/en/stable/>`_) models.
 
-**Version:** 0.0.1
+**Version:** 0.1.0
 
 **License:** GNU General Public License v3.0
 
@@ -32,14 +32,13 @@ Dependencies
 
 Tutorials
 =========
-Coming soon.
+- `Basic usage <https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb>`_
 
 Illustrations
 =============
-Extreme event extraction
+Extreme value extraction
 
 |extreme events image|
-
 
 .. |build status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
    :target: https://travis-ci.org/georgebv/pyextremes
