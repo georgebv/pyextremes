@@ -107,15 +107,17 @@ class Emcee(AbstractModelBaseClass):
             alpha: float,
             **kwargs
     ) -> tuple:
-        burn_in = kwargs.pop('burn_in')
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-
         logger.debug('calculating return value')
         return_value = self.distribution.isf(q=exceedance_probability, parameters=self.fit_parameters['map'])
         if alpha is None:
+            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
         else:
+            burn_in = kwargs.pop('burn_in')
+            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+
             logger.debug('calculating confidence interval')
             rv_sample = self.distribution.isf(
                 q=exceedance_probability,

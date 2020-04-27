@@ -113,6 +113,7 @@ class AbstractModelBaseClass(abc.ABC):
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
+            If alpha is None, no keyword arguments are required or accepted.
             MLE model:
                 n_samples : int
                     Number of samles used to get confidence interval.
@@ -130,8 +131,6 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
-        logger.debug('testing kwargs validity')
-        self._test_kwargs(kwargs=kwargs)
         if hasattr(exceedance_probability, '__iter__') and not isinstance(exceedance_probability, str):
             logger.info('getting a list of return values')
             return tuple(
@@ -169,6 +168,7 @@ class AbstractModelBaseClass(abc.ABC):
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
+            If alpha is None, no keyword arguments are required or accepted.
 
         Returns
         -------
@@ -177,12 +177,17 @@ class AbstractModelBaseClass(abc.ABC):
         upper_confidence_interval_bound : float
         """
 
-        logger.debug('decoding kwargs')
-        decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
-        try:
-            decoded_alpha = f'{alpha:.6f}'
-        except TypeError:
+        if alpha is None:
+            logger.debug('alpha is None - setting kwargs and alpha to None')
+            decoded_kwargs = 'None'
             decoded_alpha = 'None'
+        else:
+            logger.debug('testing kwargs validity')
+            self._test_kwargs(kwargs=kwargs)
+
+            logger.debug('decoding alpha and kwargs')
+            decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
+            decoded_alpha = f'{alpha:.6f}'
 
         try:
             logger.debug(

@@ -76,15 +76,17 @@ class MLE(AbstractModelBaseClass):
             alpha: float,
             **kwargs
     ) -> tuple:
-        n_samples = kwargs.pop('n_samples')
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-
         logger.debug('calculating return value')
         return_value = self.distribution.isf(exceedance_probability, *self.fit_parameters)
         if alpha is None:
+            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
         else:
+            n_samples = kwargs.pop('n_samples')
+            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+
             def draw_sample():
                 sample_size = scipy.stats.poisson.rvs(mu=len(self.extremes), loc=0, size=None)
                 sample = np.random.choice(a=self.extremes.values, size=sample_size, replace=True)

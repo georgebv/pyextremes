@@ -276,3 +276,12 @@ class EVA:
             alpha=alpha,
             **kwargs
         )
+
+    def get_summary(
+            self,
+            return_period: typing.Union[float, typing.Iterable],
+            return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
+            alpha: float = 0.95,
+            **kwargs
+    ) -> pd.DataFrame:
+        raise NotImplementedError

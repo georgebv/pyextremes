@@ -59,7 +59,7 @@ def test_mle():
     assert return_value == hashed_rv
 
     # Test alpha being None
-    return_value = model.get_return_value(exceedance_probability=0.1, alpha=None, n_samples=50)
+    return_value = model.get_return_value(exceedance_probability=0.1, alpha=None)
     assert return_value[1:] == (None, None)
 
     # Test update hashed values
