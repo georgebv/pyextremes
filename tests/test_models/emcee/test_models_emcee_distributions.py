@@ -71,7 +71,7 @@ def test_distribution(distribution_name, parameters, scipy_parameters):
     assert np.allclose(initial_state.mean(axis=0), distribution.mle_parameters, atol=0.1)
 
     # Test _get_prop
-    for prop in ['isf', 'pdf', 'cdf', 'ppf']:
+    for prop in ['pdf', 'cdf', 'ppf', 'isf']:
         assert np.isclose(
             getattr(distribution, prop)(0.1, parameters=parameters),
             getattr(scipy_distribution, prop)(0.1, *scipy_parameters)

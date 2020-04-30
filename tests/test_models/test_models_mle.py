@@ -22,13 +22,44 @@ import pytest
 from pyextremes.models import get_model
 
 
+@pytest.mark.parametrize(
+    'distribution_name, parameters, scipy_parameters',
+    [
+        ('genextreme', (0.5, 10, 2), (0.5, 10, 2)),
+        ('genpareto', (0.5, 2), (0.5, 0, 2))
+    ]
+)
+def test_mle_fit(distribution_name, parameters, scipy_parameters):
+    model = get_model(
+        extremes=pd.Series(
+            index=pd.date_range(start='2000-01-01', periods=60, freq='1H'),
+            data=getattr(scipy.stats, distribution_name).rvs(*scipy_parameters, size=60)
+        ),
+        model='MLE',
+        distribution=distribution_name
+    )
+    assert isinstance(model.fit_parameters, tuple)
+    assert len(model.fit_parameters) == len(scipy_parameters)
+
+
 def test_mle():
+    # Test bad distribution (poisson is discrete and will never be implemented)
+    with pytest.raises(NotImplementedError):
+        get_model(
+            extremes=pd.Series(
+                index=[1, 2, 3],
+                data=[1, 2, 3]
+            ),
+            model='MLE',
+            distribution='poisson'
+        )
+
     # Test fit
     parameters = (0.5, 10, 2)
     model = get_model(
         extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
-            data=scipy.stats.genextreme.rvs(*parameters, size=100)
+            index=pd.date_range(start='2000-01-01', periods=60, freq='1H'),
+            data=scipy.stats.genextreme.rvs(*parameters, size=60)
         ),
         model='MLE',
         distribution='genextreme'
@@ -38,7 +69,7 @@ def test_mle():
 
     # Test bad exceedance_probability type
     with pytest.raises(TypeError):
-        model.get_return_value(exceedance_probability='0.1', alpha=0.95, n_samples=100)
+        model.get_return_value(exceedance_probability='0.1', alpha=0.95, n_samples=40)
 
     # Test bad n_samples values
     with pytest.raises(KeyError):
@@ -49,12 +80,12 @@ def test_mle():
         model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=-1)
 
     # Test return value
-    return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=100)
+    return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
     assert len(return_value) == 3
     assert return_value[1] < return_value[0] < return_value[2]
 
     # Test hash
-    hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=100)
+    hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
     assert len(model.hashed_return_values) == 1
     assert return_value == hashed_rv
 
@@ -63,16 +94,23 @@ def test_mle():
     assert return_value[1:] == (None, None)
 
     # Test update hashed values
-    model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=50)
+    model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=20)
     assert len(model.hashed_return_values) == 1
     assert len(model.hashed_return_values['0.100000']) == 3
     assert len(model.hashed_return_values['0.100000']['0.950000']) == 2
-    model.get_return_value(exceedance_probability=0.1, alpha=0.5, n_samples=50)
+    model.get_return_value(exceedance_probability=0.1, alpha=0.5, n_samples=20)
     assert len(model.hashed_return_values) == 1
     assert len(model.hashed_return_values['0.100000']) == 4
     assert len(model.hashed_return_values['0.100000']['0.500000']) == 1
 
     # Get multiple return values
-    return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, n_samples=20)
+    return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, n_samples=10)
     assert len(return_values) == 3
     assert len(model.hashed_return_values) == 9
+
+    # Test pdf and cdf
+    for prop in ['pdf', 'cdf']:
+        assert np.isclose(
+            getattr(model, prop)(0.1),
+            getattr(scipy.stats.genextreme, prop)(0.1, *model.fit_parameters)
+        )

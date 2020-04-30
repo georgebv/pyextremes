@@ -132,10 +132,10 @@ class Emcee(AbstractModelBaseClass):
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.pdf(x=x, parameters=self.fit_parameters)
+        return self.distribution.pdf(x=x, parameters=self.fit_parameters['map'])
 
     def cdf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.cdf(x=x, parameters=self.fit_parameters)
+        return self.distribution.cdf(x=x, parameters=self.fit_parameters['map'])

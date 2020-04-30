@@ -81,3 +81,10 @@ def test_emcee():
     return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, burn_in=20)
     assert len(return_values) == 3
     assert len(model.hashed_return_values) == 9
+
+    # Test pdf and cdf
+    for prop in ['pdf', 'cdf']:
+        assert np.isclose(
+            getattr(model, prop)(0.1),
+            getattr(scipy.stats.genextreme, prop)(0.1, *model.fit_parameters['map'])
+        )
