@@ -15,14 +15,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
 
 import emcee
 import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 from pyextremes.models.emcee.distributions import get_distribution
+from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class Emcee(AbstractModelBaseClass):
     """
-    This is Markov Chain Monte Carlo (MCMC) model built around the emcee package by Daniel Foreman-Mackey.
+    Markov Chain Monte Carlo (MCMC) model built around the emcee package by Daniel Foreman-Mackey.
     """
 
     def _get_distribution(
@@ -46,6 +47,7 @@ class Emcee(AbstractModelBaseClass):
     ) -> dict:
         n_walkers = kwargs.pop('n_walkers')
         n_samples = kwargs.pop('n_samples')
+        progress = kwargs.pop('progress', False)
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
         logger.info('defining emcee ensemble sampler')
@@ -58,7 +60,7 @@ class Emcee(AbstractModelBaseClass):
         logger.info(f'running the sampler with {n_walkers} walkers and {n_samples} samples')
         sampler.run_mcmc(
             initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
-            nsteps=n_samples
+            nsteps=n_samples, progress=progress
         )
 
         logger.info(
@@ -85,12 +87,6 @@ class Emcee(AbstractModelBaseClass):
             self,
             kwargs: dict
     ) -> str:
-        return f'{kwargs["burn_in"]:d}'
-
-    def _test_kwargs(
-            self,
-            kwargs: dict
-    ) -> None:
         burn_in = kwargs['burn_in']
         if not isinstance(burn_in, int):
             raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
@@ -100,6 +96,7 @@ class Emcee(AbstractModelBaseClass):
             raise ValueError(
                 f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {self.fit_parameters["trace"].shape[1]}'
             )
+        return f'{burn_in:d}'
 
     def _get_return_value(
             self,
@@ -130,3 +127,15 @@ class Emcee(AbstractModelBaseClass):
                 )
             )
         return return_value, confidence_interval
+
+    def pdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.pdf(x=x, parameters=self.fit_parameters)
+
+    def cdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.cdf(x=x, parameters=self.fit_parameters)

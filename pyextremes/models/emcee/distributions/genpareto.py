@@ -67,9 +67,10 @@ class Genpareto(AbstractEmceeDistributionBaseClass):
         else:
             return -np.inf
 
-    def isf(
+    def _get_prop(
             self,
-            q: float,
+            prop: str,
+            x: typing.Union[float, np.ndarray],
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
-        return scipy.stats.genpareto.isf(q, c=parameters[0], loc=0, scale=parameters[1])
+        return getattr(scipy.stats.genpareto, prop)(x, c=parameters[0], loc=0, scale=parameters[1])

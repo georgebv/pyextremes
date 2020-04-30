@@ -56,9 +56,10 @@ class GumbelR(AbstractEmceeDistributionBaseClass):
         # Calculate log-likelihood
         return sum(scipy.stats.gumbel_r.logpdf(x=self.extremes.values, loc=location, scale=scale))
 
-    def isf(
+    def _get_prop(
             self,
-            q: float,
+            prop: str,
+            x: typing.Union[float, np.ndarray],
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
-        return scipy.stats.gumbel_r.isf(q=q, loc=parameters[0], scale=parameters[1])
+        return getattr(scipy.stats.gumbel_r, prop)(x, loc=parameters[0], scale=parameters[1])

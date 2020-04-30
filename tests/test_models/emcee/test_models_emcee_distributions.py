@@ -31,14 +31,24 @@ def test_get_distribution():
         )
 
 
-def test_genextreme():
+@pytest.mark.parametrize(
+    'distribution_name, parameters, scipy_parameters',
+    [
+        ('genextreme', (0.5, 10, 2), (0.5, 10, 2)),
+        ('gumbel_r', (10, 2), (10, 2)),
+        ('genpareto', (0.5, 2), (0.5, 0, 2)),
+        ('expon', (2, ), (0, 2))
+    ]
+)
+def test_distribution(distribution_name, parameters, scipy_parameters):
+    scipy_distribution = getattr(scipy.stats, distribution_name)
+
     # Test distribution fit
-    parameters = (0.5, 10, 2)
     distribution = get_distribution(
-        distribution='genextreme',
+        distribution=distribution_name,
         extremes=pd.Series(
             index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
-            data=scipy.stats.genextreme.rvs(*parameters, size=100)
+            data=scipy_distribution.rvs(*scipy_parameters, size=100)
         )
     )
     assert len(distribution.mle_parameters) == distribution.number_of_parameters
@@ -46,7 +56,7 @@ def test_genextreme():
     # Test log-likelihood
     assert np.isclose(
         distribution.log_likelihood(theta=parameters),
-        sum(scipy.stats.genextreme.logpdf(distribution.extremes.values, *parameters))
+        sum(scipy_distribution.logpdf(distribution.extremes.values, *scipy_parameters))
     )
 
     # Test log-probability
@@ -60,116 +70,9 @@ def test_genextreme():
     assert initial_state.shape == (100, distribution.number_of_parameters)
     assert np.allclose(initial_state.mean(axis=0), distribution.mle_parameters, atol=0.1)
 
-    # Test isf
-    assert np.isclose(
-        distribution.isf(q=0.1, parameters=parameters),
-        scipy.stats.genextreme.isf(0.1, *parameters)
-    )
-
-
-def test_genpareto():
-    # Test distribution fit
-    parameters = (0.5, 2)
-    distribution = get_distribution(
-        distribution='genpareto',
-        extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
-            data=scipy.stats.genpareto.rvs(c=parameters[0], loc=0, scale=parameters[1], size=100)
+    # Test _get_prop
+    for prop in ['isf', 'pdf', 'cdf', 'ppf']:
+        assert np.isclose(
+            getattr(distribution, prop)(0.1, parameters=parameters),
+            getattr(scipy_distribution, prop)(0.1, *scipy_parameters)
         )
-    )
-    assert len(distribution.mle_parameters) == distribution.number_of_parameters
-
-    # Test log-likelihood
-    assert np.isclose(
-        distribution.log_likelihood(theta=parameters),
-        sum(scipy.stats.genpareto.logpdf(distribution.extremes.values, c=parameters[0], loc=0, scale=parameters[1]))
-    )
-
-    # Test log-probability
-    assert np.greater_equal(
-        distribution.log_probability(theta=distribution.mle_parameters),
-        distribution.log_probability(theta=parameters)
-    )
-
-    # Test initial state
-    initial_state = distribution.get_initial_state(n_walkers=100)
-    assert initial_state.shape == (100, distribution.number_of_parameters)
-    assert np.allclose(initial_state.mean(axis=0), distribution.mle_parameters, atol=0.1)
-
-    # Test isf
-    assert np.isclose(
-        distribution.isf(q=0.1, parameters=parameters),
-        scipy.stats.genpareto.isf(0.1, c=parameters[0], loc=0, scale=parameters[1])
-    )
-
-
-def test_gumbel_r():
-    # Test distribution fit
-    parameters = (10, 2)
-    distribution = get_distribution(
-        distribution='gumbel_r',
-        extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
-            data=scipy.stats.gumbel_r.rvs(*parameters, size=100)
-        )
-    )
-    assert len(distribution.mle_parameters) == distribution.number_of_parameters
-
-    # Test log-likelihood
-    assert np.isclose(
-        distribution.log_likelihood(theta=parameters),
-        sum(scipy.stats.gumbel_r.logpdf(distribution.extremes.values, *parameters))
-    )
-
-    # Test log-probability
-    assert np.greater_equal(
-        distribution.log_probability(theta=distribution.mle_parameters),
-        distribution.log_probability(theta=parameters)
-    )
-
-    # Test initial state
-    initial_state = distribution.get_initial_state(n_walkers=100)
-    assert initial_state.shape == (100, distribution.number_of_parameters)
-    assert np.allclose(initial_state.mean(axis=0), distribution.mle_parameters, atol=0.1)
-
-    # Test isf
-    assert np.isclose(
-        distribution.isf(q=0.1, parameters=parameters),
-        scipy.stats.gumbel_r.isf(0.1, *parameters)
-    )
-
-
-def test_expon():
-    # Test distribution fit
-    parameters = (2, )
-    distribution = get_distribution(
-        distribution='expon',
-        extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
-            data=scipy.stats.expon.rvs(loc=0, scale=parameters[0], size=100)
-        )
-    )
-    assert len(distribution.mle_parameters) == distribution.number_of_parameters
-
-    # Test log-likelihood
-    assert np.isclose(
-        distribution.log_likelihood(theta=parameters),
-        sum(scipy.stats.expon.logpdf(distribution.extremes.values, loc=0, scale=parameters[0]))
-    )
-
-    # Test log-probability
-    assert np.greater_equal(
-        distribution.log_probability(theta=distribution.mle_parameters),
-        distribution.log_probability(theta=parameters)
-    )
-
-    # Test initial state
-    initial_state = distribution.get_initial_state(n_walkers=100)
-    assert initial_state.shape == (100, distribution.number_of_parameters)
-    assert np.allclose(initial_state.mean(axis=0), distribution.mle_parameters, atol=0.1)
-
-    # Test isf
-    assert np.isclose(
-        distribution.isf(q=0.1, parameters=parameters),
-        scipy.stats.expon.isf(0.1, loc=0, scale=parameters[0])
-    )

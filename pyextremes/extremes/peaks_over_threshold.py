@@ -50,13 +50,15 @@ def get_extremes_peaks_over_threshold(
         Time series of extreme events.
     """
 
-    logger.info(f'collecting exceedances for extremes_type={extremes_type}')
+    logger.info(f'getting extreme value extraction function for extremes_type={extremes_type}')
     if extremes_type == 'high':
         comparison_function = np.greater
     elif extremes_type == 'low':
         comparison_function = np.less
     else:
         raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
+
+    logger.info('getting exceedances')
     exceedances = ts.loc[comparison_function(ts.values, threshold)]
 
     logger.info('parsing r')

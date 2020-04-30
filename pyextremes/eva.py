@@ -279,9 +279,25 @@ class EVA:
 
     def get_summary(
             self,
-            return_period: typing.Union[float, typing.Iterable],
+            return_period: typing.Iterable,
             return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
             alpha: float = 0.95,
             **kwargs
     ) -> pd.DataFrame:
-        raise NotImplementedError
+        logger.info('calculating return values')
+        rv = self.get_return_value(
+            return_period=return_period,
+            return_period_size=return_period_size,
+            alpha=alpha,
+            kwargs=kwargs
+        )
+
+        logger.info('preparing a list of return periods to be used as DataFrame index')
+        rp = [rp if isinstance(rp, pd.Timedelta) else pd.to_timedelta(rp) for rp in return_period]
+
+        logger.info('preparing the summary dataframe')
+        return pd.DataFrame(
+            data=np.transpose(rv),
+            index=pd.Index(data=rp, name='return period'),
+            columns=['return value', 'lower ci', 'upper ci']
+        )

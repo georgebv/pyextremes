@@ -68,9 +68,10 @@ class Genextreme(AbstractEmceeDistributionBaseClass):
         else:
             return -np.inf
 
-    def isf(
+    def _get_prop(
             self,
-            q: float,
+            prop: str,
+            x: typing.Union[float, np.ndarray],
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
-        return scipy.stats.genextreme.isf(q=q, c=parameters[0], loc=parameters[1], scale=parameters[2])
+        return getattr(scipy.stats.genextreme, prop)(x, c=parameters[0], loc=parameters[1], scale=parameters[2])

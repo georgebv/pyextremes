@@ -23,6 +23,25 @@ logger = logging.getLogger(__name__)
 
 
 class ExtremesTransformer:
+    """
+    Extreme value transformer class. Provides methods to transform extreme value series to and from
+    format compatible with pyextremes models.
+    The transformed extreme value series have the following properties:
+        - probability density decreases with increased value (same as if 'extremes_type' is 'high')
+        - if 'extremes_method' is POT, then the series also starts at 0 (ensures that location parameter
+            in the genpareto distribution is always 0)
+
+    Parameters
+    ----------
+    extremes : pandas.Series
+        Time series of extreme events.
+    extremes_method : str
+        Extreme value extraction method.
+        Supported values: BM or POT.
+    extremes_type : str
+        high - provided extreme values are extreme high values
+        low - provided extreme values are extreme low values
+    """
 
     def __init__(
             self,
@@ -30,26 +49,6 @@ class ExtremesTransformer:
             extremes_method: str,
             extremes_type: str,
     ) -> None:
-        """
-        Extreme value transformer class. Provides methods to transform extreme value series to and from
-        format compatible with pyextremes models.
-        The transformed extreme value series have the following properties:
-            - probability density decreases with increased value (same as if 'extremes_type' is 'high')
-            - if 'extremes_method' is POT, then the series also starts at 0 (ensures that location parameter
-                in the genpareto distribution is always 0)
-
-        Parameters
-        ----------
-        extremes : pandas.Series
-            Time series of extreme events.
-        extremes_method : str
-            Extreme value extraction method.
-            Supported values: BM or POT.
-        extremes_type : str
-            high - provided extreme values are extreme high values
-            low - provided extreme values are extreme low values
-        """
-
         if extremes_method not in ['BM', 'POT']:
             raise ValueError(f'\'{extremes_method}\' is not a valid \'extremes_method\' value')
         if extremes_type not in ['high', 'low']:

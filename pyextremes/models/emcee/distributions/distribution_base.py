@@ -105,10 +105,38 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
         logger.info(f'getting initial positions for {n_walkers} walkers')
         return scipy.stats.norm.rvs(loc=self.mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters))
 
-    @abc.abstractmethod
     def isf(
             self,
             q: float,
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='isf', x=q, parameters=parameters)
+
+    def ppf(
+            self,
+            q: float,
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='ppf', x=q, parameters=parameters)
+
+    def pdf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='pdf', x=x, parameters=parameters)
+
+    def cdf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            parameters: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='cdf', x=x, parameters=parameters)
+
+    def _get_prop(
+            self,
+            prop: str,
+            x: typing.Union[float, np.ndarray],
             parameters: tuple
     ) -> typing.Union[float, np.ndarray]:
         pass

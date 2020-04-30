@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class MLE(AbstractModelBaseClass):
     """
-    This is Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
+    Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
     """
 
     def _get_distribution(
@@ -41,7 +41,7 @@ class MLE(AbstractModelBaseClass):
             self,
             extremes: pd.Series,
             **kwargs
-    ) -> typing.Union[tuple, dict]:
+    ) -> tuple:
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
         distributions = ['genpareto', 'expon', 'genextreme', 'gumbel_r']
         if self.distribution.name in ['genpareto', 'expon']:
@@ -58,17 +58,12 @@ class MLE(AbstractModelBaseClass):
             self,
             kwargs: dict
     ) -> str:
-        return f'{kwargs["n_samples"]}'
-
-    def _test_kwargs(
-            self,
-            kwargs: dict
-    ) -> None:
         n_samples = kwargs['n_samples']
         if not isinstance(n_samples, int):
             raise TypeError(f'invalid type in {type(n_samples)} for the \'n_samples\' argument')
         if n_samples <= 0:
             raise ValueError(f'\'{n_samples}\' is not a valid \'n_samples\' value, it must be a positive integer')
+        return f'{n_samples:d}'
 
     def _get_return_value(
             self,
@@ -104,3 +99,15 @@ class MLE(AbstractModelBaseClass):
                 )
             )
         return return_value, confidence_interval
+
+    def pdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.pdf(x, *self.fit_parameters)
+
+    def cdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.cdf(x, *self.fit_parameters)

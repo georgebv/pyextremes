@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 class AbstractModelBaseClass(abc.ABC):
+    """
+    Distribution model base class.
+    """
 
     def __init__(
             self,
@@ -36,7 +39,7 @@ class AbstractModelBaseClass(abc.ABC):
             **kwargs
     ) -> None:
         """
-        Distribution model base class.
+        Initialize the distribution model object.
 
         Parameters
         ----------
@@ -53,11 +56,16 @@ class AbstractModelBaseClass(abc.ABC):
                     The number of walkers in the ensemble.
                 n_samples : int
                     The number of steps to run.
+                progress : bool or str, optional
+                    If True, a progress bar will be shown as the sampler progresses.
+                    If a string, will select a specific tqdm progress bar - most notable is
+                    'notebook', which shows a progress bar suitable for Jupyter notebooks.
+                    If False, no progress bar will be shown (default=False).
         """
 
         self.extremes = extremes
 
-        logger.info('getting extreme value distribution')
+        logger.info('fetching extreme value distribution')
         self.distribution = self._get_distribution(distribution=distribution)
 
         logger.info('fitting the distribution to extremes')
@@ -86,13 +94,6 @@ class AbstractModelBaseClass(abc.ABC):
             self,
             kwargs: dict
     ) -> str:
-        pass
-
-    @abc.abstractmethod
-    def _test_kwargs(
-            self,
-            kwargs: dict
-    ) -> None:
         pass
 
     def get_return_value(
@@ -182,9 +183,6 @@ class AbstractModelBaseClass(abc.ABC):
             decoded_kwargs = 'None'
             decoded_alpha = 'None'
         else:
-            logger.debug('testing kwargs validity')
-            self._test_kwargs(kwargs=kwargs)
-
             logger.debug('decoding alpha and kwargs')
             decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
             decoded_alpha = f'{alpha:.6f}'
@@ -197,7 +195,7 @@ class AbstractModelBaseClass(abc.ABC):
             hashed_entry = self.hashed_return_values[f'{exceedance_probability:.6f}']
             return_value = hashed_entry['return value']
             confidence_interval = hashed_entry[decoded_alpha][decoded_kwargs]
-            logger.debug('successfully retrieved result from has - returning values')
+            logger.debug('successfully retrieved result from hash - returning values')
             return (return_value, *confidence_interval)
         except KeyError:
             logger.debug(
@@ -244,4 +242,18 @@ class AbstractModelBaseClass(abc.ABC):
             alpha: float,
             **kwargs
     ) -> tuple:
+        pass
+
+    @abc.abstractmethod
+    def pdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def cdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
         pass

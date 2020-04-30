@@ -59,6 +59,11 @@ def get_model(
                 The number of walkers in the ensemble.
             n_samples : int
                 The number of steps to run.
+            progress : bool or str, optional
+                If True, a progress bar will be shown as the sampler progresses.
+                If a string, will select a specific tqdm progress bar - most notable is
+                'notebook', which shows a progress bar suitable for Jupyter notebooks.
+                If False, no progress bar will be shown (default=False).
 
     Returns
     -------
