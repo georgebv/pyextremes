@@ -55,9 +55,11 @@ def get_distribution(
 
     logger.info(f'fetching \'{distribution}\' distribution')
     try:
-        return distributions[distribution](extremes=extremes)
+        distribution = distributions[distribution]
     except KeyError:
         raise ValueError(
             f'\'{distribution}\' distribution is not available for the \'Emcee\' model\n'
             f'Available \'Emcee\' distributions: {", ".join(distributions.keys())}'
         )
+    logger.info('creating distribution object')
+    return distribution(extremes=extremes)

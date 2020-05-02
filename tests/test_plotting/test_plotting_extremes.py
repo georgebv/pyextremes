@@ -29,7 +29,13 @@ matplotlib.use('agg')
 
 module_path = pathlib.Path(os.path.realpath(__file__)).parent
 test_data_folder = module_path.parent / 'data'
-test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
+test_data = (
+    pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
+    .sort_index(ascending=True)
+    .dropna()
+)
+test_data = test_data.loc[pd.to_datetime('1925'):]
+test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
 
 
 def test_plot_extremes_errors():
@@ -87,9 +93,10 @@ def test_plot_extremes(extremes_method, extremes_type):
     baseline_figure = module_path / 'baseline_images' / f'plot_extremes_{extremes_method}_{extremes_type}.png'
     generated_figure = module_path / 'baseline_images' / f'plot_extremes_{extremes_method}_{extremes_type}_compare.png'
     fig.savefig(generated_figure, dpi=96)
-    matplotlib.testing.compare.compare_images(
+    comparison = matplotlib.testing.compare.compare_images(
         expected=str(baseline_figure),
         actual=str(generated_figure),
         tol=.001
     )
+    assert comparison is None
     generated_figure.unlink()

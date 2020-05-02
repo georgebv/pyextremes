@@ -289,15 +289,12 @@ class EVA:
             return_period=return_period,
             return_period_size=return_period_size,
             alpha=alpha,
-            kwargs=kwargs
+            **kwargs
         )
-
-        logger.info('preparing a list of return periods to be used as DataFrame index')
-        rp = [rp if isinstance(rp, pd.Timedelta) else pd.to_timedelta(rp) for rp in return_period]
 
         logger.info('preparing the summary dataframe')
         return pd.DataFrame(
             data=np.transpose(rv),
-            index=pd.Index(data=rp, name='return period'),
+            index=pd.Index(data=return_period, name='return period'),
             columns=['return value', 'lower ci', 'upper ci']
         )

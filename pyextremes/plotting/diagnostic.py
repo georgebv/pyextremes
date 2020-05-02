@@ -14,5 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from pyextremes.eva import EVA
-from pyextremes.extremes import get_extremes, get_return_periods
+import logging
+
+import matplotlib.gridspec
+import matplotlib.pyplot as plt
+import matplotlib.ticker
+import numpy as np
+import pandas as pd
+from pyextremes.plotting.style import pyextremes_rc
+
+logger = logging.getLogger(__name__)
+
+
+def plot_diagnostic():
+    # TODO - 2x2 plot with return values/pdf/qq/pp
+    raise NotImplementedError

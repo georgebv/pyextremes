@@ -69,11 +69,13 @@ def get_extremes(
         Time series of extreme events.
     """
 
-    logger.info(f'fetching \'{method}\' extreme value function and calling it')
+    logger.info(f'fetching \'{method}\' extreme value function')
     try:
-        return methods[method](ts=ts, extremes_type=extremes_type, **kwargs)
+        extremes_function = methods[method]
     except KeyError:
         raise ValueError(
             f'\'{method}\' is not a valid \'method\' value\n'
             f'Available methods: {", ".join(methods.keys())}'
         )
+    logger.info('getting extreme values')
+    return extremes_function(ts=ts, extremes_type=extremes_type, **kwargs)

@@ -71,11 +71,13 @@ def get_model(
         An extreme value model.
     """
 
-    logger.info(f'calling get_fitting_model with {model} model')
+    logger.info(f'fetching {model} model')
     try:
-        return models[model](extremes=extremes, distribution=distribution, **kwargs)
+        model = models[model]
     except KeyError:
         raise ValueError(
             f'\'{model}\' is not a valid \'model\' value\n'
             f'Available models: {", ".join(models.keys())}'
         )
+    logger.info('creating model object')
+    return model(extremes=extremes, distribution=distribution, **kwargs)

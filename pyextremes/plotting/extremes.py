@@ -81,7 +81,7 @@ def plot_extremes(
 
     with plt.rc_context(rc=pyextremes_rc):
         logger.info('creating figure')
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, ax = plt.subplots(figsize=figsize, dpi=96)
         ax.grid(False)
 
         logger.info('plotting extreme events')
