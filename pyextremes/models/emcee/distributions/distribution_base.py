@@ -44,6 +44,11 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
         logger.info('calling the _fit method')
         self.mle_parameters = self._fit()
 
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        pass
+
     @abc.abstractmethod
     def _fit(self) -> tuple:
         """
@@ -133,6 +138,7 @@ class AbstractEmceeDistributionBaseClass(abc.ABC):
     ) -> typing.Union[float, np.ndarray]:
         return self._get_prop(prop='cdf', x=x, parameters=parameters)
 
+    @abc.abstractmethod
     def _get_prop(
             self,
             prop: str,

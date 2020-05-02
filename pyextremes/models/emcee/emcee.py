@@ -34,6 +34,10 @@ class Emcee(AbstractModelBaseClass):
     Markov Chain Monte Carlo (MCMC) model built around the emcee package by Daniel Foreman-Mackey.
     """
 
+    @property
+    def name(self) -> str:
+        return 'Emcee'
+
     def _get_distribution(
             self,
             distribution: str
@@ -139,3 +143,15 @@ class Emcee(AbstractModelBaseClass):
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
         return self.distribution.cdf(x=x, parameters=self.fit_parameters['map'])
+
+    def ppf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.ppf(q=x, parameters=self.fit_parameters['map'])
+
+    def isf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.isf(q=x, parameters=self.fit_parameters['map'])

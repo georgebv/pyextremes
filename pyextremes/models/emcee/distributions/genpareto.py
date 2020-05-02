@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 
 class Genpareto(AbstractEmceeDistributionBaseClass):
 
+    @property
+    def name(self) -> str:
+        return 'genpareto'
+
     def _fit(self) -> tuple:
         shape, location, scale = scipy.stats.genpareto.fit(self.extremes, floc=0)
         return shape, scale

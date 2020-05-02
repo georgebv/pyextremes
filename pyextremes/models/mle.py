@@ -31,6 +31,10 @@ class MLE(AbstractModelBaseClass):
     Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
     """
 
+    @property
+    def name(self) -> str:
+        return 'MLE'
+
     def _get_distribution(
             self,
             distribution: str
@@ -111,3 +115,15 @@ class MLE(AbstractModelBaseClass):
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
         return self.distribution.cdf(x, *self.fit_parameters)
+
+    def ppf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.ppf(x, *self.fit_parameters)
+
+    def isf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.distribution.isf(x, *self.fit_parameters)

@@ -74,6 +74,11 @@ class AbstractModelBaseClass(abc.ABC):
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
 
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        pass
+
     @abc.abstractmethod
     def _get_distribution(
             self,
@@ -253,6 +258,20 @@ class AbstractModelBaseClass(abc.ABC):
 
     @abc.abstractmethod
     def cdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def ppf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        pass
+
+    @abc.abstractmethod
+    def isf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:

@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 
 class GumbelR(AbstractEmceeDistributionBaseClass):
 
+    @property
+    def name(self) -> str:
+        return 'gumbel_r'
+
     def _fit(self) -> tuple:
         return scipy.stats.gumbel_r.fit(self.extremes)
 

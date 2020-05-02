@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 
 class Expon(AbstractEmceeDistributionBaseClass):
 
+    @property
+    def name(self) -> str:
+        return 'expon'
+
     def _fit(self) -> tuple:
         location, scale = scipy.stats.expon.fit(self.extremes, floc=0)
         return (scale,)

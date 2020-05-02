@@ -15,3 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from pyextremes.plotting.extremes import plot_extremes
+from pyextremes.plotting.porbability_plots import plot_probability
+from pyextremes.plotting.return_values import plot_return_values
+from pyextremes.plotting.style import pyextremes_rc

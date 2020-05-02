@@ -1,4 +1,5 @@
 import setuptools
+import pyextremes
 
 
 with open('README.rst', encoding='utf-8') as file:
@@ -7,7 +8,7 @@ with open('README.rst', encoding='utf-8') as file:
 
 setuptools.setup(
     name='pyextremes',
-    version='0.1.0',
+    version=pyextremes.__version__,
     author='Georgii Bocharov',
     author_email='bocharovgeorgii@gmail.com',
     description='Extreme value analysis (EVA) in Python',

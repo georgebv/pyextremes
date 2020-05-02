@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 
 class Genextreme(AbstractEmceeDistributionBaseClass):
 
+    @property
+    def name(self) -> str:
+        return 'genextreme'
+
     def _fit(self) -> tuple:
         return scipy.stats.genextreme.fit(self.extremes)
 

@@ -28,7 +28,7 @@ Dependencies
 ============
 **Python version:** >=3.7
 
-**Required packages:** numpy scipy pandas matplotlib
+**Required packages:** emcee matplotlib numpy pandas scipy
 
 Tutorials
 =========
@@ -40,6 +40,10 @@ Extreme value extraction
 
 |extreme events image|
 
+Model diagnostic
+
+|model diagnostic image|
+
 .. |build status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
    :target: https://travis-ci.org/georgebv/pyextremes
 
@@ -50,3 +54,5 @@ Extreme value extraction
     :target: https://badge.fury.io/py/pyextremes
 
 .. |extreme events image| image:: ./docs/source/example_images/extremes.png
+
+.. |model diagnostic image| image:: ./docs/source/example_images/diagnostic.png

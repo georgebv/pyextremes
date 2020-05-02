@@ -16,9 +16,7 @@
 
 import logging
 
-import matplotlib.gridspec
 import matplotlib.pyplot as plt
-import matplotlib.ticker
 import numpy as np
 import pandas as pd
 
@@ -27,25 +25,22 @@ from pyextremes.plotting.style import pyextremes_rc
 logger = logging.getLogger(__name__)
 
 
-def plot_return_values(
-        observed_return_values: pd.DataFrame,
-        modeled_return_values: pd.DataFrame,
+def plot_probability(
+        observed: np.ndarray,
+        theoretical: np.ndarray,
         ax=None,
-        figsize: tuple = (8, 8/1.618)
-) -> tuple:
+        figsize: tuple = (8, 8)
+):
     """
-    Plot return values and confidence intervals for given return periods.
+    Plot a probability plot (QQ or PP).
+    Used to assess goodness-of-fit of the model.
 
     Parameters
     ----------
-    observed_return_values : pandas.DataFrame
-        DataFrame with observed return values.
-        First column has extreme values.
-        Column 'return periods' has return periods.
-    modeled_return_values : pandas.DataFrame
-        DataFrame with modeled return values.
-        Index has return periods.
-        Has these columns: 'return value', 'lower ci', 'upper ci'.
+    observed : numpy.ndarray
+        Observed values.
+    theoretical : numpy.ndarray
+        Theoretical values.
     ax : matplotlib.axes.Axes, optional
         Axes onto which the figure is drawn (default=None).
         If None, a new figure and axes is created.
@@ -72,41 +67,28 @@ def plot_return_values(
             fig = None
 
         logger.info('configuring axes')
-        ax.semilogx()
-        ax.grid(True, which='both')
-        ax.xaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%.0f'))
+        ax.grid(False)
 
-        logger.info('plotting return values')
-        ax.plot(
-            modeled_return_values.index,
-            modeled_return_values.loc[:, 'return value'],
-            color='#F85C50', lw=2, ls='-', zorder=20
-        )
-
-        logger.info('plotting confidence intervals')
-        for col in ['lower ci', 'upper ci']:
-            ax.plot(
-                modeled_return_values.index,
-                modeled_return_values.loc[:, col],
-                color='#5199FF', lw=1, ls='--', zorder=15
-            )
-        ax.fill_between(
-            modeled_return_values.index,
-            modeled_return_values.loc[:, 'lower ci'],
-            modeled_return_values.loc[:, 'upper ci'],
-            facecolor='#5199FF', edgecolor='None', alpha=0.25, zorder=10
-        )
-
-        logger.info('plotting observed extreme values')
+        logger.info('plotting scatter of observed and theoretical probabilities')
         ax.scatter(
-            observed_return_values.loc[:, 'return period'],
-            observed_return_values.loc[:, observed_return_values.columns[0]],
-            marker='o', s=20, lw=1, facecolor='k', edgecolor='w', zorder=20
+            observed, theoretical,
+            marker='o', s=20, lw=1, facecolor='k', edgecolor='w', zorder=10
         )
+
+        logger.info('plotting diagonal perfect fit line')
+        min_value = min([min(ax.get_xlim()), min(ax.get_ylim())])
+        max_value = max([max(ax.get_xlim()), max(ax.get_ylim())])
+        ax.plot(
+            [min_value, max_value],
+            [min_value, max_value],
+            color='#5199FF', lw=1, ls='--', zorder=5
+        )
+        ax.set_xlim(min_value, max_value)
+        ax.set_ylim(min_value, max_value)
 
         logger.info('labeling axes')
-        ax.set_xlabel('Return period')
-        ax.set_ylabel(observed_return_values.columns[0])
+        ax.set_xlabel('Observed')
+        ax.set_ylabel('Theoretical')
 
         return fig, ax
 
@@ -150,10 +132,3 @@ if __name__ == '__main__':
         burn_in=50,
         return_period_size=return_period_size
     )
-
-    fig, ax = plot_return_values(
-        observed_return_values=observed_return_values,
-        modeled_return_values=modeled_return_values
-    )
-    ax.set_ylim(1, 4)
-    ax.set_xlim(1, 100)
