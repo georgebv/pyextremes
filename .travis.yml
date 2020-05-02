@@ -18,7 +18,7 @@ install:
     - python setup.py install
 
 script:
-    - python -m pytest -v tests --cov=pyextremes
+    - python -m pytest -v tests --cov=pyextremes --ignore=tests/test_plotting
 
 after_success:
     - codecov
