@@ -158,6 +158,12 @@ class EVA:
             )
 
         # model section
+        summary.extend(
+            [
+                center_text('Model'),
+                '-' * width,
+            ]
+        )
         if self.model is None:
             summary.extend(
                 [
@@ -454,7 +460,7 @@ class EVA:
 
     def plot_return_values(
             self,
-            return_period: typing.Iterable,
+            return_period: typing.Iterable = None,
             return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
             alpha: float = 0.95,
             plotting_position: str = 'weibull',
@@ -467,8 +473,10 @@ class EVA:
 
         Parameters
         ----------
-        return_period : array-like
+        return_period : array-like, optional
             Return period or array of return periods.
+            If None, calculates as 100 values uniformly spaced within the range
+            of return periods of the extracted extreme values.
         return_period_size : str or pandas.Timedelta, optional
             Size of return periods (default='1Y').
             If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
@@ -517,6 +525,14 @@ class EVA:
             return_period_size=return_period_size,
             plotting_position=plotting_position
         )
+
+        if return_period is None:
+            logger.info('creating default return_period array')
+            return_period = np.linspace(
+                observed_return_values.loc[:, 'return period'].min(),
+                observed_return_values.loc[:, 'return period'].max(),
+                100
+            )
 
         logger.info('getting modeled return values')
         modeled_return_values = self.get_summary(
@@ -615,7 +631,7 @@ class EVA:
 
     def plot_diagnostic(
             self,
-            return_period: typing.Iterable,
+            return_period: typing.Iterable = None,
             return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
             alpha: float = 0.95,
             plotting_position: str = 'weibull',
@@ -623,11 +639,19 @@ class EVA:
             **kwargs
     ):
         """
+        Plot a diagnostic plot. This plot can be used to quickly assess goodness-of-fit of the selected model.
+        The diagnostice plot consists of four axes:
+            - top left : return values
+            - top right : PDF
+            - bottom left : Q-Q
+            - bottom right : P-P
 
         Parameters
         ----------
-        return_period : array-like
+        return_period : array-like, optional
             Return period or array of return periods.
+            If None, calculates as 100 values uniformly spaced within the range
+            of return periods of the extracted extreme values.
         return_period_size : str or pandas.Timedelta, optional
             Size of return periods (default='1Y').
             If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
