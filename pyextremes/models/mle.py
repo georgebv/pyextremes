@@ -33,6 +33,17 @@ class MLE(AbstractModelBaseClass):
     Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
     """
 
+    def __init__(
+            self,
+            extremes: pd.Series,
+            distribution: str,
+            **kwargs
+    ) -> None:
+        super().__init__(extremes=extremes, distribution=distribution, **kwargs)
+
+        logger.info('initializing the fit parameter hash')
+        self.hashed_fit_parameters = []
+
     @property
     def name(self) -> str:
         return 'MLE'
@@ -82,7 +93,7 @@ class MLE(AbstractModelBaseClass):
             self,
             kwargs: dict
     ) -> str:
-        n_samples = kwargs['n_samples']
+        n_samples = kwargs.get('n_samples', 1000)
         if not isinstance(n_samples, int):
             raise TypeError(f'invalid type in {type(n_samples)} for the \'n_samples\' argument')
         if n_samples <= 0:
@@ -103,17 +114,20 @@ class MLE(AbstractModelBaseClass):
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
         else:
-            n_samples = kwargs.pop('n_samples')
+            n_samples = kwargs.pop('n_samples', 1000)
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
-            def draw_sample():
-                sample_size = scipy.stats.poisson.rvs(mu=len(self.extremes), loc=0, size=None)
-                sample = np.random.choice(a=self.extremes.values, size=sample_size, replace=True)
-                sample_fit_parameters = self._fit(extremes=sample)
-                return self.distribution.isf(exceedance_probability, *sample_fit_parameters)
+            if len(self.hashed_fit_parameters) < n_samples:
+                logger.info('putting additional fit parameters into the hash')
+                for _ in range(n_samples - len(self.hashed_fit_parameters)):
+                    sample = np.random.choice(a=self.extremes.values, size=len(self.extremes), replace=True)
+                    sample_fit_parameters = self._fit(extremes=sample)
+                    self.hashed_fit_parameters.append(sample_fit_parameters)
 
-            logger.info('drawing return value samples from the extremes')
-            rv_sample = np.array([draw_sample() for _ in range(n_samples)])
+            logger.info('calculating return values from hashed fit parameters')
+            rv_sample = np.zeros(shape=n_samples)
+            for i in range(n_samples):
+                rv_sample[i] = self.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
 
             logger.debug('calculating confidence interval')
             confidence_interval = tuple(

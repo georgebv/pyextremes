@@ -321,7 +321,7 @@ class EVA:
                 n_walkers : int, optional
                     The number of walkers in the ensemble (default=100).
                 n_samples : int, optional
-                    The number of steps to run (default=500).
+                    The number of steps to run (default=1000).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is

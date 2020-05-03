@@ -132,8 +132,8 @@ class AbstractModelBaseClass(abc.ABC):
             Keyword arguments passed to a model ._get_return_value method.
             If alpha is None, no keyword arguments are required or accepted.
             MLE model:
-                n_samples : int
-                    Number of samles used to get confidence interval.
+                n_samples : int, optional
+                    The number of steps to run (default=1000).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
