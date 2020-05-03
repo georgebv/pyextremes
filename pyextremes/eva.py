@@ -23,9 +23,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyextremes.extremes import get_extremes, ExtremesTransformer, get_return_periods
+from pyextremes.extremes import (
+    ExtremesTransformer,
+    get_extremes,
+    get_return_periods
+)
 from pyextremes.models import get_model
-from pyextremes.plotting import plot_extremes, plot_return_values, plot_probability, pyextremes_rc
+from pyextremes.plotting import (
+    plot_extremes,
+    plot_corner,
+    plot_probability,
+    plot_return_values,
+    plot_trace,
+    pyextremes_rc
+)
 
 logger = logging.getLogger(__name__)
 
@@ -185,12 +196,16 @@ class EVA:
                     [
                         align_pair(
                             ('Walkers', 'Samples per walker'),
-                            (self.model_kwargs['n_walkers'], self.model_kwargs['n_samples'])
+                            (f'{self.model_kwargs["n_walkers"]:d}', f'{self.model_kwargs["n_samples"]:d}')
                         )
                     ]
                 )
             summary.extend(
                 [
+                    align_pair(
+                        ('Log-likelihood', 'AIC'),
+                        (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
+                    ),
                     '=' * width
                 ]
             )
@@ -303,10 +318,10 @@ class EVA:
             MLE model:
                 MLE model takes no additional arguments.
             Emcee model:
-                n_walkers : int
-                    The number of walkers in the ensemble.
-                n_samples : int
-                    The number of steps to run.
+                n_walkers : int, optional
+                    The number of walkers in the ensemble (default=100).
+                n_samples : int, optional
+                    The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is
@@ -338,6 +353,111 @@ class EVA:
             **kwargs
         )
         self.model_kwargs = kwargs.copy()
+
+    def plot_trace(
+            self,
+            labels: tuple = None,
+            figsize: tuple = None
+    ) -> tuple:
+        """
+        Plot a trace plot for a given MCMC sampler trace.
+
+        Parameters
+        ----------
+        labels : tuple, optional
+            Tuple with parameter names, used to label axes (default=None).
+        figsize : tuple, optional
+            Figure size in inches (default=None).
+            If None, calculated automatically as 8 by 2 times number of parameters.
+
+        Returns
+        -------
+        figure : matplotlib.figure.Figure
+            Figure object.
+        axes : tuple
+            Tuple with n_parameters Axes objects.
+        """
+
+        logger.info('making sure a model has been fit')
+        if self.model is None:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
+        logger.info('making sure the fitting model has trace')
+        if self.model.name not in ['Emcee']:
+            raise ValueError('this method is applicable only for MCMC models')
+
+        distribution_labels = {
+            'genextreme': [r'Shape, $\xi$', r'Location, $\mu$', r'Scale, $\sigma$'],
+            'gumbel_r': [r'Location, $\mu$', r'Scale, $\sigma$'],
+            'genpareto': [r'Shape, $\xi$', r'Scale, $\sigma$'],
+            'expon': [r'Scale, $\sigma$']
+        }
+        if labels is None:
+            try:
+                labels = distribution_labels[self.model.distribution.name]
+            except KeyError:
+                pass
+
+        return plot_trace(
+            trace=self.model.fit_parameters['trace'],
+            trace_map=self.model.fit_parameters['map'],
+            labels=labels,
+            figsize=figsize
+        )
+
+    def plot_corner(
+            self,
+            burn_in: int = 0,
+            labels: tuple = None,
+            figsize: tuple = (8, 8)
+    ) -> tuple:
+        """
+        Plot a corner plot for a given MCMC sampler trace.
+
+        Parameters
+        ----------
+        labels : tuple, optional
+            Tuple with parameter names, used to label axes (default=None).
+        burn_in : int, optional
+            Burn-in value (number of first steps to discard for each walker) (default=0).
+        figsize : tuple, optional
+            Figure size in inches (default=(8, 8).
+
+        Returns
+        -------
+        figure : matplotlib.figure.Figure
+            Figure object.
+        axes : tuple
+            Tuple with n_parameters Axes objects.
+        """
+
+        logger.info('making sure a model has been fit')
+        if self.model is None:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
+        logger.info('making sure the fitting model has trace')
+        if self.model.name not in ['Emcee']:
+            raise ValueError('this method is applicable only for MCMC models')
+
+        distribution_labels = {
+            'genextreme': [r'Shape, $\xi$', r'Location, $\mu$', r'Scale, $\sigma$'],
+            'gumbel_r': [r'Location, $\mu$', r'Scale, $\sigma$'],
+            'genpareto': [r'Shape, $\xi$', r'Scale, $\sigma$'],
+            'expon': [r'Scale, $\sigma$']
+        }
+        if labels is None:
+            try:
+                labels = distribution_labels[self.model.distribution.name]
+            except KeyError:
+                pass
+
+        return plot_corner(
+            trace=self.model.fit_parameters['trace'],
+            trace_map=self.model.fit_parameters['map'],
+            labels=labels,
+            burn_in=burn_in,
+            figsize=figsize
+        )
 
     def get_return_value(
             self,
@@ -378,6 +498,10 @@ class EVA:
         upper_ci_bount : float or array-like
             Upper confidence interval bound(s).
         """
+
+        logger.info('making sure a model has been fit')
+        if self.model is None:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
 
         logger.info('calculating rate of extreme events as number of events per return_period_size')
         if self.extremes_method == 'BM':
@@ -680,7 +804,7 @@ class EVA:
         -------
         figure : matplotlib.figure.Figure
             Figure object.
-        axes : tuple with 4 matplotlib.axes.Axes
+        axes : tuple
             Tuple with four Axes objects: return values, pdf, qq, pp
         """
 

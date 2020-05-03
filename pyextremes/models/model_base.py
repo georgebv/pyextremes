@@ -94,6 +94,17 @@ class AbstractModelBaseClass(abc.ABC):
     ) -> typing.Union[tuple, dict]:
         pass
 
+    @property
+    @abc.abstractmethod
+    def loglikelihood(self) -> float:
+        pass
+
+    # noinspection PyPep8Naming
+    @property
+    @abc.abstractmethod
+    def AIC(self) -> float:
+        pass
+
     @abc.abstractmethod
     def _decode_kwargs(
             self,

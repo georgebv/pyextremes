@@ -16,7 +16,7 @@ pyextremes
 
 **E-Mail:** bocharovgeorgii@gmail.com
 
-**Documentation:** work in progress
+**Documentation:** coming soon
 
 Installation
 ============
@@ -33,6 +33,8 @@ Dependencies
 Tutorials
 =========
 - `Basic usage <https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb>`_
+- Models
+- Statistical distributions
 
 Illustrations
 =============

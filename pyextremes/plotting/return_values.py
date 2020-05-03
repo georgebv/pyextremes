@@ -19,7 +19,6 @@ import logging
 import matplotlib.gridspec
 import matplotlib.pyplot as plt
 import matplotlib.ticker
-import numpy as np
 import pandas as pd
 
 from pyextremes.plotting.style import pyextremes_rc
@@ -109,51 +108,3 @@ def plot_return_values(
         ax.set_ylabel(observed_return_values.columns[0])
 
         return fig, ax
-
-
-if __name__ == '__main__':
-    import pathlib
-    import os
-    from pyextremes import EVA
-    from pyextremes.extremes import get_return_periods
-    path = pathlib.Path(os.getcwd()) / 'tests' / 'data' / 'battery_wl.csv'
-    data = pd.read_csv(path, index_col=0, parse_dates=True, squeeze=True)
-    data = (
-        data
-        .sort_index(ascending=True)
-        .dropna()
-    )
-    data = data.loc[pd.to_datetime('1925'):]
-    data = data - (data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
-    eva = EVA(data=data)
-    eva.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
-    eva.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
-
-    return_period_size = '1Y'
-    plotting_position = 'weibull'
-    try:
-        block_size = eva.extremes_kwargs['block_size']
-    except KeyError:
-        block_size = None
-    observed_return_values = get_return_periods(
-        ts=eva.data,
-        extremes=eva.extremes,
-        extremes_method=eva.extremes_method,
-        extremes_type=eva.extremes_type,
-        block_size=block_size,
-        return_period_size=return_period_size,
-        plotting_position=plotting_position
-    )
-    return_period = np.logspace(np.log(observed_return_values.loc[:, 'return period'].min()), 2, 100)
-    modeled_return_values = eva.get_summary(
-        return_period=return_period,
-        burn_in=50,
-        return_period_size=return_period_size
-    )
-
-    fig, ax = plot_return_values(
-        observed_return_values=observed_return_values,
-        modeled_return_values=modeled_return_values
-    )
-    ax.set_ylim(1, 4)
-    ax.set_xlim(1, 100)

@@ -55,10 +55,10 @@ def get_model(
         MLE model:
             MLE model takes no additional arguments.
         Emcee model:
-            n_walkers : int
-                The number of walkers in the ensemble.
-            n_samples : int
-                The number of steps to run.
+            n_walkers : int, optional
+                The number of walkers in the ensemble (default=100).
+            n_samples : int, optional
+                The number of steps to run (default=500).
             progress : bool or str, optional
                 If True, a progress bar will be shown as the sampler progresses.
                 If a string, will select a specific tqdm progress bar - most notable is

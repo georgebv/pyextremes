@@ -25,6 +25,8 @@ from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
 
+distributions = ['genpareto', 'expon', 'genextreme', 'gumbel_r']
+
 
 class MLE(AbstractModelBaseClass):
     """
@@ -47,16 +49,34 @@ class MLE(AbstractModelBaseClass):
             **kwargs
     ) -> tuple:
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        distributions = ['genpareto', 'expon', 'genextreme', 'gumbel_r']
         if self.distribution.name in ['genpareto', 'expon']:
             return self.distribution.fit(extremes, floc=0)
         elif self.distribution.name in ['genextreme', 'gumbel_r']:
             return self.distribution.fit(extremes)
         else:
             raise NotImplementedError(
-                f'\'{self.distribution.name}\' distribution is not implemented for the \'MLE\' model\n'
+                f'\'{self.distribution.name}\' distribution is not implemented for the \'MLE\' model. '
                 f'Available \'MLE\' distributions: {", ".join(distributions)}'
             )
+
+    @property
+    def loglikelihood(self) -> float:
+        return sum(self.distribution.logpdf(self.extremes.values, *self.fit_parameters))
+
+    @property
+    def AIC(self) -> float:
+        if self.distribution.name in ['genextreme']:
+            k = 3
+        elif self.distribution.name in ['genpareto', 'gumbel_r']:
+            k = 2
+        elif self.distribution.name in ['expon']:
+            k = 1
+        else:
+            raise NotImplementedError(
+                f'\'{self.distribution.name}\' distribution is not implemented for the \'MLE\' model. '
+                f'Available \'MLE\' distributions: {", ".join(distributions)}'
+            )
+        return 2 * k - 2 * self.loglikelihood
 
     def _decode_kwargs(
             self,

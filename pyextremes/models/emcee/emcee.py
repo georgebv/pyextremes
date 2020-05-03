@@ -49,8 +49,8 @@ class Emcee(AbstractModelBaseClass):
             extremes: pd.Series,
             **kwargs
     ) -> dict:
-        n_walkers = kwargs.pop('n_walkers')
-        n_samples = kwargs.pop('n_samples')
+        n_walkers = kwargs.pop('n_walkers', 100)
+        n_samples = kwargs.pop('n_samples', 500)
         progress = kwargs.pop('progress', False)
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
@@ -86,6 +86,14 @@ class Emcee(AbstractModelBaseClass):
             'map': map_estimate,
             'trace': sampler.get_chain().transpose((1, 0, 2))
         }
+
+    @property
+    def loglikelihood(self) -> float:
+        return self.distribution.log_likelihood(theta=self.fit_parameters['map'])
+
+    @property
+    def AIC(self) -> float:
+        return 2 * self.distribution.number_of_parameters - 2 * self.loglikelihood
 
     def _decode_kwargs(
             self,
