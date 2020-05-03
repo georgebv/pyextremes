@@ -72,8 +72,6 @@ def test_mle():
         model.get_return_value(exceedance_probability='0.1', alpha=0.95, n_samples=40)
 
     # Test bad n_samples values
-    with pytest.raises(KeyError):
-        model.get_return_value(exceedance_probability=0.1, alpha=0.95)
     with pytest.raises(TypeError):
         model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=1.1)
     with pytest.raises(ValueError):
@@ -114,3 +112,7 @@ def test_mle():
             getattr(model, prop)(0.1),
             getattr(scipy.stats.genextreme, prop)(0.1, *model.fit_parameters)
         )
+
+    # Test hashed fit parameters
+    assert len(model.hashed_fit_parameters) == 40
+    assert np.all([len(sample) == 3 for sample in model.hashed_fit_parameters])
