@@ -33,8 +33,7 @@ class Distribution:
     Parameters
     ----------
     extremes : pandas.Series
-        Time series of transformed extreme values.
-        Extreme values must be transformed in a way that higher values are considered more extreme.
+        Time series of transformed extreme events.
     distribution : str or scipy.stats.rv_continuous
         scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
         See https://docs.scipy.org/doc/scipy/reference/stats.html
@@ -208,14 +207,31 @@ class Distribution:
         mle_parameters = [self.mle_parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(loc=mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters))
 
-    def _get_prop(
+    def get_prop(
             self,
             prop: str,
             x: typing.Union[float, np.ndarray],
-            theta: tuple
+            free_parameters: dict
     ) -> typing.Union[float, np.ndarray]:
-        logger.debug('unpacking theta')
-        free_parameters = {self.free_parameters[i]: value for i, value in enumerate(theta)}
+        """
+        Calculate a property such as isf, cdf, or logpdf.
+
+        Parameters
+        ----------
+        prop : str
+            Property name (e.g. 'isf' or 'logpdf').
+        x : array-like
+            Data for which the property is calculated.
+        free_parameters : dict
+            Dictionary with free distribution parameter values.
+
+        Returns
+        -------
+        result : array-like
+            Output of property.
+        """
+
+        logger.debug('unpacking fixed parameters')
         fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
 
         logger.debug('getting property function')
@@ -223,41 +239,6 @@ class Distribution:
 
         logger.debug('calculating and returning property')
         return prop_function(x, **free_parameters, **fixed_parameters)
-
-    def pdf(
-            self,
-            x: typing.Union[float, np.ndarray],
-            theta: tuple
-    ) -> typing.Union[float, np.ndarray]:
-        return self._get_prop(prop='pdf', x=x, theta=theta)
-
-    def cdf(
-            self,
-            x: typing.Union[float, np.ndarray],
-            theta: tuple
-    ) -> typing.Union[float, np.ndarray]:
-        return self._get_prop(prop='cdf', x=x, theta=theta)
-
-    def sf(
-            self,
-            x: typing.Union[float, np.ndarray],
-            theta: tuple
-    ) -> typing.Union[float, np.ndarray]:
-        return self._get_prop(prop='sf', x=x, theta=theta)
-
-    def ppf(
-            self,
-            x: typing.Union[float, np.ndarray],
-            theta: tuple
-    ) -> typing.Union[float, np.ndarray]:
-        return self._get_prop(prop='ppf', x=x, theta=theta)
-
-    def isf(
-            self,
-            x: typing.Union[float, np.ndarray],
-            theta: tuple
-    ) -> typing.Union[float, np.ndarray]:
-        return self._get_prop(prop='isf', x=x, theta=theta)
 
 
 if __name__ == '__main__':

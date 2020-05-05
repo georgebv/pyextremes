@@ -81,7 +81,8 @@ def test_distribution(distribution_name, theta, kwargs, scipy_parameters):
 
     # Test _get_prop
     for prop in ['pdf', 'cdf', 'ppf', 'isf']:
+        free_parameters = {key: theta[i] for i, key in enumerate(distribution.free_parameters)}
         assert np.isclose(
-            getattr(distribution, prop)(0.1, theta=theta),
+            distribution.get_prop(prop=prop, x=0.1, free_parameters=free_parameters),
             getattr(scipy_distribution, prop)(0.1, *scipy_parameters)
         )

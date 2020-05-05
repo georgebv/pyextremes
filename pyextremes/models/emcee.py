@@ -22,8 +22,6 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distributions import get_distribution
-from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
@@ -37,12 +35,6 @@ class Emcee(AbstractModelBaseClass):
     @property
     def name(self) -> str:
         return 'Emcee'
-
-    def _get_distribution(
-            self,
-            distribution: str
-    ) -> AbstractEmceeDistributionBaseClass:
-        return get_distribution(distribution=distribution, extremes=self.extremes)
 
     def _fit(
             self,

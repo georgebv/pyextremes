@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.distribution import Distribution
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,8 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
-            distribution: str,
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
         """
@@ -44,15 +45,24 @@ class AbstractModelBaseClass(abc.ABC):
         Parameters
         ----------
         extremes : pandas.Series
-            Time series of transformed extreme events.
-        distribution : str
-            Name of scipy.stats distribution.
+            Time series of extreme events.
+        distribution : str or scipy.stats.rv_continuous
+            scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
+            See https://docs.scipy.org/doc/scipy/reference/stats.html
+        distribution_kwargs : dict, optional
+            Dictionary with special keyword arguments specific to a distribution
+            which hold certain parameters fixed (default=None).
+            E.g. dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+            of the distribution, reducting its degree of freedom (number of free parameters) by one.
+            Similarly, dict(floc=0) hold the location parameter 'loc' at 0.
+            dict(fc=0, floc=0) holds both parameters fixed.
+            See documentation of a specific scipy.stats distribution for documentation of these parameters.
         kwargs
             Keyword arguments passed to a model ._fit method.
             MLE model:
                 MLE model takes no additional arguments.
             Emcee model:
-                n_walkers : int
+                n_walkers : int TODO - this is optional
                     The number of walkers in the ensemble.
                 n_samples : int
                     The number of steps to run.
@@ -66,10 +76,13 @@ class AbstractModelBaseClass(abc.ABC):
         self.extremes = extremes
 
         logger.info('fetching extreme value distribution')
-        self.distribution = self._get_distribution(distribution=distribution)
+        distribution_kwargs = distribution_kwargs or {}
+        self.distribution = Distribution(extremes=self.extremes, distribution=distribution, **distribution_kwargs)
 
         logger.info('fitting the distribution to extremes')
-        self.fit_parameters = self._fit(extremes=extremes, **kwargs)
+        self.fit_parameters = None
+        self.trace = None
+        self.fit()
 
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
@@ -77,21 +90,12 @@ class AbstractModelBaseClass(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:
+        # Returns model name
         pass
 
     @abc.abstractmethod
-    def _get_distribution(
-            self,
-            distribution: str
-    ) -> typing.Union[scipy.stats.rv_continuous, AbstractEmceeDistributionBaseClass]:
-        pass
-
-    @abc.abstractmethod
-    def _fit(
-            self,
-            extremes: pd.Series,
-            **kwargs
-    ) -> typing.Union[tuple, dict]:
+    def fit(self) -> None:
+        # Sets self.fit_parameters and self.trace attributes
         pass
 
     @property
@@ -110,6 +114,7 @@ class AbstractModelBaseClass(abc.ABC):
             self,
             kwargs: dict
     ) -> str:
+        # Converts model kwargs to a string, which is used as a hash key
         pass
 
     def get_return_value(
@@ -258,32 +263,38 @@ class AbstractModelBaseClass(abc.ABC):
             alpha: float,
             **kwargs
     ) -> tuple:
+        # Calculate return value and confidence interval bounds
+        # Format: (return_value, (ci_lower, ci_upper))
         pass
 
-    @abc.abstractmethod
+    def get_prop(
+            self,
+            prop: str,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        logger.debug('calculating and returning property')
+        return self.distribution.get_prop(prop=prop, x=x, free_parameters=self.fit_parameters)
+
     def pdf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='pdf', x=x)
 
-    @abc.abstractmethod
     def cdf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='cdf', x=x)
 
-    @abc.abstractmethod
     def ppf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='ppf', x=x)
 
-    @abc.abstractmethod
     def isf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='isf', x=x)
