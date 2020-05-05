@@ -1,3 +1,19 @@
+# pyextremes, Extreme Value Analysis in Python
+# Copyright (C), 2020 Georgii Bocharov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import typing
 
@@ -17,7 +33,8 @@ class Distribution:
     Parameters
     ----------
     extremes : pandas.Series
-        Time series of transformed extreme events.
+        Time series of transformed extreme values.
+        Extreme values must be transformed in a way that higher values are considered more extreme.
     distribution : str or scipy.stats.rv_continuous
         scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
         See https://docs.scipy.org/doc/scipy/reference/stats.html
@@ -67,7 +84,7 @@ class Distribution:
                         f'valid keyword arguments: {", ".join(valid_kwargs)}'
                     ]
                 )
-                raise KeyError(message)
+                raise TypeError(message)
 
         logger.info('collecting free parameters')
         self.free_parameters = []
@@ -76,12 +93,34 @@ class Distribution:
                 self.free_parameters.append(parameter)
 
         logger.info('fitting the distribution using scipy.stats MLE method')
-        self.mle_parameters = {
-            self.distribution_parameters[i]: value for i, value in enumerate(self.distribution.fit(self.extremes))
-        }
+        self.mle_parameters = self.fit(data=self.extremes.values)
 
-    def fit(self, data: np.ndarray) -> tuple:
-        return self.distribution.fit(data=data, **self.fixed_parameters)
+    def fit(self, data: np.ndarray) -> dict:
+        """
+        Fit distribution to data using scipy.stats MLE method.
+        Calculates only free parameters.
+
+        Parameters
+        ----------
+        data : numpy.ndarray
+            Array with data to which the distribution is fit.
+
+        Returns
+        -------
+        parameters : dict
+            Dictionary with MLE of free distribution parameters
+            with keys being names of these parameters.
+        """
+
+        logger.debug('calculating full MLE of distribution parameters')
+        full_mle = self.distribution.fit(data=data, **self.fixed_parameters)
+
+        logger.debug('packing distribution parameters into ordered free distribution parameters')
+        free_parameters = {}
+        for i, parameter in enumerate(self.distribution_parameters):
+            if f'f{parameter}' not in self.fixed_parameters:
+                free_parameters[parameter] = full_mle[i]
+        return free_parameters
 
     @property
     def name(self) -> str:
@@ -133,6 +172,7 @@ class Distribution:
 
         logger.debug('unpacking theta')
         free_parameters = {self.free_parameters[i]: value for i, value in enumerate(theta)}
+        fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
 
         logger.debug('calculating logprior')
         logprior = 0
@@ -141,7 +181,7 @@ class Distribution:
 
         logger.debug('calculating loglikelihood')
         loglikelihood = sum(
-            self.distribution.logpdf(x=self.extremes.values, **free_parameters, **self.fixed_parameters)
+            self.distribution.logpdf(x=self.extremes.values, **free_parameters, **fixed_parameters)
         )
 
         return logprior + loglikelihood
@@ -168,6 +208,57 @@ class Distribution:
         mle_parameters = [self.mle_parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(loc=mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters))
 
+    def _get_prop(
+            self,
+            prop: str,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        logger.debug('unpacking theta')
+        free_parameters = {self.free_parameters[i]: value for i, value in enumerate(theta)}
+        fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
+
+        logger.debug('getting property function')
+        prop_function = getattr(self.distribution, prop)
+
+        logger.debug('calculating and returning property')
+        return prop_function(x, **free_parameters, **fixed_parameters)
+
+    def pdf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='pdf', x=x, theta=theta)
+
+    def cdf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='cdf', x=x, theta=theta)
+
+    def sf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='sf', x=x, theta=theta)
+
+    def ppf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='ppf', x=x, theta=theta)
+
+    def isf(
+            self,
+            x: typing.Union[float, np.ndarray],
+            theta: tuple
+    ) -> typing.Union[float, np.ndarray]:
+        return self._get_prop(prop='isf', x=x, theta=theta)
+
 
 if __name__ == '__main__':
     import pathlib
@@ -185,4 +276,4 @@ if __name__ == '__main__':
     eva = EVA(data=test_data)
     eva.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
 
-    self = Distribution(extremes=eva.extremes, distribution='genextreme')
+    self = Distribution(extremes=eva.extremes, distribution='genextreme', fc=0)
