@@ -207,11 +207,99 @@ class Distribution:
         mle_parameters = [self.mle_parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(loc=mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters))
 
+    def free2full_parameters(
+            self,
+            free_parameters: typing.Union[dict, tuple, list, np.ndarray]
+    ) -> np.ndarray:
+        """
+        Convert a dictionary or array-like object of free parameters to an array of full parameters.
+        The output array has the same shape as input (1D for dict, tuple, list, or 1D numpu array).
+
+        Parameters
+        ----------
+        free_parameters : dict or array-like
+            Free parameters.
+            If dict, then should be {parameter: value}. E.g. {'loc': 0, 'scale': 1}
+            If array-like, should be either 1D or (n, number_of_free_parameters).
+                E.g. [0, 1] for [loc, scale] if loc and scale are the only free parameters
+                or [[0, 1], [2, 3],...] for a sequence of [loc, scale] pairs
+
+        Returns
+        -------
+        full_parameters : numpy.ndarray
+            Array with full parameters.
+            1D for dict or 1D array
+            (n, number_of_parameters) for array of shape (n, number_of_free_parameters)
+        """
+
+        if isinstance(free_parameters, dict):
+            logger.debug('unpacking a free parameter dictionary')
+            if len(free_parameters) != self.number_of_parameters:
+                raise ValueError(f'invalid size in {len(free_parameters)} for the \'free_parameters\' argument')
+            full_parameters = []
+            for parameter in self.distribution_parameters:
+                if f'f{parameter}' in self.fixed_parameters:
+                    full_parameters.append(self.fixed_parameters[f'f{parameter}'])
+                else:
+                    full_parameters.append(free_parameters[parameter])
+            return np.array(full_parameters)
+
+        elif isinstance(free_parameters, (tuple, list, np.ndarray)):
+            logger.debug('unpacking a free parameter array')
+            free_parameters = np.array(free_parameters)
+
+            if len(free_parameters.shape) == 1:
+                logger.debug('unpacking 1D free parameter array')
+                if len(free_parameters) != self.number_of_parameters:
+                    raise ValueError(
+                        f'invalid number of free parameters in {len(free_parameters):d} '
+                        f'for the \'free_parameters\' array, must be {self.number_of_parameters:d}'
+                    )
+                i = 0
+                full_parameters = []
+                for parameter in self.distribution_parameters:
+                    if f'f{parameter}' in self.fixed_parameters:
+                        full_parameters.append(self.fixed_parameters[f'f{parameter}'])
+                    else:
+                        if not isinstance(free_parameters[i], np.number):
+                            raise TypeError(
+                                f'invalid type in {type(free_parameters[i])} for the \'free_parameters\' array element'
+                            )
+                        full_parameters.append(free_parameters[i])
+                        i += 1
+                return np.array(full_parameters)
+
+            elif len(free_parameters.shape) == 2:
+                logger.debug('unpacking 2D free parameter')
+                if free_parameters.shape[1] != self.number_of_parameters:
+                    raise ValueError(
+                        f'invalid number of free parameters in {free_parameters.shape[1]:d} '
+                        f'for the \'free_parameters\' array, must be {self.number_of_parameters:d}'
+                    )
+                j = 0
+                full_parameters = np.full(
+                    shape=(len(free_parameters), len(self.distribution_parameters)),
+                    fill_value=np.nan
+                )
+                for i, parameter in enumerate(self.distribution_parameters):
+                    if f'f{parameter}' in self.fixed_parameters:
+                        full_parameters[:, i] = self.fixed_parameters[f'f{parameter}']
+                    else:
+                        full_parameters[:, i] = free_parameters[:, j]
+                        j += 1
+                return full_parameters
+
+            else:
+                raise ValueError(f'invalid shape in {free_parameters.shape} for the \'free_parameters\' array')
+
+        else:
+            raise TypeError(f'invalid type in {type(free_parameters)} for the \'free_parameters\' argument')
+
     def get_prop(
             self,
             prop: str,
-            x: typing.Union[float, np.ndarray],
-            free_parameters: dict
+            x: typing.Union[int, float, tuple, list, np.ndarray],
+            free_parameters: typing.Union[dict, tuple, list, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
         """
         Calculate a property such as isf, cdf, or logpdf.
@@ -220,25 +308,56 @@ class Distribution:
         ----------
         prop : str
             Property name (e.g. 'isf' or 'logpdf').
-        x : array-like
+        x : float or array-like
             Data for which the property is calculated.
-        free_parameters : dict
+            Scalar or 1D array-like.
+        free_parameters : dict or numpy.ndarray
             Dictionary with free distribution parameter values.
+            See self.free2full_parameters method documentation.
 
         Returns
         -------
-        result : array-like
+        result : float or numpy.ndarray
             Output of property.
+            If x is scalar:
+                output is scalar or 1D array with length equal to number of free_parameter combinations
+                    e.g. for free_parameters=[1, 2] it is scalar
+                    and for [[1, 2], [3, 4], [5, 6]] it is an array of length 3
+                output is a 1D or 2D array
+                    for free_parameters=[1, 2] it is a 1D array of length len(x)
+                    for free_parameters=[[1, 2], [3, 4], ...] it is a 2D array of shape
+                        (len(x), len(free_parameters)
         """
-
-        logger.debug('unpacking fixed parameters')
-        fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
 
         logger.debug('getting property function')
         prop_function = getattr(self.distribution, prop)
 
-        logger.debug('calculating and returning property')
-        return prop_function(x, **free_parameters, **fixed_parameters)
+        logger.debug('converting free_parameters to an array of full parameters')
+        full_parameters = self.free2full_parameters(free_parameters=free_parameters)
+
+        if isinstance(x, (int, float)):
+            logger.debug('calculating property for scalar x')
+            return prop_function(x, *np.transpose(full_parameters))
+        elif isinstance(x, (tuple, list, np.ndarray)):
+            logger.debug('calculating property for array x')
+            x = np.array(x)
+            if len(x.shape) != 1:
+                raise ValueError(f'invalid shape in {x.shape} for the \'x\' array')
+
+            if len(full_parameters.shape) == 1:
+                logger.debug('calculating property for one combination of parameters')
+                return prop_function(x, *full_parameters)
+            elif len(full_parameters.shape) == 2:
+                logger.debug(f'calculating property for {len(full_parameters)} combinations of parameters')
+                full_x = np.full(
+                    shape=(len(full_parameters), len(x)),
+                    fill_value=np.nan
+                )
+                for i in range(len(full_parameters)):
+                    full_x[i] = x
+                return prop_function(np.transpose(full_x), *np.transpose(full_parameters))
+            else:
+                raise RuntimeError
 
 
 if __name__ == '__main__':
@@ -258,3 +377,28 @@ if __name__ == '__main__':
     eva.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
 
     self = Distribution(extremes=eva.extremes, distribution='genextreme', fc=0)
+    self.get_prop(
+        prop='logpdf',
+        x=self.extremes.values,
+        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
+    ).sum(axis=0)
+    self.get_prop(
+        prop='isf',
+        x=[0.1, 0.2, 0.3],
+        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
+    )
+    self.get_prop(
+        prop='isf',
+        x=0.01,
+        free_parameters=[0.4, 2]
+    )
+    self.get_prop(
+        prop='isf',
+        x=[0.01, 0.1],
+        free_parameters=[0.4, 2]
+    )
+    self.get_prop(
+        prop='isf',
+        x=0.1,
+        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
+    )
