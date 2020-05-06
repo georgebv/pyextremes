@@ -88,7 +88,6 @@ class EVA:
         self.extremes_method = None
         self.extremes_type = None
         self.extremes_kwargs = None
-        self.extremes_transformer = None
 
         # Attributes related to model
         logger.info('initializing attributes related to model fitting')
@@ -112,7 +111,7 @@ class EVA:
             )
 
         def align_text(text: str, value: str) -> str:
-            value_width = (width - sep) - (len(text) + 1)
+            value_width = width - (len(text) + 1)
             return f'{text}:{value:>{value_width:d}}'
 
         def align_pair(text: tuple, value: tuple) -> str:
@@ -183,13 +182,17 @@ class EVA:
                 ]
             )
         else:
-            summary.extend(
-                [
-                    align_pair(
-                        ('Model', 'Distribution'),
-                        (self.model.name, self.model.distribution.name)
-                    )
-                ]
+            summary.append(
+                align_pair(
+                    ('Model', 'Distribution'),
+                    (self.model.name, self.model.distribution.name)
+                )
+            )
+            summary.append(
+                align_text(
+                    'Fit parameters',
+                    ' '.join([f'{key}={value:.3f}' for key, value in self.model.fit_parameters.items()])
+                )
             )
             if self.model.name == 'Emcee':
                 summary.extend(
@@ -254,13 +257,6 @@ class EVA:
             if isinstance(self.extremes_kwargs['block_size'], str):
                 self.extremes_kwargs['block_size'] = pd.to_timedelta(self.extremes_kwargs['block_size'])
 
-        logger.info('preparing extremes transformer object')
-        self.extremes_transformer = ExtremesTransformer(
-            extremes=self.extremes,
-            extremes_method=method,
-            extremes_type=extremes_type
-        )
-
         logger.info('removing any previously declared models')
         self.model = None
         self.model_kwargs = None
@@ -321,7 +317,7 @@ class EVA:
                 n_walkers : int, optional
                     The number of walkers in the ensemble (default=100).
                 n_samples : int, optional
-                    The number of steps to run (default=1000).
+                    The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is
@@ -348,7 +344,7 @@ class EVA:
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
-            extremes=self.extremes_transformer.transformed_extremes,
+            extremes=self.extremes,
             distribution=distribution,
             **kwargs
         )
@@ -731,18 +727,10 @@ class EVA:
         logger.info(f'getting observed and theoretical values for plot_type=\'{plot_type}\'')
         if plot_type == 'PP':
             observed = 1 - observed_return_values.loc[:, 'exceedance probability'].values
-            theoretical = self.model.cdf(
-                self.extremes_transformer.forward_transform(
-                    observed_return_values.loc[:, self.extremes.name].values
-                )
-            )
+            theoretical = self.model.cdf(observed_return_values.loc[:, self.extremes.name].values)
         elif plot_type == 'QQ':
             observed = observed_return_values.loc[:, self.extremes.name].values
-            theoretical = self.extremes_transformer.inverse_transform(
-                self.model.isf(
-                    observed_return_values.loc[:, 'exceedance probability'].values
-                )
-            )
+            theoretical = self.model.isf(observed_return_values.loc[:, 'exceedance probability'].values)
         else:
             raise ValueError(f'\'{plot_type}\' is not a valid \'plot_type\' value. Available plot_types: PP, QQ')
 
@@ -842,7 +830,7 @@ class EVA:
 
             logger.info('plotting pdf')
             pdf_support = np.linspace(self.extremes.min(), self.extremes.max(), 100)
-            pdf = self.model.pdf(self.extremes_transformer.forward_transform(pdf_support))
+            pdf = self.model.pdf(pdf_support)
             ax_pdf.grid(False)
             ax_pdf.set_title('Probability density plot')
             ax_pdf.set_ylabel('Probability density')
@@ -903,4 +891,5 @@ if __name__ == '__main__':
     test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
     self = EVA(data=test_data)
     self.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
-    self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
+    self.fit_model(model='MLE', distribution='genextreme')
+    # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)

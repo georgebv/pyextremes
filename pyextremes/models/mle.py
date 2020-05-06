@@ -15,6 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -22,6 +23,7 @@ import pandas as pd
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
+DEFAULT_N_SAMPLES = 1000
 
 
 class MLE(AbstractModelBaseClass):
@@ -52,21 +54,13 @@ class MLE(AbstractModelBaseClass):
 
     def fit(self) -> None:
         self.fit_parameters = self.distribution.mle_parameters
+        self.trace = None
 
-    @property
-    def loglikelihood(self) -> float:
-        return sum(self.get_prop(prop='logpdf', x=self.extremes.values))
-
-    @property
-    def AIC(self) -> float:
-        k = self.distribution.number_of_parameters
-        return 2 * k - 2 * self.loglikelihood
-
-    def _decode_kwargs(
+    def _encode_kwargs(
             self,
             kwargs: dict
     ) -> str:
-        n_samples = kwargs.get('n_samples', 1000)
+        n_samples = kwargs.get('n_samples', DEFAULT_N_SAMPLES)
         if not isinstance(n_samples, int):
             raise TypeError(f'invalid type in {type(n_samples)} for the \'n_samples\' argument')
         if n_samples <= 0:
@@ -82,29 +76,38 @@ class MLE(AbstractModelBaseClass):
         logger.debug('calculating return value')
         return_value = self.isf(exceedance_probability)
         if alpha is None:
+            if 'n_samples' in kwargs:
+                kwargs.pop('n_samples')
+                warnings.warn(message='n_samples is not used when alpha is None')
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
         else:
-            n_samples = kwargs.pop('n_samples', 1000)
+            n_samples = kwargs.pop('n_samples', DEFAULT_N_SAMPLES)
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
             if len(self.hashed_fit_parameters) < n_samples:
-                logger.info('putting additional fit parameters into the hash')
+                logger.debug(
+                    f'putting {n_samples-len(self.hashed_fit_parameters):d} additional fit parameters into the hash'
+                )
                 for _ in range(n_samples - len(self.hashed_fit_parameters)):
                     sample = np.random.choice(a=self.extremes.values, size=len(self.extremes), replace=True)
-                    sample_fit_parameters = self.distribution.fit(extremes=sample)
+                    sample_fit_parameters = self.distribution.distribution.fit(
+                        data=sample,
+                        **self.distribution.fixed_parameters
+                    )
                     self.hashed_fit_parameters.append(sample_fit_parameters)
 
-            logger.info('calculating return values from hashed fit parameters')
-            rv_sample = np.zeros(shape=n_samples)
-            for i in range(n_samples):
-                rv_sample[i] = self.distribution.get_prop(
-                    prop='isf',
-                    x=exceedance_probability,
-                    free_parameters=self.hashed_fit_parameters[i]
-                )
+            logger.debug(
+                'calculating return values from hashed fit parameters to be used for confidence interval estimation'
+            )
+            rv_sample = np.array(
+                [
+                    self.distribution.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
+                    for i in range(n_samples)
+                ]
+            )
 
             logger.debug('calculating confidence interval')
             confidence_interval = tuple(

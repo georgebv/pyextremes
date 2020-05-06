@@ -58,14 +58,14 @@ class AbstractModelBaseClass(abc.ABC):
             dict(fc=0, floc=0) holds both parameters fixed.
             See documentation of a specific scipy.stats distribution for documentation of these parameters.
         kwargs
-            Keyword arguments passed to a model ._fit method.
+            Keyword arguments passed to a model .fit method.
             MLE model:
                 MLE model takes no additional arguments.
             Emcee model:
-                n_walkers : int TODO - this is optional
-                    The number of walkers in the ensemble.
-                n_samples : int
-                    The number of steps to run.
+                n_walkers : int, optional
+                    The number of walkers in the ensemble (default=100).
+                n_samples : int, optional
+                    The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is
@@ -95,31 +95,40 @@ class AbstractModelBaseClass(abc.ABC):
 
     @abc.abstractmethod
     def fit(self) -> None:
-        # Sets self.fit_parameters and self.trace attributes
+        """
+        Sets values for self.fit_parameters and self.trace (the latter only for MCMC-like models).
+        """
         pass
 
     @property
-    @abc.abstractmethod
     def loglikelihood(self) -> float:
-        pass
+        return sum(self.get_prop(prop='logpdf', x=self.extremes.values))
 
     # noinspection PyPep8Naming
     @property
-    @abc.abstractmethod
     def AIC(self) -> float:
-        pass
+        return 2 * self.distribution.number_of_parameters - 2 * self.loglikelihood
 
     @abc.abstractmethod
-    def _decode_kwargs(
-            self,
-            kwargs: dict
-    ) -> str:
-        # Converts model kwargs to a string, which is used as a hash key
+    def _encode_kwargs(self, kwargs: dict) -> str:
+        """
+        Convert kwargs to a string, which is used as a return value and confidence interval hash key.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary with keyword arguments passed to a model self._get_return_value method.
+
+        Returns
+        -------
+        encoded_kwargs : str
+            String with encoded kwargs.
+        """
         pass
 
     def get_return_value(
             self,
-            exceedance_probability: typing.Union[float, typing.Iterable[float]],
+            exceedance_probability: typing.Union[float, tuple, list, np.ndarray],
             alpha: float = None,
             **kwargs
     ) -> tuple:
@@ -130,12 +139,13 @@ class AbstractModelBaseClass(abc.ABC):
         ----------
         exceedance_probability : float or array-like
             Exceedance probability or array of exceedance probabilities.
+            Each exceedance probability must fall in range [0, 1).
         alpha : float, optional
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
-            Keyword arguments passed to a model ._get_return_value method.
-            If alpha is None, no keyword arguments are required or accepted.
+            Keyword arguments passed to a model self._get_return_value method.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
             MLE model:
                 n_samples : int, optional
                     The number of steps to run (default=1000).
@@ -153,7 +163,7 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
-        if hasattr(exceedance_probability, '__iter__') and not isinstance(exceedance_probability, str):
+        if isinstance(exceedance_probability, (tuple, list, np.ndarray)):
             logger.info('getting a list of return values')
             return tuple(
                 np.transpose(
@@ -184,13 +194,13 @@ class AbstractModelBaseClass(abc.ABC):
         Parameters
         ----------
         exceedance_probability : float
-            Exceedance probability.
+            Exceedance probability [0, 1).
         alpha : float
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
-            If alpha is None, no keyword arguments are required or accepted.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
 
         Returns
         -------
@@ -199,57 +209,61 @@ class AbstractModelBaseClass(abc.ABC):
         upper_confidence_interval_bound : float
         """
 
+        logger.debug('encoding exceedance_probability')
+        encoded_exceedance_probability = f'{exceedance_probability:.6f}'
+
         if alpha is None:
             logger.debug('alpha is None - setting kwargs and alpha to None')
-            decoded_kwargs = 'None'
-            decoded_alpha = 'None'
+            encoded_kwargs = 'None'
+            encoded_alpha = 'None'
         else:
-            logger.debug('decoding alpha and kwargs')
-            decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
-            decoded_alpha = f'{alpha:.6f}'
+            logger.debug('encoding alpha and kwargs')
+            encoded_kwargs = self._encode_kwargs(kwargs=kwargs)
+            encoded_alpha = f'{alpha:.6f}'
 
         try:
             logger.debug(
-                f'trying to retrieve result from hash for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                f'trying to retrieve result from hash for exceedance_probability {encoded_exceedance_probability}, '
+                f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
             )
-            hashed_entry = self.hashed_return_values[f'{exceedance_probability:.6f}']
+            hashed_entry = self.hashed_return_values[encoded_exceedance_probability]
             return_value = hashed_entry['return value']
-            confidence_interval = hashed_entry[decoded_alpha][decoded_kwargs]
+            confidence_interval = hashed_entry[encoded_alpha][encoded_kwargs]
             logger.debug('successfully retrieved result from hash - returning values')
             return (return_value, *confidence_interval)
         except KeyError:
             logger.debug(
-                f'calculating new results for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                f'calculating new results for exceedance_probability {encoded_exceedance_probability}, '
+                f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
             )
             rv = self._get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
-            if f'{exceedance_probability:.6f}' in self.hashed_return_values:
-                if decoded_alpha in self.hashed_return_values[f'{exceedance_probability:.6f}']:
+
+            if encoded_exceedance_probability in self.hashed_return_values:
+                if encoded_alpha in self.hashed_return_values[encoded_exceedance_probability]:
                     logger.debug(
-                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'and alpha {decoded_alpha} with kwargs {decoded_kwargs}'
+                        f'updating entry for exceedance_probability {encoded_exceedance_probability} '
+                        f'and alpha {encoded_alpha} with kwargs {encoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha][decoded_kwargs] = rv[1]
+                    self.hashed_return_values[encoded_exceedance_probability][encoded_alpha][encoded_kwargs] = rv[1]
                 else:
                     logger.debug(
-                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'with alpha {decoded_alpha} and kwargs {decoded_kwargs}'
+                        f'updating entry for exceedance_probability {encoded_exceedance_probability} '
+                        f'with alpha {encoded_alpha} and kwargs {encoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha] = {
-                        decoded_kwargs: rv[1]
-                    }
+                    self.hashed_return_values[encoded_exceedance_probability][encoded_alpha] = {encoded_kwargs: rv[1]}
             else:
                 logger.debug(
-                    f'creating a new entry for exceedance_probability {exceedance_probability:.6f}, '
-                    f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                    f'creating a new entry for exceedance_probability {encoded_exceedance_probability}, '
+                    f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
                 )
-                self.hashed_return_values[f'{exceedance_probability:.6f}'] = {
+                self.hashed_return_values[encoded_exceedance_probability] = {
                     'return value': rv[0],
-                    decoded_alpha: {
-                        decoded_kwargs: rv[1]
+                    encoded_alpha: {
+                        encoded_kwargs: rv[1]
                     }
                 }
+
+            logger.debug('hash has been updated - calling the retrieval function again')
             return self._retrieve_return_value(
                 exceedance_probability=exceedance_probability,
                 alpha=alpha,
@@ -263,8 +277,27 @@ class AbstractModelBaseClass(abc.ABC):
             alpha: float,
             **kwargs
     ) -> tuple:
-        # Calculate return value and confidence interval bounds
-        # Format: (return_value, (ci_lower, ci_upper))
+        """
+        Calculate return value and confidence interval bounds.
+
+        Parameters
+        ----------
+        exceedance_probability : float
+            Exceedance probability [0, 1).
+        alpha : float
+            Width of confidence interval, from 0 to 1 (default=None).
+            If None, return None for upper and lower confidence interval bounds.
+        kwargs
+            Keyword arguments passed to a model ._get_return_value method.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
+
+        Returns
+        -------
+        return_value : float
+        ci : tuple
+            ci_lower : float
+            ci_upper : float
+        """
         pass
 
     def get_prop(

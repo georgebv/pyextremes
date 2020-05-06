@@ -62,7 +62,11 @@ def test_distribution(distribution_name, theta, kwargs, scipy_parameters):
         distribution=distribution_name,
         **kwargs
     )
+    assert len(distribution.distribution_parameters) == len(scipy_parameters)
+    assert distribution.fixed_parameters == kwargs
+    assert len(distribution.free_parameters) == (len(scipy_parameters) - len(kwargs))
     assert len(distribution.mle_parameters) == distribution.number_of_parameters
+    assert distribution.name == distribution_name
 
     # Test log-probability
     assert np.less_equal(
@@ -79,10 +83,35 @@ def test_distribution(distribution_name, theta, kwargs, scipy_parameters):
     assert initial_state.shape == (100, distribution.number_of_parameters)
     assert np.allclose(initial_state.mean(axis=0), list(distribution.mle_parameters.values()), atol=0.1)
 
+    # Test free2full parameters
+    assert len(distribution.free2full_parameters(free_parameters=theta)) == len(scipy_parameters)
+    assert distribution.free2full_parameters(
+        free_parameters=[theta]*5
+    ).shape == (5, len(scipy_parameters))
+
     # Test _get_prop
     for prop in ['pdf', 'cdf', 'ppf', 'isf']:
         free_parameters = {key: theta[i] for i, key in enumerate(distribution.free_parameters)}
         assert np.isclose(
             distribution.get_prop(prop=prop, x=0.1, free_parameters=free_parameters),
             getattr(scipy_distribution, prop)(0.1, *scipy_parameters)
+        )
+        assert np.allclose(
+            distribution.get_prop(prop=prop, x=[0.1, 0.2], free_parameters=free_parameters),
+            getattr(scipy_distribution, prop)([0.1, 0.2], *scipy_parameters)
+        )
+        assert np.allclose(
+            distribution.get_prop(prop=prop, x=0.1, free_parameters=[theta, theta]),
+            getattr(scipy_distribution, prop)(0.1, *np.transpose([scipy_parameters, scipy_parameters]))
+        )
+        assert np.allclose(
+            distribution.get_prop(prop=prop, x=[0.1, 0.2], free_parameters=[theta, theta]),
+            np.transpose(
+                getattr(scipy_distribution, prop)(
+                    np.transpose([0.1, 0.2]),
+                    *np.transpose(
+                        [[scipy_parameters, scipy_parameters], [scipy_parameters, scipy_parameters]]
+                    )
+                )
+            )
         )
