@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 def plot_probability(
         observed: np.ndarray,
         theoretical: np.ndarray,
+        extremes_type: str,
         ax=None,
         figsize: tuple = (8, 8)
 ):
@@ -40,6 +41,9 @@ def plot_probability(
         Observed values.
     theoretical : numpy.ndarray
         Theoretical values.
+    extremes_type : str
+        high - get extreme high values
+        low - get extreme low values
     ax : matplotlib.axes.Axes, optional
         Axes onto which the figure is drawn (default=None).
         If None, a new figure and axes is created.
@@ -77,11 +81,20 @@ def plot_probability(
         logger.info('plotting diagonal perfect fit line')
         min_value = min([min(ax.get_xlim()), min(ax.get_ylim())])
         max_value = max([max(ax.get_xlim()), max(ax.get_ylim())])
-        ax.plot(
-            [min_value, max_value],
-            [min_value, max_value],
-            color='#5199FF', lw=1, ls='--', zorder=5
-        )
+        if extremes_type == 'high':
+            ax.plot(
+                [min_value, max_value],
+                [min_value, max_value],
+                color='#5199FF', lw=1, ls='--', zorder=5
+            )
+        elif extremes_type == 'low':
+            ax.plot(
+                [min_value, max_value],
+                [max_value, min_value],
+                color='#5199FF', lw=1, ls='--', zorder=5
+            )
+        else:
+            raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
         ax.set_xlim(min_value, max_value)
         ax.set_ylim(min_value, max_value)
 

@@ -93,6 +93,7 @@ class EVA:
         logger.info('initializing attributes related to model fitting')
         self.model = None
         self.model_kwargs = None
+        self.extremes_transformer = None
 
     def __repr__(self) -> str:
         # repr parameters
@@ -295,6 +296,7 @@ class EVA:
             self,
             model: str,
             distribution: str,
+            transform: bool = False,
             **kwargs
     ) -> None:
         """
@@ -309,6 +311,11 @@ class EVA:
                 Emcee - Markov Chain Monte Carlo model based on the emcee package by Daniel Foreman-Mackey
         distribution : str
             Name of scipy.stats distribution.
+        transform : bool, optional
+            Transform extreme values by inverting their order (default=False).
+            Can be useful for one-sided distributions: e.g. genpareto and expon assume that
+            higher values have lower likelihood. If extremes are 'low', then genpareto wouldn't work.
+            If, however, transform is applied, then genpareto can be used with 'low' extremes.
         kwargs
             Model-specific keyword arguments.
             MLE model:
@@ -324,6 +331,9 @@ class EVA:
                     'notebook', which shows a progress bar suitable for Jupyter notebooks.
                     If False, no progress bar will be shown (default=False).
         """
+
+        # TODO - make an option to use a transformer to allow usage of any positive distributions
+        #   transformer=True
 
         logger.info('making sure extreme values have been extracted')
         if self.extremes is None:
@@ -341,10 +351,18 @@ class EVA:
                     f'{distribution} distribution is only applicable to extremes extracted using the POT model'
                 )
 
+        logger.info('creating extremes transformer')
+        self.extremes_transformer = ExtremesTransformer(
+            extremes=self.extremes,
+            extremes_type=self.extremes_type,
+            null_transform=transform
+        )
+
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
-            extremes=self.extremes,
+            extremes=self.extremes_transformer.transformed_extremes,
+            extremes_type=self.extremes_type,
             distribution=distribution,
             **kwargs
         )
@@ -737,6 +755,7 @@ class EVA:
         return plot_probability(
             observed=observed,
             theoretical=theoretical,
+            extremes_type=self.extremes_type,
             ax=ax,
             figsize=figsize
         )

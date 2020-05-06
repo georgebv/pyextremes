@@ -35,6 +35,7 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
+            extreme_value_function: str,
             distribution: typing.Union[str, scipy.stats.rv_continuous],
             distribution_kwargs: dict = None,
             **kwargs
@@ -46,6 +47,9 @@ class AbstractModelBaseClass(abc.ABC):
         ----------
         extremes : pandas.Series
             Time series of extreme events.
+        extreme_value_function : str
+            Name of function used to calculate extreme values from the distribution.
+            Available values: 'isf' or 'ppf'.
         distribution : str or scipy.stats.rv_continuous
             scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
             See https://docs.scipy.org/doc/scipy/reference/stats.html
@@ -74,6 +78,11 @@ class AbstractModelBaseClass(abc.ABC):
         """
 
         self.extremes = extremes
+
+        logger.info('getting extreme value function')
+        if extreme_value_function not in ['isf', 'ppf']:
+            raise ValueError(f'\'{extreme_value_function}\' is not a valid \'extreme_value_function\' value')
+        self.extreme_value_function = extreme_value_function
 
         logger.info('fetching extreme value distribution')
         distribution_kwargs = distribution_kwargs or {}

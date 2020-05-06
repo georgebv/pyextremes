@@ -44,6 +44,7 @@ class MLE(AbstractModelBaseClass):
             distribution_kwargs=distribution_kwargs,
             **kwargs
         )
+        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
         logger.info('initializing the fit parameter hash')
         self.hashed_fit_parameters = []
@@ -74,7 +75,8 @@ class MLE(AbstractModelBaseClass):
             **kwargs
     ) -> tuple:
         logger.debug('calculating return value')
-        return_value = self.isf(exceedance_probability)
+        return_value = getattr(self, self.extreme_value_function)(exceedance_probability)
+
         if alpha is None:
             if 'n_samples' in kwargs:
                 kwargs.pop('n_samples')
@@ -102,9 +104,10 @@ class MLE(AbstractModelBaseClass):
             logger.debug(
                 'calculating return values from hashed fit parameters to be used for confidence interval estimation'
             )
+            extreme_value_function = getattr(self.distribution.distribution, self.extreme_value_function)
             rv_sample = np.array(
                 [
-                    self.distribution.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
+                    extreme_value_function(exceedance_probability, *self.hashed_fit_parameters[i])
                     for i in range(n_samples)
                 ]
             )
