@@ -35,7 +35,6 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
-            extreme_value_function: str,
             distribution: typing.Union[str, scipy.stats.rv_continuous],
             distribution_kwargs: dict = None,
             **kwargs
@@ -47,20 +46,19 @@ class AbstractModelBaseClass(abc.ABC):
         ----------
         extremes : pandas.Series
             Time series of extreme events.
-        extreme_value_function : str
-            Name of function used to calculate extreme values from the distribution.
-            Available values: 'isf' or 'ppf'.
         distribution : str or scipy.stats.rv_continuous
-            scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
-            See https://docs.scipy.org/doc/scipy/reference/stats.html
+            distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+            See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
         distribution_kwargs : dict, optional
-            Dictionary with special keyword arguments specific to a distribution
-            which hold certain parameters fixed (default=None).
-            E.g. dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
-            of the distribution, reducting its degree of freedom (number of free parameters) by one.
-            Similarly, dict(floc=0) hold the location parameter 'loc' at 0.
-            dict(fc=0, floc=0) holds both parameters fixed.
-            See documentation of a specific scipy.stats distribution for documentation of these parameters.
+            Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
+            These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
+            parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
+            See documentation of a specific scipy.stats distribution for names of available parameters.
+            Examples:
+                dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+                    of the distribution, reducting its degree of freedom (number of free parameters) by one.
+                dict(floc=0) hold the location parameter 'loc' at 0
+                dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
         kwargs
             Keyword arguments passed to a model .fit method.
             MLE model:
@@ -75,14 +73,10 @@ class AbstractModelBaseClass(abc.ABC):
                     If a string, will select a specific tqdm progress bar - most notable is
                     'notebook', which shows a progress bar suitable for Jupyter notebooks.
                     If False, no progress bar will be shown (default=False).
+                    This progress bar is a part of the emcee package.
         """
 
         self.extremes = extremes
-
-        logger.info('getting extreme value function')
-        if extreme_value_function not in ['isf', 'ppf']:
-            raise ValueError(f'\'{extreme_value_function}\' is not a valid \'extreme_value_function\' value')
-        self.extreme_value_function = extreme_value_function
 
         logger.info('fetching extreme value distribution')
         distribution_kwargs = distribution_kwargs or {}
@@ -99,29 +93,42 @@ class AbstractModelBaseClass(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:
-        # Returns model name
+        """
+        Returns model name
+        """
         pass
 
     @abc.abstractmethod
     def fit(self) -> None:
         """
         Sets values for self.fit_parameters and self.trace (the latter only for MCMC-like models).
+        self.fit_parameters is a dictionary with {parameter_name: value}, e.g. {'c': 0.1, 'loc': -7, 'scale': 0.3}
+        self.trace is a numpy.ndarray with shape of (n_walkers, n_samples, n_free_parameters)
         """
         pass
 
     @property
     def loglikelihood(self) -> float:
-        return sum(self.get_prop(prop='logpdf', x=self.extremes.values))
+        return sum(self.logpdf(x=self.extremes.values))
 
     # noinspection PyPep8Naming
     @property
     def AIC(self) -> float:
-        return 2 * self.distribution.number_of_parameters - 2 * self.loglikelihood
+        """
+        Returns corrected Akaike Information Criterion (AIC) of the model.
+        See https://en.wikipedia.org/wiki/Akaike_information_criterion
+        """
+
+        k = self.distribution.number_of_parameters
+        n = len(self.extremes)
+        aic = 2 * k - 2 * self.loglikelihood
+        correction = (2 * k ** 2 + 2 * k) / (n - k - 1)
+        return aic + correction
 
     @abc.abstractmethod
     def _encode_kwargs(self, kwargs: dict) -> str:
         """
-        Convert kwargs to a string, which is used as a return value and confidence interval hash key.
+        Convert kwargs to a string, which is used as a "return value" and "confidence interval" hash keys.
 
         Parameters
         ----------
@@ -150,14 +157,15 @@ class AbstractModelBaseClass(abc.ABC):
             Exceedance probability or array of exceedance probabilities.
             Each exceedance probability must fall in range [0, 1).
         alpha : float, optional
-            Width of confidence interval, from 0 to 1 (default=None).
+            Width of confidence interval (default=None).
+            Must fall in range (0, 1).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model self._get_return_value method.
             If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
             MLE model:
                 n_samples : int, optional
-                    The number of steps to run (default=1000).
+                    The number of steps to run (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
@@ -173,7 +181,7 @@ class AbstractModelBaseClass(abc.ABC):
         """
 
         if isinstance(exceedance_probability, (tuple, list, np.ndarray)):
-            logger.info('getting a list of return values')
+            logger.info('getting an array of return values')
             return tuple(
                 np.transpose(
                     [
@@ -287,14 +295,14 @@ class AbstractModelBaseClass(abc.ABC):
             **kwargs
     ) -> tuple:
         """
-        Calculate return value and confidence interval bounds.
+        Calculate return value and confidence interval bounds for given exceedance probability.
 
         Parameters
         ----------
         exceedance_probability : float
             Exceedance probability [0, 1).
         alpha : float
-            Width of confidence interval, from 0 to 1 (default=None).
+            Width of confidence interval (0, 1) (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
@@ -322,6 +330,12 @@ class AbstractModelBaseClass(abc.ABC):
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
         return self.get_prop(prop='pdf', x=x)
+
+    def logpdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.get_prop(prop='logpdf', x=x)
 
     def cdf(
             self,

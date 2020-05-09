@@ -15,26 +15,29 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
 import warnings
 
 import numpy as np
 import pandas as pd
+import scipy.stats
 
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
-DEFAULT_N_SAMPLES = 1000
+DEFAULT_N_SAMPLES = 100
 
 
 class MLE(AbstractModelBaseClass):
     """
-    Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
+    Maximum Likelihood Estimate (MLE) model.
+    Built around the scipy.stats.rv_continuous.fit method.
     """
 
     def __init__(
             self,
             extremes: pd.Series,
-            distribution: str,
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
             distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
@@ -63,7 +66,9 @@ class MLE(AbstractModelBaseClass):
     ) -> str:
         n_samples = kwargs.get('n_samples', DEFAULT_N_SAMPLES)
         if not isinstance(n_samples, int):
-            raise TypeError(f'invalid type in {type(n_samples)} for the \'n_samples\' argument')
+            raise TypeError(
+                f'invalid type in {type(n_samples)} for the \'n_samples\' argument, it must be a positive integer'
+            )
         if n_samples <= 0:
             raise ValueError(f'\'{n_samples}\' is not a valid \'n_samples\' value, it must be a positive integer')
         return f'{n_samples:d}'
@@ -75,7 +80,11 @@ class MLE(AbstractModelBaseClass):
             **kwargs
     ) -> tuple:
         logger.debug('calculating return value')
-        return_value = getattr(self, self.extreme_value_function)(exceedance_probability)
+        return_value = self.distribution.distribution.isf(
+            q=exceedance_probability,
+            **self.fit_parameters,
+            **self.distribution.fixed_parameters
+        )
 
         if alpha is None:
             if 'n_samples' in kwargs:
@@ -85,6 +94,7 @@ class MLE(AbstractModelBaseClass):
 
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
+
         else:
             n_samples = kwargs.pop('n_samples', DEFAULT_N_SAMPLES)
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
@@ -104,13 +114,10 @@ class MLE(AbstractModelBaseClass):
             logger.debug(
                 'calculating return values from hashed fit parameters to be used for confidence interval estimation'
             )
-            extreme_value_function = getattr(self.distribution.distribution, self.extreme_value_function)
-            rv_sample = np.array(
-                [
-                    extreme_value_function(exceedance_probability, *self.hashed_fit_parameters[i])
-                    for i in range(n_samples)
-                ]
-            )
+            rv_sample = [
+                self.distribution.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
+                for i in range(n_samples)
+            ]
 
             logger.debug('calculating confidence interval')
             confidence_interval = tuple(
@@ -119,4 +126,6 @@ class MLE(AbstractModelBaseClass):
                     q=[(1-alpha)/2, (1+alpha)/2]
                 )
             )
+
+        logger.debug('returning return value and confidence interval')
         return return_value, confidence_interval

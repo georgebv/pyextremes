@@ -27,22 +27,26 @@ logger = logging.getLogger()
 class Distribution:
     """
     A distribution class compatible with pyextremes models.
-    It is a wrapper around scipy.stats.rv_continous distributions.
+    It is a wrapper around the scipy.stats.rv_continous class and its subclasses.
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.html
 
     Parameters
     ----------
     extremes : pandas.Series
-        Time series of transformed extreme events.
+        Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
-        scipy.stats distribution name or a subclass of scipy.stats.rv_continuous
-        See https://docs.scipy.org/doc/scipy/reference/stats.html
+        distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+        See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
     kwargs
-        Special keyword arguments specific to a distribution which hold certain parameters fixed.
-        E.g. fc=0 holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
-        of the distribution, reducting its degree of freedom (number of free parameters) by one.
-        Similarly, floc=0 hold the location parameter 'loc' at 0.
-        See documentation of a specific scipy.stats distribution for documentation of these parameters.
+        Special keyword arguments, passsed to the .fit method of the continuous distribution.
+        These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
+        parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
+        See documentation of a specific scipy.stats distribution for names of available parameters.
+        Examples:
+            dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+                of the distribution, reducting its degree of freedom (number of free parameters) by one.
+            dict(floc=0) hold the location parameter 'loc' at 0
+            dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
     """
 
     def __init__(
@@ -53,7 +57,7 @@ class Distribution:
     ) -> None:
         self.extremes = extremes
 
-        logger.info('getting scipy.stats distribution or ensuring distribution is a subclass of rv_continuous')
+        logger.info('fetching scipy.stats distribution or ensuring distribution is a subclass of rv_continuous')
         if isinstance(distribution, scipy.stats.rv_continuous):
             self.distribution = distribution
         elif isinstance(distribution, str):
@@ -61,10 +65,9 @@ class Distribution:
         else:
             raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
 
-        logger.info('setting invalid value to -np.inf')
         self.distribution.badvalue = -np.inf
 
-        logger.info('getting distribution parameters')
+        logger.info('getting a list of distribution parameter names')
         self.distribution_parameters = []
         if self.distribution.shapes is not None:
             self.distribution_parameters.extend([shape.strip() for shape in self.distribution.shapes.split(',')])
@@ -77,13 +80,11 @@ class Distribution:
             if key in valid_kwargs:
                 self.fixed_parameters[key] = value
             else:
-                message = '; '.join(
-                    [
-                        f'\'{key}\' is not a valid keyword argument for \'{self.distribution.name}\' distribution',
-                        f'valid keyword arguments: {", ".join(valid_kwargs)}'
-                    ]
+                raise TypeError(
+                    f'\'{key}\' is not a valid keyword argument for \'{self.distribution.name}\' distribution, '
+                    f'valid keyword arguments: {", ".join(valid_kwargs)}'
                 )
-                raise TypeError(message)
+        self._fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
 
         logger.info('collecting free parameters')
         self.free_parameters = []
@@ -96,8 +97,8 @@ class Distribution:
 
     def fit(self, data: np.ndarray) -> dict:
         """
-        Fit distribution to data using scipy.stats MLE method.
-        Calculates only free parameters.
+        Fit distribution to data using the scipy.stats.rv_continuous.fit method.
+        Returns a dictionary with Maximum Likelihood Estimates of free distribution parameters.
 
         Parameters
         ----------
@@ -107,8 +108,7 @@ class Distribution:
         Returns
         -------
         parameters : dict
-            Dictionary with MLE of free distribution parameters
-            with keys being names of these parameters.
+            Dictionary with MLE of free distribution parameters.
         """
 
         logger.debug('calculating full MLE of distribution parameters')
@@ -117,7 +117,7 @@ class Distribution:
         logger.debug('packing distribution parameters into ordered free distribution parameters')
         free_parameters = {}
         for i, parameter in enumerate(self.distribution_parameters):
-            if f'f{parameter}' not in self.fixed_parameters:
+            if parameter in self.free_parameters:
                 free_parameters[parameter] = full_mle[i]
         return free_parameters
 
@@ -132,9 +132,10 @@ class Distribution:
     def __repr__(self) -> str:
         free_parameters = ', '.join(self.free_parameters)
 
-        fixed_parameters = ', '.join([f'{key}={value:,.3f}' for key, value in self.fixed_parameters.items()])
-        if fixed_parameters == '':
+        if len(self.fixed_parameters) == 0:
             fixed_parameters = 'all parameters are free'
+        else:
+            fixed_parameters = ', '.join([f'{key}={value:,.3f}' for key, value in self.fixed_parameters.items()])
 
         mle_parameters = ', '.join([f'{key}={value:,.3f}' for key, value in self.mle_parameters.items()])
 
@@ -151,11 +152,11 @@ class Distribution:
 
     def log_probability(self, theta: tuple) -> float:
         """
-        Calculate log-probability of distribution for a given set of distribution parameters.
-        Calculated as a sum of log-prior and log-likelihood.
-        Log-prior is calculated from normal distribution with location as
-        corresponding MLE value and scale as 100.
-        Log-likelihood is calculated as sum of logarithms of PDF values for a distribution with parameters
+        Calculate log-probability of distribution for a given set of distribution parameters
+        as a sum of log-prior and log-likelihood.
+        Log-prior is calculated as logpdf of normal distribution
+        with location being the corresponding MLE of the parameter and scale being 100.
+        Log-likelihood is calculated as sum of logpdf values for a distribution with parameters
         set to theta and values being extreme values.
 
         Parameters
@@ -170,24 +171,24 @@ class Distribution:
         """
 
         logger.debug('unpacking theta')
-        free_parameters = {self.free_parameters[i]: value for i, value in enumerate(theta)}
-        fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
+        assert len(theta) == self.number_of_parameters, f'invalid theta size {len(theta):d}'
+        free_parameters = dict(zip(self.free_parameters, theta))
 
-        logger.debug('calculating logprior')
+        logger.debug('calculating log-prior')
         logprior = 0
         for key, value in free_parameters.items():
             logprior += scipy.stats.norm.logpdf(x=value, loc=self.mle_parameters[key], scale=100)
 
-        logger.debug('calculating loglikelihood')
+        logger.debug('calculating log-likelihood')
         loglikelihood = sum(
-            self.distribution.logpdf(x=self.extremes.values, **free_parameters, **fixed_parameters)
+            self.distribution.logpdf(x=self.extremes.values, **free_parameters, **self._fixed_parameters)
         )
 
         return logprior + loglikelihood
 
     def get_initial_state(self, n_walkers: int) -> np.ndarray:
         """
-        Get initial positions of emcee sampler walkers.
+        Get initial positions of the ensemble sampler walkers.
         Positions are sampled from a normal distribution for each of the free distribution parameters
         (e.g. c, loc, scale) with location for each of them taken from scipy.stats MLE fit
         and standard deviation being 0.01.
@@ -200,7 +201,7 @@ class Distribution:
         Returns
         -------
         initial_positions : numpy.ndarray
-            Array with initial positions of emcee sampler walkers.
+            Array with initial positions of the ensemble sampler walkers.
         """
 
         logger.info(f'getting initial positions for {n_walkers} walkers')
@@ -212,15 +213,15 @@ class Distribution:
             free_parameters: typing.Union[dict, tuple, list, np.ndarray]
     ) -> np.ndarray:
         """
-        Convert a dictionary or array-like object of free parameters to an array of full parameters.
-        The output array has the same shape as input (1D for dict, tuple, list, or 1D numpu array).
+        Convert a dictionary or array-like object of free parameters to an array with full parameters.
+        The output array has the same number of dimensions as input (1D for dict, tuple, list, or 1D numpu array).
 
         Parameters
         ----------
         free_parameters : dict or array-like
             Free parameters.
             If dict, then should be {parameter: value}. E.g. {'loc': 0, 'scale': 1}
-            If array-like, should be either 1D or (n, number_of_free_parameters).
+            If array-like, should be either 1D or have shape of (n, number_of_free_parameters).
                 E.g. [0, 1] for [loc, scale] if loc and scale are the only free parameters
                 or [[0, 1], [2, 3],...] for a sequence of [loc, scale] pairs
 
@@ -229,7 +230,7 @@ class Distribution:
         full_parameters : numpy.ndarray
             Array with full parameters.
             1D for dict or 1D array
-            (n, number_of_parameters) for array of shape (n, number_of_free_parameters)
+            (n, number_of_parameters) for array with shape (n, number_of_free_parameters)
         """
 
         if isinstance(free_parameters, dict):
@@ -238,10 +239,10 @@ class Distribution:
                 raise ValueError(f'invalid size in {len(free_parameters)} for the \'free_parameters\' argument')
             full_parameters = []
             for parameter in self.distribution_parameters:
-                if f'f{parameter}' in self.fixed_parameters:
-                    full_parameters.append(self.fixed_parameters[f'f{parameter}'])
-                else:
+                try:
                     full_parameters.append(free_parameters[parameter])
+                except KeyError:
+                    full_parameters.append(self._fixed_parameters[parameter])
             return np.array(full_parameters)
 
         elif isinstance(free_parameters, (tuple, list, np.ndarray)):
@@ -258,13 +259,9 @@ class Distribution:
                 i = 0
                 full_parameters = []
                 for parameter in self.distribution_parameters:
-                    if f'f{parameter}' in self.fixed_parameters:
-                        full_parameters.append(self.fixed_parameters[f'f{parameter}'])
-                    else:
-                        if not isinstance(free_parameters[i], np.number):
-                            raise TypeError(
-                                f'invalid type in {type(free_parameters[i])} for the \'free_parameters\' array element'
-                            )
+                    try:
+                        full_parameters.append(self._fixed_parameters[parameter])
+                    except KeyError:
                         full_parameters.append(free_parameters[i])
                         i += 1
                 return np.array(full_parameters)
@@ -277,14 +274,11 @@ class Distribution:
                         f'for the \'free_parameters\' array, must be {self.number_of_parameters:d}'
                     )
                 j = 0
-                full_parameters = np.full(
-                    shape=(len(free_parameters), len(self.distribution_parameters)),
-                    fill_value=np.nan
-                )
+                full_parameters = np.zeros(shape=(len(free_parameters), len(self.distribution_parameters)))
                 for i, parameter in enumerate(self.distribution_parameters):
-                    if f'f{parameter}' in self.fixed_parameters:
-                        full_parameters[:, i] = self.fixed_parameters[f'f{parameter}']
-                    else:
+                    try:
+                        full_parameters[:, i] = self._fixed_parameters[parameter]
+                    except KeyError:
                         full_parameters[:, i] = free_parameters[:, j]
                         j += 1
                 return full_parameters
@@ -312,7 +306,7 @@ class Distribution:
             Data for which the property is calculated.
             Scalar or 1D array-like.
         free_parameters : dict or numpy.ndarray
-            Dictionary with free distribution parameter values.
+            Dictionary or array with free distribution parameter values.
             See self.free2full_parameters method documentation.
 
         Returns
@@ -321,12 +315,12 @@ class Distribution:
             Output of property.
             If x is scalar:
                 output is scalar or 1D array with length equal to number of free_parameter combinations
-                    e.g. for free_parameters=[1, 2] it is scalar
-                    and for [[1, 2], [3, 4], [5, 6]] it is an array of length 3
+                    for 1D free_parameters=[1, 2] it is scalar
+                    for 2D free parameters=[[1, 2], [3, 4], [5, 6]] it is an array of length len(free_paramters)
+            If x is a 1D array:
                 output is a 1D or 2D array
                     for free_parameters=[1, 2] it is a 1D array of length len(x)
-                    for free_parameters=[[1, 2], [3, 4], ...] it is a 2D array of shape
-                        (len(x), len(free_parameters)
+                    for free_parameters=[[1, 2], [3, 4], ...] it is a 2D array of shape (len(x), len(free_parameters)
         """
 
         logger.debug('getting property function')
@@ -342,22 +336,19 @@ class Distribution:
             logger.debug('calculating property for array x')
             x = np.array(x)
             if len(x.shape) != 1:
-                raise ValueError(f'invalid shape in {x.shape} for the \'x\' array')
+                raise ValueError(f'invalid shape in {x.shape} for the \'x\' argument')
 
             if len(full_parameters.shape) == 1:
                 logger.debug('calculating property for one combination of parameters')
                 return prop_function(x, *full_parameters)
+
             elif len(full_parameters.shape) == 2:
                 logger.debug(f'calculating property for {len(full_parameters)} combinations of parameters')
-                full_x = np.full(
-                    shape=(len(full_parameters), len(x)),
-                    fill_value=np.nan
-                )
-                for i in range(len(full_parameters)):
-                    full_x[i] = x
+                full_x = np.tile(x, reps=(len(full_parameters), 1))
                 return prop_function(np.transpose(full_x), *np.transpose(full_parameters))
+
             else:
-                raise RuntimeError
+                raise RuntimeError('this is a bug: self.free2full_parameters method returned invalid value')
 
 
 if __name__ == '__main__':

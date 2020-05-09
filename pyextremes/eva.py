@@ -94,6 +94,7 @@ class EVA:
         self.model = None
         self.model_kwargs = None
         self.extremes_transformer = None
+        self.transformed_type = None
 
     def __repr__(self) -> str:
         # repr parameters
@@ -332,9 +333,6 @@ class EVA:
                     If False, no progress bar will be shown (default=False).
         """
 
-        # TODO - make an option to use a transformer to allow usage of any positive distributions
-        #   transformer=True
-
         logger.info('making sure extreme values have been extracted')
         if self.extremes is None:
             raise AttributeError('extreme values must be extracted before fitting a model, use .get_extremes method')
@@ -355,14 +353,16 @@ class EVA:
         self.extremes_transformer = ExtremesTransformer(
             extremes=self.extremes,
             extremes_type=self.extremes_type,
-            null_transform=transform
+            null_transform=~transform
         )
+
+        self.transformed_type = 'low' if ((self.extremes_type == 'low') ^ transform) else 'high'
 
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
+            extreme_value_function='ppf' if self.transformed_type == 'low' else 'isf',
             extremes=self.extremes_transformer.transformed_extremes,
-            extremes_type=self.extremes_type,
             distribution=distribution,
             **kwargs
         )
