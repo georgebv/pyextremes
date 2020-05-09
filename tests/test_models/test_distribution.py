@@ -30,6 +30,13 @@ def test_distribution():
             distribution=1
         )
 
+    # Test discrete distribution
+    with pytest.raises(ValueError):
+        Distribution(
+            extremes=pd.Series([1, 2, 3]),
+            distribution='poisson'
+        )
+
     # Test bad kwargs
     with pytest.raises(TypeError):
         Distribution(

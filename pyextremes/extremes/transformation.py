@@ -25,12 +25,11 @@ logger = logging.getLogger(__name__)
 class ExtremesTransformer:
     """
     Extreme value transformer class.
-    Provides methods to perform forward and inverse transforms of extreme values.
-    Transformation of extreme value series allows using distributions previously unavailable
-    due to support constraints.
+    Provides methods to transform extreme value series to and from format compatible with pyextremes models.
+    The values are transformed in a way to have extreme events at the right side of the distribution support.
+    For extremes_type being 'high' no transform is performed.
+    For extremes_type being 'low' the values are flipped around the maximum value.
 
-    Transformation is performed by mirroring the extreme values against 0 (multiplication by -1)
-    and then shifting the resulting series to have start at 0 (min or max, depending on original orientation).
 
     Parameters
     ----------
@@ -39,28 +38,15 @@ class ExtremesTransformer:
     extremes_type : str
         high - provided extreme values are extreme high values
         low - provided extreme values are extreme low values
-    null_transform : bool, optional
-        If True, then the transformer doesn't perform any transformations.
     """
 
     def __init__(
             self,
             extremes: pd.Series,
             extremes_type: str,
-            null_transform: bool = False
     ) -> None:
-
-        if null_transform:
-            logger.info('declaring a null transformer')
-            self.pivot_point = None
-        else:
-            logger.info(f'preparing a transformer for \'{extremes_type}\' extremes')
-            if extremes_type == 'high':
-                self.pivot_point = extremes.min()
-            elif extremes_type == 'low':
-                self.pivot_point = extremes.max()
-            else:
-                raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
+        self.extremes = extremes
+        self.extremes_type = extremes_type
 
         logger.info('transforming extremes')
         self.transformed_extremes = self.transform(value=extremes)
@@ -70,8 +56,7 @@ class ExtremesTransformer:
             value: typing.Union[float, pd.Series]
     ) -> typing.Union[float, pd.Series]:
         """
-        Perform a forward/inverse transform of extreme value(s).
-        Forward and inverse transforms are identical.
+        Perform a transform of extreme values. Works both ways.
 
         Parameters
         ----------
@@ -85,7 +70,7 @@ class ExtremesTransformer:
         """
 
         logger.debug('performing transform')
-        if self.pivot_point is None:
+        if self.extremes_type == 'high':
             return value
         else:
-            return self.pivot_point - value
+            return 2 * self.extremes.max() - value

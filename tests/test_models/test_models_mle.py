@@ -38,22 +38,11 @@ def test_mle_fit(distribution_name, parameters, scipy_parameters):
         model='MLE',
         distribution=distribution_name
     )
-    assert isinstance(model.fit_parameters, tuple)
+    assert isinstance(model.fit_parameters, dict)
     assert len(model.fit_parameters) == len(scipy_parameters)
 
 
 def test_mle():
-    # Test bad distribution (poisson is discrete and will never be implemented)
-    with pytest.raises(NotImplementedError):
-        get_model(
-            extremes=pd.Series(
-                index=[1, 2, 3],
-                data=[1, 2, 3]
-            ),
-            model='MLE',
-            distribution='poisson'
-        )
-
     # Test fit
     parameters = (0.5, 10, 2)
     model = get_model(
@@ -64,7 +53,7 @@ def test_mle():
         model='MLE',
         distribution='genextreme'
     )
-    assert isinstance(model.fit_parameters, tuple)
+    assert isinstance(model.fit_parameters, dict)
     assert len(model.fit_parameters) == len(parameters)
 
     # Test bad exceedance_probability type

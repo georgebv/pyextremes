@@ -62,6 +62,8 @@ class Distribution:
             self.distribution = distribution
         elif isinstance(distribution, str):
             self.distribution = getattr(scipy.stats, distribution)
+            if not isinstance(self.distribution, scipy.stats.rv_continuous):
+                raise ValueError(f'{distribution} is not a continuous distribution')
         else:
             raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
 
@@ -349,47 +351,3 @@ class Distribution:
 
             else:
                 raise RuntimeError('this is a bug: self.free2full_parameters method returned invalid value')
-
-
-if __name__ == '__main__':
-    import pathlib
-    import os
-    from pyextremes import EVA
-    test_path = pathlib.Path(os.getcwd()) / 'tests' / 'data' / 'battery_wl.csv'
-    test_data = pd.read_csv(test_path, index_col=0, parse_dates=True, squeeze=True)
-    test_data = (
-        test_data
-        .sort_index(ascending=True)
-        .dropna()
-    )
-    test_data = test_data.loc[pd.to_datetime('1925'):]
-    test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
-    eva = EVA(data=test_data)
-    eva.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
-
-    self = Distribution(extremes=eva.extremes, distribution='genextreme', fc=0)
-    self.get_prop(
-        prop='logpdf',
-        x=self.extremes.values,
-        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
-    ).sum(axis=0)
-    self.get_prop(
-        prop='isf',
-        x=[0.1, 0.2, 0.3],
-        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
-    )
-    self.get_prop(
-        prop='isf',
-        x=0.01,
-        free_parameters=[0.4, 2]
-    )
-    self.get_prop(
-        prop='isf',
-        x=[0.01, 0.1],
-        free_parameters=[0.4, 2]
-    )
-    self.get_prop(
-        prop='isf',
-        x=0.1,
-        free_parameters=np.array([[0.4, 2], [0.4, 1], [0.4, 1.5], [1.376, 0.171]])
-    )
