@@ -56,7 +56,8 @@ class MLE(AbstractModelBaseClass):
     def name(self) -> str:
         return 'MLE'
 
-    def fit(self) -> None:
+    def fit(self, **kwargs) -> None:
+        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
         self.fit_parameters = self.distribution.mle_parameters
         self.trace = None
 

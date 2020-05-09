@@ -361,7 +361,6 @@ class EVA:
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
-            extreme_value_function='ppf' if self.transformed_type == 'low' else 'isf',
             extremes=self.extremes_transformer.transformed_extremes,
             distribution=distribution,
             **kwargs
@@ -910,5 +909,5 @@ if __name__ == '__main__':
     test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
     self = EVA(data=test_data)
     self.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
-    self.fit_model(model='MLE', distribution='genextreme')
-    # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
+    # self.fit_model(model='MLE', distribution='genextreme')
+    self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)

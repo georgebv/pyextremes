@@ -85,7 +85,7 @@ class AbstractModelBaseClass(abc.ABC):
         logger.info('fitting the distribution to extremes')
         self.fit_parameters = None
         self.trace = None
-        self.fit()
+        self.fit(**kwargs)
 
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
@@ -99,7 +99,7 @@ class AbstractModelBaseClass(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def fit(self) -> None:
+    def fit(self, **kwargs) -> None:
         """
         Sets values for self.fit_parameters and self.trace (the latter only for MCMC-like models).
         self.fit_parameters is a dictionary with {parameter_name: value}, e.g. {'c': 0.1, 'loc': -7, 'scale': 0.3}

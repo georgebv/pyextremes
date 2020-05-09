@@ -46,8 +46,8 @@ def get_model(
     model : str
         Name of an extreme value distribution fitting model (not case-sensitive).
         Supported names:
-            MLE - Maximum Likelihood Estimate model, based on scipy (scipy.stats.rv_continuous.fit)
-            Emcee - Markov Chain Monte Carlo model, based on the emcee package by Daniel Foreman-Mackey
+            MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
+            Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
