@@ -16,65 +16,95 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 import scipy.stats
 
-import pytest
 from pyextremes.models import get_model
 
 
 @pytest.mark.parametrize(
-    'distribution_name, parameters, scipy_parameters',
+    'distribution_name, theta, distribution_kwargs, scipy_parameters',
     [
-        ('genextreme', (0.5, 10, 2), (0.5, 10, 2)),
-        ('genpareto', (0.5, 2), (0.5, 0, 2))
+        ('genextreme', (0.5, 10, 2), {}, (0.5, 10, 2)),
+        ('gumbel_r', (10, 2), {}, (10, 2)),
+        ('genpareto', (0.5, 0, 2), {}, (0.5, 0, 2)),
+        ('genpareto', (0.5, 2), {'floc': 0}, (0.5, 0, 2)),
+        ('expon', (0, 2,), {}, (0, 2)),
+        ('expon', (2, ), {'floc': 0}, (0, 2))
     ]
 )
-def test_mle_fit(distribution_name, parameters, scipy_parameters):
+def test_mle(distribution_name, theta, distribution_kwargs, scipy_parameters):
+    scipy_distribution = getattr(scipy.stats, distribution_name)
+
     model = get_model(
         extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=60, freq='1H'),
-            data=getattr(scipy.stats, distribution_name).rvs(*scipy_parameters, size=60)
+            index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
+            data=scipy_distribution.rvs(*scipy_parameters, size=100)
         ),
         model='MLE',
-        distribution=distribution_name
+        distribution=distribution_name,
+        distribution_kwargs=distribution_kwargs
     )
-    assert isinstance(model.fit_parameters, dict)
-    assert len(model.fit_parameters) == len(scipy_parameters)
 
-
-def test_mle():
     # Test fit
-    parameters = (0.5, 10, 2)
-    model = get_model(
-        extremes=pd.Series(
-            index=pd.date_range(start='2000-01-01', periods=60, freq='1H'),
-            data=scipy.stats.genextreme.rvs(*parameters, size=60)
-        ),
-        model='MLE',
-        distribution='genextreme'
+    assert len(model.fit_parameters) == (len(scipy_parameters) - len(distribution_kwargs))
+    assert model.trace is None
+    assert model.hashed_return_values == {}
+    assert model.hashed_fit_parameters == []
+
+    # Test model name
+    assert model.name == 'MLE'
+
+    # Test loglikelihood
+    assert np.isclose(
+        model.loglikelihood,
+        sum(
+            scipy_distribution.logpdf(
+                model.extremes.values,
+                **model.fit_parameters,
+                **model.distribution._fixed_parameters
+            )
+        )
     )
-    assert isinstance(model.fit_parameters, dict)
-    assert len(model.fit_parameters) == len(parameters)
 
-    # Test bad exceedance_probability type
-    with pytest.raises(TypeError):
-        model.get_return_value(exceedance_probability='0.1', alpha=0.95, n_samples=40)
+    # Test AIC
+    k = model.distribution.number_of_parameters
+    n = len(model.extremes)
+    loglikelihood = sum(
+        scipy_distribution.logpdf(
+            model.extremes.values,
+            **model.fit_parameters,
+            **model.distribution._fixed_parameters
+        )
+    )
+    aic = 2 * k - 2 * loglikelihood
+    correction = (2 * k ** 2 + 2 * k) / (n - k - 1)
+    assert np.isclose(
+        model.AIC,
+        aic + correction
+    )
 
-    # Test bad n_samples values
+    # Test encode_kwargs
     with pytest.raises(TypeError):
-        model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=1.1)
+        model._encode_kwargs({'n_samples': 1.01})
     with pytest.raises(ValueError):
-        model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=-1)
+        model._encode_kwargs({'n_samples': -5})
+    for n_samples in [1, 10, 252]:
+        assert model._encode_kwargs({'n_samples': n_samples}) == f'{n_samples:d}'
 
     # Test return value
     return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
+    assert np.isclose(
+        return_value[0],
+        scipy_distribution.isf(0.1, **model.fit_parameters, **model.distribution._fixed_parameters)
+    )
     assert len(return_value) == 3
     assert return_value[1] < return_value[0] < return_value[2]
 
     # Test hash
     hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
     assert len(model.hashed_return_values) == 1
-    assert return_value == hashed_rv
+    assert np.allclose(return_value, hashed_rv)
 
     # Test alpha being None
     return_value = model.get_return_value(exceedance_probability=0.1, alpha=None)
@@ -95,13 +125,13 @@ def test_mle():
     assert len(return_values) == 3
     assert len(model.hashed_return_values) == 9
 
-    # Test pdf and cdf
-    for prop in ['pdf', 'cdf']:
+    # Test model hashed fit parameters
+    assert len(model.hashed_fit_parameters) == 40
+    assert np.all([len(sample) == len(scipy_parameters) for sample in model.hashed_fit_parameters])
+
+    # Test properties
+    for prop in ['pdf', 'cdf', 'ppf', 'isf', 'logpdf']:
         assert np.isclose(
             getattr(model, prop)(0.1),
-            getattr(scipy.stats.genextreme, prop)(0.1, *model.fit_parameters)
+            getattr(scipy_distribution, prop)(0.1, **model.fit_parameters, **model.distribution._fixed_parameters)
         )
-
-    # Test hashed fit parameters
-    assert len(model.hashed_fit_parameters) == 40
-    assert np.all([len(sample) == 3 for sample in model.hashed_fit_parameters])

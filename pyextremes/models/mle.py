@@ -38,16 +38,13 @@ class MLE(AbstractModelBaseClass):
             self,
             extremes: pd.Series,
             distribution: typing.Union[str, scipy.stats.rv_continuous],
-            distribution_kwargs: dict = None,
-            **kwargs
+            distribution_kwargs: dict = None
     ) -> None:
         super().__init__(
             extremes=extremes,
             distribution=distribution,
-            distribution_kwargs=distribution_kwargs,
-            **kwargs
+            distribution_kwargs=distribution_kwargs
         )
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
         logger.info('initializing the fit parameter hash')
         self.hashed_fit_parameters = []
@@ -84,7 +81,7 @@ class MLE(AbstractModelBaseClass):
         return_value = self.distribution.distribution.isf(
             q=exceedance_probability,
             **self.fit_parameters,
-            **self.distribution.fixed_parameters
+            **self.distribution._fixed_parameters
         )
 
         if alpha is None:

@@ -71,30 +71,32 @@ def test_distribution(distribution_name, theta, kwargs, scipy_parameters):
     )
     assert len(distribution.distribution_parameters) == len(scipy_parameters)
     assert distribution.fixed_parameters == kwargs
+    assert len(distribution._fixed_parameters) == len(kwargs)
     assert len(distribution.free_parameters) == (len(scipy_parameters) - len(kwargs))
     assert len(distribution.mle_parameters) == distribution.number_of_parameters
     assert distribution.name == distribution_name
 
     # Test log-probability
-    assert np.less_equal(
-        distribution.log_probability(theta=theta),
-        sum(scipy_distribution.logpdf(distribution.extremes.values, *scipy_parameters))
+    logprior = sum(
+        [
+            scipy.stats.norm.logpdf(x=value, loc=distribution.mle_parameters[key], scale=100)
+            for key, value in dict(zip(distribution.free_parameters, theta)).items()
+        ]
     )
-    assert np.greater_equal(
-        distribution.log_probability(theta=distribution.mle_parameters.values()),
-        distribution.log_probability(theta=theta)
+    assert np.isclose(
+        distribution.log_probability(theta=theta) - logprior,
+        sum(scipy_distribution.logpdf(distribution.extremes.values, *scipy_parameters))
     )
 
     # Test initial state
-    initial_state = distribution.get_initial_state(n_walkers=100)
-    assert initial_state.shape == (100, distribution.number_of_parameters)
+    initial_state = distribution.get_initial_state(n_walkers=1000)
+    assert initial_state.shape == (1000, distribution.number_of_parameters)
     assert np.allclose(initial_state.mean(axis=0), list(distribution.mle_parameters.values()), atol=0.1)
 
     # Test free2full parameters
+    assert len(distribution.free2full_parameters(free_parameters=distribution.mle_parameters)) == len(scipy_parameters)
     assert len(distribution.free2full_parameters(free_parameters=theta)) == len(scipy_parameters)
-    assert distribution.free2full_parameters(
-        free_parameters=[theta]*5
-    ).shape == (5, len(scipy_parameters))
+    assert distribution.free2full_parameters(free_parameters=[theta]*5).shape == (5, len(scipy_parameters))
 
     # Test _get_prop
     for prop in ['pdf', 'cdf', 'ppf', 'isf']:
