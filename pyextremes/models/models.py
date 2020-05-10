@@ -51,7 +51,7 @@ def get_model(
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
-        distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+        Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
         See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
     distribution_kwargs : dict, optional
         Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.

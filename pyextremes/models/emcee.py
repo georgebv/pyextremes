@@ -15,16 +15,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import typing
+import warnings
 
 import emcee
 import numpy as np
+import pandas as pd
 import scipy.stats
 
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
-DEFAULT_N_WALKERS = 100
-DEFAULT_N_SAMPLES = 500
 
 
 class Emcee(AbstractModelBaseClass):
@@ -33,16 +34,34 @@ class Emcee(AbstractModelBaseClass):
     Built around the emcee package by Daniel Foreman-Mackey
     """
 
+    def __init__(
+            self,
+            extremes: pd.Series,
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            distribution_kwargs: dict = None,
+            n_walkers: int = 100,
+            n_samples: int = 500,
+            progress: bool = False
+    ) -> None:
+        super().__init__(
+            extremes=extremes,
+            distribution=distribution,
+            distribution_kwargs=distribution_kwargs,
+            n_walkers=n_walkers,
+            n_samples=n_samples,
+            progress=progress
+        )
+
     @property
     def name(self) -> str:
         return 'Emcee'
 
-    def fit(self, **kwargs) -> None:
-        n_walkers = kwargs.pop('n_walkers', DEFAULT_N_WALKERS)
-        n_samples = kwargs.pop('n_samples', DEFAULT_N_SAMPLES)
-        progress = kwargs.pop('progress', False)
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-
+    def fit(
+            self,
+            n_walkers: int,
+            n_samples: int,
+            progress: bool
+    ) -> None:
         logger.info('defining emcee ensemble sampler')
         sampler = emcee.EnsembleSampler(
             nwalkers=n_walkers,
@@ -102,6 +121,9 @@ class Emcee(AbstractModelBaseClass):
         )
 
         if alpha is None:
+            if 'burn_in' in kwargs:
+                kwargs.pop('burn_in')
+                warnings.warn(message='burn_in is not used when alpha is None')
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
             logger.debug('returning confidence interval as None for alpha=None')

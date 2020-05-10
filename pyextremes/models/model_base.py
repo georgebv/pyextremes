@@ -47,7 +47,7 @@ class AbstractModelBaseClass(abc.ABC):
         extremes : pandas.Series
             Time series of extreme events.
         distribution : str or scipy.stats.rv_continuous
-            distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+            Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
             See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
         distribution_kwargs : dict, optional
             Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
@@ -165,7 +165,7 @@ class AbstractModelBaseClass(abc.ABC):
             If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
             MLE model:
                 n_samples : int, optional
-                    The number of steps to run (default=100).
+                    Number of bootstrap samples used to estimate confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
@@ -190,7 +190,7 @@ class AbstractModelBaseClass(abc.ABC):
                     ]
                 ).astype(float)
             )
-        elif isinstance(exceedance_probability, float):
+        elif isinstance(exceedance_probability, (int, float, np.number)):
             logger.info('getting a single return value')
             return self._retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
         else:

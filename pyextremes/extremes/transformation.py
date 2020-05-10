@@ -53,8 +53,8 @@ class ExtremesTransformer:
 
     def transform(
             self,
-            value: typing.Union[float, pd.Series]
-    ) -> typing.Union[float, pd.Series]:
+            value: typing.Union[None, float, pd.Series]
+    ) -> typing.Union[None, float, pd.Series]:
         """
         Perform a transform of extreme values. Works both ways.
 
@@ -65,12 +65,16 @@ class ExtremesTransformer:
 
         Returns
         -------
-        transformed_value : float or pandas.Series
+        transformed_value : None, float, or pandas.Series
             Transformed value or series.
+            If value is None, returns None.
         """
 
-        logger.debug('performing transform')
-        if self.extremes_type == 'high':
+        if value is None:
             return value
         else:
-            return 2 * self.extremes.max() - value
+            logger.debug('performing transform')
+            if self.extremes_type == 'high':
+                return value
+            else:
+                return 2 * self.extremes.max() - value
