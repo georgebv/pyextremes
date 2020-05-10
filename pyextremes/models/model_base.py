@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee.distributions.distribution_base import AbstractEmceeDistributionBaseClass
+from pyextremes.models.distribution import Distribution
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,8 @@ class AbstractModelBaseClass(abc.ABC):
     def __init__(
             self,
             extremes: pd.Series,
-            distribution: str,
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
         """
@@ -44,32 +45,47 @@ class AbstractModelBaseClass(abc.ABC):
         Parameters
         ----------
         extremes : pandas.Series
-            Time series of transformed extreme events.
-        distribution : str
-            Name of scipy.stats distribution.
+            Time series of extreme events.
+        distribution : str or scipy.stats.rv_continuous
+            Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+            See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
+        distribution_kwargs : dict, optional
+            Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
+            These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
+            parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
+            See documentation of a specific scipy.stats distribution for names of available parameters.
+            Examples:
+                dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+                    of the distribution, reducting its degree of freedom (number of free parameters) by one.
+                dict(floc=0) hold the location parameter 'loc' at 0
+                dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
         kwargs
-            Keyword arguments passed to a model ._fit method.
+            Keyword arguments passed to a model .fit method.
             MLE model:
                 MLE model takes no additional arguments.
             Emcee model:
-                n_walkers : int
-                    The number of walkers in the ensemble.
-                n_samples : int
-                    The number of steps to run.
+                n_walkers : int, optional
+                    The number of walkers in the ensemble (default=100).
+                n_samples : int, optional
+                    The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is
                     'notebook', which shows a progress bar suitable for Jupyter notebooks.
                     If False, no progress bar will be shown (default=False).
+                    This progress bar is a part of the emcee package.
         """
 
         self.extremes = extremes
 
         logger.info('fetching extreme value distribution')
-        self.distribution = self._get_distribution(distribution=distribution)
+        distribution_kwargs = distribution_kwargs or {}
+        self.distribution = Distribution(extremes=self.extremes, distribution=distribution, **distribution_kwargs)
 
         logger.info('fitting the distribution to extremes')
-        self.fit_parameters = self._fit(extremes=extremes, **kwargs)
+        self.fit_parameters = None
+        self.trace = None
+        self.fit(**kwargs)
 
         logger.info('initializing the return value hash')
         self.hashed_return_values = {}
@@ -77,44 +93,58 @@ class AbstractModelBaseClass(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:
+        """
+        Returns model name
+        """
         pass
 
     @abc.abstractmethod
-    def _get_distribution(
-            self,
-            distribution: str
-    ) -> typing.Union[scipy.stats.rv_continuous, AbstractEmceeDistributionBaseClass]:
-        pass
-
-    @abc.abstractmethod
-    def _fit(
-            self,
-            extremes: pd.Series,
-            **kwargs
-    ) -> typing.Union[tuple, dict]:
+    def fit(self, **kwargs) -> None:
+        """
+        Sets values for self.fit_parameters and self.trace (the latter only for MCMC-like models).
+        self.fit_parameters is a dictionary with {parameter_name: value}, e.g. {'c': 0.1, 'loc': -7, 'scale': 0.3}
+        self.trace is a numpy.ndarray with shape of (n_walkers, n_samples, n_free_parameters)
+        """
         pass
 
     @property
-    @abc.abstractmethod
     def loglikelihood(self) -> float:
-        pass
+        return sum(self.logpdf(x=self.extremes.values))
 
     # noinspection PyPep8Naming
     @property
-    @abc.abstractmethod
     def AIC(self) -> float:
-        pass
+        """
+        Returns corrected Akaike Information Criterion (AIC) of the model.
+        See https://en.wikipedia.org/wiki/Akaike_information_criterion
+        """
+
+        k = self.distribution.number_of_parameters
+        n = len(self.extremes)
+        aic = 2 * k - 2 * self.loglikelihood
+        correction = (2 * k ** 2 + 2 * k) / (n - k - 1)
+        return aic + correction
 
     @abc.abstractmethod
-    def _decode_kwargs(
-            self,
-            kwargs: dict
-    ) -> str:
+    def _encode_kwargs(self, kwargs: dict) -> str:
+        """
+        Convert kwargs to a string, which is used as a "return value" and "confidence interval" hash keys.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary with keyword arguments passed to a model self._get_return_value method.
+
+        Returns
+        -------
+        encoded_kwargs : str
+            String with encoded kwargs.
+        """
         pass
 
     def get_return_value(
             self,
-            exceedance_probability: typing.Union[float, typing.Iterable[float]],
+            exceedance_probability: typing.Union[float, tuple, list, np.ndarray],
             alpha: float = None,
             **kwargs
     ) -> tuple:
@@ -125,15 +155,17 @@ class AbstractModelBaseClass(abc.ABC):
         ----------
         exceedance_probability : float or array-like
             Exceedance probability or array of exceedance probabilities.
+            Each exceedance probability must fall in range [0, 1).
         alpha : float, optional
-            Width of confidence interval, from 0 to 1 (default=None).
+            Width of confidence interval (default=None).
+            Must fall in range (0, 1).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
-            Keyword arguments passed to a model ._get_return_value method.
-            If alpha is None, no keyword arguments are required or accepted.
+            Keyword arguments passed to a model self._get_return_value method.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
             MLE model:
                 n_samples : int, optional
-                    The number of steps to run (default=1000).
+                    Number of bootstrap samples used to estimate confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
@@ -148,8 +180,8 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bound(s).
         """
 
-        if hasattr(exceedance_probability, '__iter__') and not isinstance(exceedance_probability, str):
-            logger.info('getting a list of return values')
+        if isinstance(exceedance_probability, (tuple, list, np.ndarray)):
+            logger.info('getting an array of return values')
             return tuple(
                 np.transpose(
                     [
@@ -158,7 +190,7 @@ class AbstractModelBaseClass(abc.ABC):
                     ]
                 ).astype(float)
             )
-        elif isinstance(exceedance_probability, float):
+        elif isinstance(exceedance_probability, (int, float, np.number)):
             logger.info('getting a single return value')
             return self._retrieve_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
         else:
@@ -179,13 +211,13 @@ class AbstractModelBaseClass(abc.ABC):
         Parameters
         ----------
         exceedance_probability : float
-            Exceedance probability.
+            Exceedance probability [0, 1).
         alpha : float
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
             Keyword arguments passed to a model ._get_return_value method.
-            If alpha is None, no keyword arguments are required or accepted.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
 
         Returns
         -------
@@ -194,57 +226,61 @@ class AbstractModelBaseClass(abc.ABC):
         upper_confidence_interval_bound : float
         """
 
+        logger.debug('encoding exceedance_probability')
+        encoded_exceedance_probability = f'{exceedance_probability:.6f}'
+
         if alpha is None:
             logger.debug('alpha is None - setting kwargs and alpha to None')
-            decoded_kwargs = 'None'
-            decoded_alpha = 'None'
+            encoded_kwargs = 'None'
+            encoded_alpha = 'None'
         else:
-            logger.debug('decoding alpha and kwargs')
-            decoded_kwargs = self._decode_kwargs(kwargs=kwargs)
-            decoded_alpha = f'{alpha:.6f}'
+            logger.debug('encoding alpha and kwargs')
+            encoded_kwargs = self._encode_kwargs(kwargs=kwargs)
+            encoded_alpha = f'{alpha:.6f}'
 
         try:
             logger.debug(
-                f'trying to retrieve result from hash for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                f'trying to retrieve result from hash for exceedance_probability {encoded_exceedance_probability}, '
+                f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
             )
-            hashed_entry = self.hashed_return_values[f'{exceedance_probability:.6f}']
+            hashed_entry = self.hashed_return_values[encoded_exceedance_probability]
             return_value = hashed_entry['return value']
-            confidence_interval = hashed_entry[decoded_alpha][decoded_kwargs]
+            confidence_interval = hashed_entry[encoded_alpha][encoded_kwargs]
             logger.debug('successfully retrieved result from hash - returning values')
             return (return_value, *confidence_interval)
         except KeyError:
             logger.debug(
-                f'calculating new results for exceedance_probability {exceedance_probability:.6f}, '
-                f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                f'calculating new results for exceedance_probability {encoded_exceedance_probability}, '
+                f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
             )
             rv = self._get_return_value(exceedance_probability=exceedance_probability, alpha=alpha, **kwargs)
-            if f'{exceedance_probability:.6f}' in self.hashed_return_values:
-                if decoded_alpha in self.hashed_return_values[f'{exceedance_probability:.6f}']:
+
+            if encoded_exceedance_probability in self.hashed_return_values:
+                if encoded_alpha in self.hashed_return_values[encoded_exceedance_probability]:
                     logger.debug(
-                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'and alpha {decoded_alpha} with kwargs {decoded_kwargs}'
+                        f'updating entry for exceedance_probability {encoded_exceedance_probability} '
+                        f'and alpha {encoded_alpha} with kwargs {encoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha][decoded_kwargs] = rv[1]
+                    self.hashed_return_values[encoded_exceedance_probability][encoded_alpha][encoded_kwargs] = rv[1]
                 else:
                     logger.debug(
-                        f'updating entry for exceedance_probability {exceedance_probability:.6f} '
-                        f'with alpha {decoded_alpha} and kwargs {decoded_kwargs}'
+                        f'updating entry for exceedance_probability {encoded_exceedance_probability} '
+                        f'with alpha {encoded_alpha} and kwargs {encoded_kwargs}'
                     )
-                    self.hashed_return_values[f'{exceedance_probability:.6f}'][decoded_alpha] = {
-                        decoded_kwargs: rv[1]
-                    }
+                    self.hashed_return_values[encoded_exceedance_probability][encoded_alpha] = {encoded_kwargs: rv[1]}
             else:
                 logger.debug(
-                    f'creating a new entry for exceedance_probability {exceedance_probability:.6f}, '
-                    f'alpha {decoded_alpha}, and kwargs {decoded_kwargs}'
+                    f'creating a new entry for exceedance_probability {encoded_exceedance_probability}, '
+                    f'alpha {encoded_alpha}, and kwargs {encoded_kwargs}'
                 )
-                self.hashed_return_values[f'{exceedance_probability:.6f}'] = {
+                self.hashed_return_values[encoded_exceedance_probability] = {
                     'return value': rv[0],
-                    decoded_alpha: {
-                        decoded_kwargs: rv[1]
+                    encoded_alpha: {
+                        encoded_kwargs: rv[1]
                     }
                 }
+
+            logger.debug('hash has been updated - calling the retrieval function again')
             return self._retrieve_return_value(
                 exceedance_probability=exceedance_probability,
                 alpha=alpha,
@@ -258,32 +294,63 @@ class AbstractModelBaseClass(abc.ABC):
             alpha: float,
             **kwargs
     ) -> tuple:
+        """
+        Calculate return value and confidence interval bounds for given exceedance probability.
+
+        Parameters
+        ----------
+        exceedance_probability : float
+            Exceedance probability [0, 1).
+        alpha : float
+            Width of confidence interval (0, 1) (default=None).
+            If None, return None for upper and lower confidence interval bounds.
+        kwargs
+            Keyword arguments passed to a model ._get_return_value method.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
+
+        Returns
+        -------
+        return_value : float
+        ci : tuple
+            ci_lower : float
+            ci_upper : float
+        """
         pass
 
-    @abc.abstractmethod
+    def get_prop(
+            self,
+            prop: str,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        logger.debug('calculating and returning property')
+        return self.distribution.get_prop(prop=prop, x=x, free_parameters=self.fit_parameters)
+
     def pdf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='pdf', x=x)
 
-    @abc.abstractmethod
+    def logpdf(
+            self,
+            x: typing.Union[float, np.ndarray]
+    ) -> typing.Union[float, np.ndarray]:
+        return self.get_prop(prop='logpdf', x=x)
+
     def cdf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='cdf', x=x)
 
-    @abc.abstractmethod
     def ppf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='ppf', x=x)
 
-    @abc.abstractmethod
     def isf(
             self,
             x: typing.Union[float, np.ndarray]
     ) -> typing.Union[float, np.ndarray]:
-        pass
+        return self.get_prop(prop='isf', x=x)

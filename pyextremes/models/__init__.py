@@ -15,3 +15,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from pyextremes.models.models import get_model
+from pyextremes.models.distribution import Distribution

@@ -24,20 +24,17 @@ logger = logging.getLogger(__name__)
 
 class ExtremesTransformer:
     """
-    Extreme value transformer class. Provides methods to transform extreme value series to and from
-    format compatible with pyextremes models.
-    The transformed extreme value series have the following properties:
-        - probability density decreases with increased value (same as if 'extremes_type' is 'high')
-        - if 'extremes_method' is POT, then the series also starts at 0 (ensures that location parameter
-            in the genpareto distribution is always 0)
+    Extreme value transformer class.
+    Provides methods to transform extreme value series to and from format compatible with pyextremes models.
+    The values are transformed in a way to have extreme events at the right side of the distribution support.
+    For extremes_type being 'high' no transform is performed.
+    For extremes_type being 'low' the values are flipped around the maximum value.
+
 
     Parameters
     ----------
     extremes : pandas.Series
         Time series of extreme events.
-    extremes_method : str
-        Extreme value extraction method.
-        Supported values: BM or POT.
     extremes_type : str
         high - provided extreme values are extreme high values
         low - provided extreme values are extreme low values
@@ -46,36 +43,20 @@ class ExtremesTransformer:
     def __init__(
             self,
             extremes: pd.Series,
-            extremes_method: str,
             extremes_type: str,
     ) -> None:
-        if extremes_method not in ['BM', 'POT']:
-            raise ValueError(f'\'{extremes_method}\' is not a valid \'extremes_method\' value')
-        if extremes_type not in ['high', 'low']:
-            raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
-
+        self.extremes = extremes
         self.extremes_type = extremes_type
 
-        logger.info('finding pivot value')
-        if extremes_method == 'BM':
-            self.pivot_value = 0
-        elif extremes_method == 'POT':
-            if extremes_type == 'high':
-                self.pivot_value = extremes.min()
-            elif extremes_type == 'low':
-                self.pivot_value = extremes.max()
-        logger.info(f'calculated the pivot value as {self.pivot_value}')
-
         logger.info('transforming extremes')
-        self.transformed_extremes = self.forward_transform(value=extremes)
+        self.transformed_extremes = self.transform(value=extremes)
 
-    def forward_transform(
+    def transform(
             self,
-            value: typing.Union[float, pd.Series]
-    ) -> typing.Union[float, pd.Series]:
+            value: typing.Union[None, float, pd.Series]
+    ) -> typing.Union[None, float, pd.Series]:
         """
-        Perform an forward transform of extreme values.
-        Transforms original extremes to pyextremes-model-friendly extremes.
+        Perform a transform of extreme values. Works both ways.
 
         Parameters
         ----------
@@ -84,58 +65,16 @@ class ExtremesTransformer:
 
         Returns
         -------
-        transformed_value : float or pandas.Series
+        transformed_value : None, float, or pandas.Series
             Transformed value or series.
+            If value is None, returns None.
         """
 
-        logger.info('performing forward transform')
-        if self.extremes_type == 'high':
-            return value - self.pivot_value
-        elif self.extremes_type == 'low':
-            return self.__pivot(value=value) - self.pivot_value
-
-    def inverse_transform(
-            self,
-            value: typing.Union[float, pd.Series]
-    ) -> typing.Union[float, pd.Series]:
-        """
-        Perform an inverse transform of extreme values.
-        Transforms pyextremes-model-friendly extremes to original extremes.
-
-        Parameters
-        ----------
-        value : float or pandas.Series
-            Value or series of values to be transformed.
-
-        Returns
-        -------
-        transformed_value : float or pandas.Series
-            Transformed value or series.
-        """
-
-        logger.info('performing inverse transform')
-        if self.extremes_type == 'high':
-            return value + self.pivot_value
-        elif self.extremes_type == 'low':
-            return self.__pivot(value=value+self.pivot_value)
-
-    def __pivot(
-            self,
-            value: typing.Union[float, pd.Series]
-    ) -> typing.Union[float, pd.Series]:
-        """
-        Pivot (a.k.a. mirror or rotate) series around self.pivot_value.
-
-        Parameters
-        ----------
-        value : float or pandas.Series
-            Value or series of values to be pivoted.
-
-        Returns
-        -------
-        pivoted_value : float or pandas.Series
-            Pivoted value or series.
-        """
-
-        logger.info('pivoting values')
-        return 2 * self.pivot_value - value
+        if value is None:
+            return value
+        else:
+            logger.debug('performing transform')
+            if self.extremes_type == 'high':
+                return value
+            else:
+                return 2 * self.extremes.max() - value

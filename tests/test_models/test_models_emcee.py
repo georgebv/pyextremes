@@ -16,44 +16,45 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 import scipy.stats
 
+import pytest
 from pyextremes.models import get_model
 
 
 @pytest.mark.parametrize(
-    'distribution_name, distribution_kwargs, scipy_parameters',
+    'distribution_name, theta, distribution_kwargs, scipy_parameters',
     [
-        ('genextreme',  {}, (0.5, 10, 2)),
-        ('gumbel_r', {}, (10, 2)),
-        ('genpareto', {}, (0.5, 0, 2)),
-        ('genpareto', {'floc': 0}, (0.5, 0, 2)),
-        ('expon', {}, (0, 2)),
-        ('expon', {'floc': 0}, (0, 2))
+        ('genextreme', (0.5, 10, 2), {}, (0.5, 10, 2)),
+        ('gumbel_r', (10, 2), {}, (10, 2)),
+        ('genpareto', (0.5, 0, 2), {}, (0.5, 0, 2)),
+        ('genpareto', (0.5, 2), {'floc': 0}, (0.5, 0, 2)),
+        ('expon', (0, 2,), {}, (0, 2)),
+        ('expon', (2, ), {'floc': 0}, (0, 2))
     ]
 )
-def test_mle(distribution_name, distribution_kwargs, scipy_parameters):
+def test_emcee(distribution_name, theta, distribution_kwargs, scipy_parameters):
     scipy_distribution = getattr(scipy.stats, distribution_name)
 
     model = get_model(
-        model='MLE',
+        model='Emcee',
         extremes=pd.Series(
             index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
             data=scipy_distribution.rvs(*scipy_parameters, size=100)
         ),
         distribution=distribution_name,
-        distribution_kwargs=distribution_kwargs
+        distribution_kwargs=distribution_kwargs,
+        n_walkers=20,
+        n_samples=100
     )
 
     # Test fit
     assert len(model.fit_parameters) == (len(scipy_parameters) - len(distribution_kwargs))
-    assert model.trace is None
+    assert model.trace.shape == (20, 100, len(theta))
     assert model.hashed_return_values == {}
-    assert model.hashed_fit_parameters == []
 
     # Test model name
-    assert model.name == 'MLE'
+    assert model.name == 'Emcee'
 
     # Test loglikelihood
     assert np.isclose(
@@ -86,23 +87,26 @@ def test_mle(distribution_name, distribution_kwargs, scipy_parameters):
 
     # Test encode_kwargs
     with pytest.raises(TypeError):
-        model._encode_kwargs({'n_samples': 1.01})
+        model._encode_kwargs({'burn_in': 1.01})
     with pytest.raises(ValueError):
-        model._encode_kwargs({'n_samples': -5})
-    for n_samples in [1, 10, 252]:
-        assert model._encode_kwargs({'n_samples': n_samples}) == f'{n_samples:d}'
+        model._encode_kwargs({'burn_in': -5})
+    with pytest.raises(ValueError):
+        model._encode_kwargs({'burn_in': 100})
+    for burn_in in [1, 10, 95]:
+        assert model._encode_kwargs({'burn_in': burn_in}) == f'{burn_in:d}'
 
     # Test return value
-    return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
+    return_value = model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=50)
     assert np.isclose(
         return_value[0],
-        scipy_distribution.isf(0.1, **model.fit_parameters, **model.distribution._fixed_parameters)
+        scipy_distribution.isf(0.1, **model.fit_parameters, **model.distribution._fixed_parameters),
+        rtol=0.1
     )
     assert len(return_value) == 3
     assert return_value[1] < return_value[0] < return_value[2]
 
     # Test hash
-    hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=40)
+    hashed_rv = model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=50)
     assert len(model.hashed_return_values) == 1
     assert np.allclose(return_value, hashed_rv)
 
@@ -111,23 +115,19 @@ def test_mle(distribution_name, distribution_kwargs, scipy_parameters):
     assert return_value[1:] == (None, None)
 
     # Test update hashed values
-    model.get_return_value(exceedance_probability=0.1, alpha=0.95, n_samples=20)
+    model.get_return_value(exceedance_probability=0.1, alpha=0.95, burn_in=20)
     assert len(model.hashed_return_values) == 1
     assert len(model.hashed_return_values['0.100000']) == 3
     assert len(model.hashed_return_values['0.100000']['0.950000']) == 2
-    model.get_return_value(exceedance_probability=0.1, alpha=0.5, n_samples=20)
+    model.get_return_value(exceedance_probability=0.1, alpha=0.5, burn_in=20)
     assert len(model.hashed_return_values) == 1
     assert len(model.hashed_return_values['0.100000']) == 4
     assert len(model.hashed_return_values['0.100000']['0.500000']) == 1
 
     # Get multiple return values
-    return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, n_samples=10)
+    return_values = model.get_return_value(exceedance_probability=np.arange(0.9, 0, -0.1), alpha=0.5, burn_in=10)
     assert len(return_values) == 3
     assert len(model.hashed_return_values) == 9
-
-    # Test model hashed fit parameters
-    assert len(model.hashed_fit_parameters) == 40
-    assert np.all([len(sample) == len(scipy_parameters) for sample in model.hashed_fit_parameters])
 
     # Test properties
     for prop in ['pdf', 'cdf', 'ppf', 'isf', 'logpdf']:

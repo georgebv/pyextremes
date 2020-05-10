@@ -14,16 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import pathlib
-
 import pandas as pd
 import pytest
 
 from pyextremes.models import get_model
-
-test_data_folder = pathlib.Path(os.path.realpath(__file__)).parent.parent / 'data'
-test_data = pd.read_csv(test_data_folder/'battery_wl.csv', index_col=0, parse_dates=True, squeeze=True)
 
 
 def test_get_model():

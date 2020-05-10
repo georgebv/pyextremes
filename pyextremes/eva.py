@@ -17,18 +17,20 @@
 import calendar
 import logging
 import typing
+import warnings
 
 import matplotlib.gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import scipy.stats
 
 from pyextremes.extremes import (
     ExtremesTransformer,
     get_extremes,
     get_return_periods
 )
-from pyextremes.models import get_model
+from pyextremes.models import get_model, Distribution
 from pyextremes.plotting import (
     plot_extremes,
     plot_corner,
@@ -45,21 +47,23 @@ class EVA:
     """
     Extreme Value Analysis (EVA) class.
     This class brings together most of the tools available in the pyextremes package
-    and provides a pipeline to perform extreme value analysis on time series of a signal.
+    bundled together in a pipeline to perform extreme value analysis.
 
     A typical workflow using the EVA class would consist of the following:
         - extract extreme values (.get_extremes method)
         - fit a model (.fit_model method)
         - generate outputs (.get_summary method)
+        - visualize the model (.plot_diagnostic, .plot_return_values methods)
 
     Multiple additional graphical and numerical methods are available within this class
-    to analyze extracted extreme values, vizualize them, assess goodness-of-fit of selected model,
+    to analyze extracted extreme values, visualize them, assess goodness-of-fit of selected model,
     and to visualize its outputs.
 
     Parameters
     ----------
     data : pandas.Series
         Time series of the signal.
+        Index must be date-time and values must be numeric.
     """
 
     def __init__(
@@ -68,7 +72,7 @@ class EVA:
     ) -> None:
         logger.info('ensuring data has correct types')
         if not isinstance(data, pd.Series):
-            raise TypeError(f'invalid type in {type(data)} for the \'data\' argument')
+            raise TypeError(f'data must be pandas.Series, {type(data)} was passed')
         if not data.index.is_all_dates:
             raise TypeError('index of data must be a sequence of date-time objects')
         if not np.issubdtype(data.dtype, np.number):
@@ -112,7 +116,7 @@ class EVA:
             )
 
         def align_text(text: str, value: str) -> str:
-            value_width = (width - sep) - (len(text) + 1)
+            value_width = width - (len(text) + 1)
             return f'{text}:{value:>{value_width:d}}'
 
         def align_pair(text: tuple, value: tuple) -> str:
@@ -153,7 +157,7 @@ class EVA:
             elif self.extremes_method == 'POT':
                 ev_parameters = ('Threshold', str(self.extremes_kwargs['threshold']))
             else:
-                raise RuntimeError
+                raise RuntimeError(f'this is a bug - wrong extremes method')
             summary.extend(
                 [
                     align_pair(
@@ -183,25 +187,38 @@ class EVA:
                 ]
             )
         else:
+            summary.append(
+                align_pair(
+                    ('Model', 'Distribution'),
+                    (self.model.name, self.model.distribution.name)
+                )
+            )
+            if self.model.name == 'Emcee':
+                summary.append(
+                    align_pair(
+                        ('Walkers', 'Samples per walker'),
+                        (f'{self.model_kwargs["n_walkers"]:d}', f'{self.model_kwargs["n_samples"]:d}')
+                    )
+                )
+            free_parameters = ', '.join(
+                [
+                    f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
+                    for parameter in self.model.distribution.free_parameters
+                ]
+            )
+            fixed_parameters = ', '.join(
+                [
+                    f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
+                ]
+            )
+            if fixed_parameters == '':
+                fixed_parameters = 'All parameters are free'
             summary.extend(
                 [
                     align_pair(
-                        ('Model', 'Distribution'),
-                        (self.model.name, self.model.distribution.name)
-                    )
-                ]
-            )
-            if self.model.name == 'Emcee':
-                summary.extend(
-                    [
-                        align_pair(
-                            ('Walkers', 'Samples per walker'),
-                            (f'{self.model_kwargs["n_walkers"]:d}', f'{self.model_kwargs["n_samples"]:d}')
-                        )
-                    ]
-                )
-            summary.extend(
-                [
+                        ('Free parameters', 'Fixed parameters'),
+                        (free_parameters, fixed_parameters)
+                    ),
                     align_pair(
                         ('Log-likelihood', 'AIC'),
                         (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
@@ -254,12 +271,8 @@ class EVA:
             if isinstance(self.extremes_kwargs['block_size'], str):
                 self.extremes_kwargs['block_size'] = pd.to_timedelta(self.extremes_kwargs['block_size'])
 
-        logger.info('preparing extremes transformer object')
-        self.extremes_transformer = ExtremesTransformer(
-            extremes=self.extremes,
-            extremes_method=method,
-            extremes_type=extremes_type
-        )
+        logger.info('creating extremes transformer')
+        self.extremes_transformer = ExtremesTransformer(extremes=self.extremes, extremes_type=self.extremes_type)
 
         logger.info('removing any previously declared models')
         self.model = None
@@ -298,7 +311,8 @@ class EVA:
     def fit_model(
             self,
             model: str,
-            distribution: str,
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
         """
@@ -307,26 +321,39 @@ class EVA:
         Parameters
         ----------
         model : str
-            Name of an extreme value distribution fitting model.
+            Name of an extreme value distribution fitting model (not case-sensitive).
             Supported names:
-                MLE - Maximum Likelihood Estimate model (based on scipy)
-                Emcee - Markov Chain Monte Carlo model based on the emcee package by Daniel Foreman-Mackey
-        distribution : str
-            Name of scipy.stats distribution.
+                MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
+                Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
+        distribution : str or scipy.stats.rv_continuous
+            Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
+            See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
+        distribution_kwargs : dict, optional
+            Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
+            These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
+            parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
+            See documentation of a specific scipy.stats distribution for names of available parameters.
+            By default (None) assigns fixed parameters automatically based on selected model and extremes type.
+            Examples:
+                dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+                    of the distribution, reducting its degree of freedom (number of free parameters) by one.
+                dict(floc=0) hold the location parameter 'loc' at 0
+                dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
         kwargs
-            Model-specific keyword arguments.
+            Keyword arguments passed to a model .fit method.
             MLE model:
                 MLE model takes no additional arguments.
             Emcee model:
                 n_walkers : int, optional
                     The number of walkers in the ensemble (default=100).
                 n_samples : int, optional
-                    The number of steps to run (default=1000).
+                    The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
                     If a string, will select a specific tqdm progress bar - most notable is
                     'notebook', which shows a progress bar suitable for Jupyter notebooks.
                     If False, no progress bar will be shown (default=False).
+                    This progress bar is a part of the emcee package.
         """
 
         logger.info('making sure extreme values have been extracted')
@@ -336,20 +363,28 @@ class EVA:
         logger.info('checking if distribution is valid for extremes type')
         if distribution in ['genextreme', 'gumbel_r']:
             if self.extremes_method != 'BM':
-                raise ValueError(
+                warnings.warn(
                     f'{distribution} distribution is only applicable to extremes extracted using the BM model'
                 )
         elif distribution in ['genpareto', 'expon']:
             if self.extremes_method != 'POT':
-                raise ValueError(
+                warnings.warn(
                     f'{distribution} distribution is only applicable to extremes extracted using the POT model'
                 )
+
+        if distribution_kwargs is None:
+            logger.info('assigning default distribution_kwargs')
+            _distribution = Distribution(extremes=self.extremes, distribution=distribution)
+            if _distribution.name in ['genpareto', 'expon']:
+                logger.info(f'fixing location parameter at 0 (floc=0) for {_distribution.name} distribution')
+                distribution_kwargs = {'floc': self.extremes_transformer.transformed_extremes.min()}
 
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
             model=model,
             extremes=self.extremes_transformer.transformed_extremes,
             distribution=distribution,
+            distribution_kwargs=distribution_kwargs,
             **kwargs
         )
         self.model_kwargs = kwargs.copy()
@@ -383,24 +418,32 @@ class EVA:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
 
         logger.info('making sure the fitting model has trace')
-        if self.model.name not in ['Emcee']:
-            raise ValueError('this method is applicable only for MCMC models')
+        if self.model.trace is None:
+            raise AttributeError('this method is applicable only for MCMC-like models with .trace attribute')
 
-        distribution_labels = {
-            'genextreme': [r'Shape, $\xi$', r'Location, $\mu$', r'Scale, $\sigma$'],
-            'gumbel_r': [r'Location, $\mu$', r'Scale, $\sigma$'],
-            'genpareto': [r'Shape, $\xi$', r'Scale, $\sigma$'],
-            'expon': [r'Scale, $\sigma$']
+        parameter_names = {
+            'c': r'Shape, $\xi$',
+            'loc': r'Location, $\mu$',
+            'scale': r'Scale, $\sigma$'
         }
         if labels is None:
-            try:
-                labels = distribution_labels[self.model.distribution.name]
-            except KeyError:
-                pass
+            logger.info('assigning distribution parameter labels')
+            labels = []
+            for parameter in self.model.distribution.free_parameters:
+                try:
+                    labels.append(parameter_names[parameter])
+                except KeyError:
+                    labels.append(parameter)
+
+        logger.info('preparing distribution parameters MAP tuple')
+        trace_map = tuple(
+            self.model.fit_parameters[parameter]
+            for parameter in self.model.distribution.free_parameters
+        )
 
         return plot_trace(
-            trace=self.model.fit_parameters['trace'],
-            trace_map=self.model.fit_parameters['map'],
+            trace=self.model.trace,
+            trace_map=trace_map,
             labels=labels,
             figsize=figsize
         )
@@ -436,24 +479,32 @@ class EVA:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
 
         logger.info('making sure the fitting model has trace')
-        if self.model.name not in ['Emcee']:
-            raise ValueError('this method is applicable only for MCMC models')
+        if self.model.trace is None:
+            raise AttributeError('this method is applicable only for MCMC-like models with .trace attribute')
 
-        distribution_labels = {
-            'genextreme': [r'Shape, $\xi$', r'Location, $\mu$', r'Scale, $\sigma$'],
-            'gumbel_r': [r'Location, $\mu$', r'Scale, $\sigma$'],
-            'genpareto': [r'Shape, $\xi$', r'Scale, $\sigma$'],
-            'expon': [r'Scale, $\sigma$']
+        parameter_names = {
+            'c': r'Shape, $\xi$',
+            'loc': r'Location, $\mu$',
+            'scale': r'Scale, $\sigma$'
         }
         if labels is None:
-            try:
-                labels = distribution_labels[self.model.distribution.name]
-            except KeyError:
-                pass
+            logger.info('assigning distribution parameter labels')
+            labels = []
+            for parameter in self.model.distribution.free_parameters:
+                try:
+                    labels.append(parameter_names[parameter])
+                except KeyError:
+                    labels.append(parameter)
+
+        logger.info('preparing distribution parameters MAP tuple')
+        trace_map = tuple(
+            self.model.fit_parameters[parameter]
+            for parameter in self.model.distribution.free_parameters
+        )
 
         return plot_corner(
-            trace=self.model.fit_parameters['trace'],
-            trace_map=self.model.fit_parameters['map'],
+            trace=self.model.trace,
+            trace_map=trace_map,
             labels=labels,
             burn_in=burn_in,
             figsize=figsize
@@ -461,7 +512,7 @@ class EVA:
 
     def get_return_value(
             self,
-            return_period: typing.Union[float, typing.Iterable],
+            return_period: typing.Union[float, tuple, list, np.ndarray],
             return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
             alpha: float = None,
             **kwargs
@@ -480,11 +531,11 @@ class EVA:
             Width of confidence interval, from 0 to 1 (default=None).
             If None, return None for upper and lower confidence interval bounds.
         kwargs
-            Model-specific keyword arguments.
-            If alpha is None, no keyword arguments are required or accepted.
+            Keyword arguments specific to a model.
+            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
             MLE model:
-                n_samples : int
-                    Number of samles used to get confidence interval.
+                n_samples : int, optional
+                    Number of bootstrap samples used to estimate confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
@@ -512,30 +563,29 @@ class EVA:
             extremes_rate = len(self.extremes) / n_periods
             logger.debug('calculated extremes_rate for POT method')
         else:
-            raise RuntimeError
+            raise RuntimeError('this is a bug - invalid extremes method')
 
         logger.info('calculating exceedance probability')
-        if hasattr(return_period, '__iter__') and not isinstance(return_period, str):
+        if isinstance(return_period, (tuple, list, np.ndarray)):
             logger.info('getting a list of exceedance probabilities')
             exceedance_probability = 1 / np.array(return_period) / extremes_rate
-        elif isinstance(return_period, float):
+        elif isinstance(return_period, (int, float, np.number)):
             logger.info('getting a single exceedance probability')
             exceedance_probability = 1 / return_period / extremes_rate
         else:
-            raise TypeError(
-                f'invalid type in {type(return_period)} for the \'return_period\' argument'
-            )
+            raise TypeError(f'invalid type in {type(return_period)} for the \'return_period\' argument')
 
         logger.info('calculating return value using the model')
-        return self.model.get_return_value(
+        rv = self.model.get_return_value(
             exceedance_probability=exceedance_probability,
             alpha=alpha,
             **kwargs
         )
+        return tuple(self.extremes_transformer.transform(value) for value in rv)
 
     def get_summary(
             self,
-            return_period: typing.Iterable,
+            return_period: typing.Union[tuple, list, np.ndarray],
             return_period_size: typing.Union[str, pd.Timedelta] = '1Y',
             alpha: float = 0.95,
             **kwargs
@@ -732,16 +782,14 @@ class EVA:
         if plot_type == 'PP':
             observed = 1 - observed_return_values.loc[:, 'exceedance probability'].values
             theoretical = self.model.cdf(
-                self.extremes_transformer.forward_transform(
+                self.extremes_transformer.transform(
                     observed_return_values.loc[:, self.extremes.name].values
                 )
             )
         elif plot_type == 'QQ':
             observed = observed_return_values.loc[:, self.extremes.name].values
-            theoretical = self.extremes_transformer.inverse_transform(
-                self.model.isf(
-                    observed_return_values.loc[:, 'exceedance probability'].values
-                )
+            theoretical = self.extremes_transformer.transform(
+                self.model.isf(observed_return_values.loc[:, 'exceedance probability'].values)
             )
         else:
             raise ValueError(f'\'{plot_type}\' is not a valid \'plot_type\' value. Available plot_types: PP, QQ')
@@ -842,7 +890,7 @@ class EVA:
 
             logger.info('plotting pdf')
             pdf_support = np.linspace(self.extremes.min(), self.extremes.max(), 100)
-            pdf = self.model.pdf(self.extremes_transformer.forward_transform(pdf_support))
+            pdf = self.model.pdf(self.extremes_transformer.transform(pdf_support))
             ax_pdf.grid(False)
             ax_pdf.set_title('Probability density plot')
             ax_pdf.set_ylabel('Probability density')
@@ -903,4 +951,9 @@ if __name__ == '__main__':
     test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to_timedelta('1Y') * 2.87e-3
     self = EVA(data=test_data)
     self.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
-    self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
+    self.fit_model(model='MLE', distribution='genextreme')
+    # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
+
+    self.get_extremes(method='POT', extremes_type='high', threshold=1.3)
+    self.fit_model(model='MLE', distribution='genpareto')
+    self.plot_diagnostic()

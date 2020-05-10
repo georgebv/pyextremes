@@ -16,6 +16,7 @@
 
 import logging
 import typing
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -24,22 +25,26 @@ import scipy.stats
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
-
-distributions = ['genpareto', 'expon', 'genextreme', 'gumbel_r']
+DEFAULT_N_SAMPLES = 100
 
 
 class MLE(AbstractModelBaseClass):
     """
-    Maximum Likelihood Estimate (MLE) model built around the scipy.stats package.
+    Maximum Likelihood Estimate (MLE) model.
+    Built around the scipy.stats.rv_continuous.fit method.
     """
 
     def __init__(
             self,
             extremes: pd.Series,
-            distribution: str,
-            **kwargs
+            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            distribution_kwargs: dict = None
     ) -> None:
-        super().__init__(extremes=extremes, distribution=distribution, **kwargs)
+        super().__init__(
+            extremes=extremes,
+            distribution=distribution,
+            distribution_kwargs=distribution_kwargs
+        )
 
         logger.info('initializing the fit parameter hash')
         self.hashed_fit_parameters = []
@@ -48,54 +53,20 @@ class MLE(AbstractModelBaseClass):
     def name(self) -> str:
         return 'MLE'
 
-    def _get_distribution(
-            self,
-            distribution: str
-    ) -> scipy.stats.rv_continuous:
-        return getattr(scipy.stats, distribution)
-
-    def _fit(
-            self,
-            extremes: pd.Series,
-            **kwargs
-    ) -> tuple:
+    def fit(self, **kwargs) -> None:
         assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        if self.distribution.name in ['genpareto', 'expon']:
-            return self.distribution.fit(extremes, floc=0)
-        elif self.distribution.name in ['genextreme', 'gumbel_r']:
-            return self.distribution.fit(extremes)
-        else:
-            raise NotImplementedError(
-                f'\'{self.distribution.name}\' distribution is not implemented for the \'MLE\' model. '
-                f'Available \'MLE\' distributions: {", ".join(distributions)}'
-            )
+        self.fit_parameters = self.distribution.mle_parameters
+        self.trace = None
 
-    @property
-    def loglikelihood(self) -> float:
-        return sum(self.distribution.logpdf(self.extremes.values, *self.fit_parameters))
-
-    @property
-    def AIC(self) -> float:
-        if self.distribution.name in ['genextreme']:
-            k = 3
-        elif self.distribution.name in ['genpareto', 'gumbel_r']:
-            k = 2
-        elif self.distribution.name in ['expon']:
-            k = 1
-        else:
-            raise NotImplementedError(
-                f'\'{self.distribution.name}\' distribution is not implemented for the \'MLE\' model. '
-                f'Available \'MLE\' distributions: {", ".join(distributions)}'
-            )
-        return 2 * k - 2 * self.loglikelihood
-
-    def _decode_kwargs(
+    def _encode_kwargs(
             self,
             kwargs: dict
     ) -> str:
-        n_samples = kwargs.get('n_samples', 1000)
+        n_samples = kwargs.get('n_samples', DEFAULT_N_SAMPLES)
         if not isinstance(n_samples, int):
-            raise TypeError(f'invalid type in {type(n_samples)} for the \'n_samples\' argument')
+            raise TypeError(
+                f'invalid type in {type(n_samples)} for the \'n_samples\' argument, it must be a positive integer'
+            )
         if n_samples <= 0:
             raise ValueError(f'\'{n_samples}\' is not a valid \'n_samples\' value, it must be a positive integer')
         return f'{n_samples:d}'
@@ -107,27 +78,44 @@ class MLE(AbstractModelBaseClass):
             **kwargs
     ) -> tuple:
         logger.debug('calculating return value')
-        return_value = self.distribution.isf(exceedance_probability, *self.fit_parameters)
+        return_value = self.distribution.distribution.isf(
+            q=exceedance_probability,
+            **self.fit_parameters,
+            **self.distribution._fixed_parameters
+        )
+
         if alpha is None:
+            if 'n_samples' in kwargs:
+                kwargs.pop('n_samples')
+                warnings.warn(message='n_samples is not used when alpha is None')
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
             logger.debug('returning confidence interval as None for alpha=None')
             confidence_interval = (None, None)
+
         else:
-            n_samples = kwargs.pop('n_samples', 1000)
+            n_samples = kwargs.pop('n_samples', DEFAULT_N_SAMPLES)
             assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
 
             if len(self.hashed_fit_parameters) < n_samples:
-                logger.info('putting additional fit parameters into the hash')
+                logger.debug(
+                    f'putting {n_samples-len(self.hashed_fit_parameters):d} additional fit parameters into the hash'
+                )
                 for _ in range(n_samples - len(self.hashed_fit_parameters)):
                     sample = np.random.choice(a=self.extremes.values, size=len(self.extremes), replace=True)
-                    sample_fit_parameters = self._fit(extremes=sample)
+                    sample_fit_parameters = self.distribution.distribution.fit(
+                        data=sample,
+                        **self.distribution.fixed_parameters
+                    )
                     self.hashed_fit_parameters.append(sample_fit_parameters)
 
-            logger.info('calculating return values from hashed fit parameters')
-            rv_sample = np.zeros(shape=n_samples)
-            for i in range(n_samples):
-                rv_sample[i] = self.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
+            logger.debug(
+                'calculating return values from hashed fit parameters to be used for confidence interval estimation'
+            )
+            rv_sample = [
+                self.distribution.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
+                for i in range(n_samples)
+            ]
 
             logger.debug('calculating confidence interval')
             confidence_interval = tuple(
@@ -136,28 +124,6 @@ class MLE(AbstractModelBaseClass):
                     q=[(1-alpha)/2, (1+alpha)/2]
                 )
             )
+
+        logger.debug('returning return value and confidence interval')
         return return_value, confidence_interval
-
-    def pdf(
-            self,
-            x: typing.Union[float, np.ndarray]
-    ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.pdf(x, *self.fit_parameters)
-
-    def cdf(
-            self,
-            x: typing.Union[float, np.ndarray]
-    ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.cdf(x, *self.fit_parameters)
-
-    def ppf(
-            self,
-            x: typing.Union[float, np.ndarray]
-    ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.ppf(x, *self.fit_parameters)
-
-    def isf(
-            self,
-            x: typing.Union[float, np.ndarray]
-    ) -> typing.Union[float, np.ndarray]:
-        return self.distribution.isf(x, *self.fit_parameters)
