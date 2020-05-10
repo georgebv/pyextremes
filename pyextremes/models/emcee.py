@@ -98,7 +98,7 @@ class Emcee(AbstractModelBaseClass):
         return_value = self.distribution.distribution.isf(
             q=exceedance_probability,
             **self.fit_parameters,
-            **self.distribution.fixed_parameters
+            **self.distribution._fixed_parameters
         )
 
         if alpha is None:

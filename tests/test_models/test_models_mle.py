@@ -23,25 +23,25 @@ from pyextremes.models import get_model
 
 
 @pytest.mark.parametrize(
-    'distribution_name, theta, distribution_kwargs, scipy_parameters',
+    'distribution_name, distribution_kwargs, scipy_parameters',
     [
-        ('genextreme', (0.5, 10, 2), {}, (0.5, 10, 2)),
-        ('gumbel_r', (10, 2), {}, (10, 2)),
-        ('genpareto', (0.5, 0, 2), {}, (0.5, 0, 2)),
-        ('genpareto', (0.5, 2), {'floc': 0}, (0.5, 0, 2)),
-        ('expon', (0, 2,), {}, (0, 2)),
-        ('expon', (2, ), {'floc': 0}, (0, 2))
+        ('genextreme',  {}, (0.5, 10, 2)),
+        ('gumbel_r', {}, (10, 2)),
+        ('genpareto', {}, (0.5, 0, 2)),
+        ('genpareto', {'floc': 0}, (0.5, 0, 2)),
+        ('expon', {}, (0, 2)),
+        ('expon', {'floc': 0}, (0, 2))
     ]
 )
-def test_mle(distribution_name, theta, distribution_kwargs, scipy_parameters):
+def test_mle(distribution_name, distribution_kwargs, scipy_parameters):
     scipy_distribution = getattr(scipy.stats, distribution_name)
 
     model = get_model(
+        model='MLE',
         extremes=pd.Series(
             index=pd.date_range(start='2000-01-01', periods=100, freq='1H'),
             data=scipy_distribution.rvs(*scipy_parameters, size=100)
         ),
-        model='MLE',
         distribution=distribution_name,
         distribution_kwargs=distribution_kwargs
     )
