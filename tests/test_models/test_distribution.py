@@ -22,7 +22,7 @@ import scipy.stats
 from pyextremes.models.distribution import Distribution
 
 
-def test_distribution():
+def test_distribution_errors():
     # Test bad distribution type
     with pytest.raises(TypeError):
         Distribution(
