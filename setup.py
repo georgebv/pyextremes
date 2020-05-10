@@ -20,7 +20,7 @@ setuptools.setup(
     include_package_data=True,
     classifiers=[
         'Programming Language :: Python :: 3.7',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'

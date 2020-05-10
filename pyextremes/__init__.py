@@ -17,4 +17,4 @@
 from pyextremes.eva import EVA
 from pyextremes.extremes import get_extremes, get_return_periods
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
