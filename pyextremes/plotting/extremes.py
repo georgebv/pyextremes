@@ -33,7 +33,7 @@ def plot_extremes(
         extremes_type: str,
         block_size: typing.Union[str, pd.Timedelta] = None,
         figsize: tuple = (8, 5)
-):
+) -> tuple:
     """
     Plot time series of extreme events.
 

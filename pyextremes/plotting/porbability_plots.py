@@ -29,7 +29,7 @@ def plot_probability(
         theoretical: np.ndarray,
         ax=None,
         figsize: tuple = (8, 8)
-):
+) -> tuple:
     """
     Plot a probability plot (QQ or PP).
     Used to assess goodness-of-fit of the model.

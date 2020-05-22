@@ -388,6 +388,13 @@ class EVA:
             **kwargs
         )
         self.model_kwargs = kwargs.copy()
+        if self.model.name == 'Emcee':
+            if 'n_walkers' not in self.model_kwargs:
+                self.model_kwargs['n_walkers'] = 100
+            if 'n_samples' not in self.model_kwargs:
+                self.model_kwargs['n_samples'] = 500
+            if 'progress' not in self.model_kwargs:
+                self.model_kwargs['progress'] = 500
 
     def plot_trace(
             self,
