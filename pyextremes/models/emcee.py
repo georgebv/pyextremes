@@ -63,17 +63,40 @@ class Emcee(AbstractModelBaseClass):
             progress: bool
     ) -> None:
         logger.info('defining emcee ensemble sampler')
-        sampler = emcee.EnsembleSampler(
-            nwalkers=n_walkers,
-            ndim=self.distribution.number_of_parameters,
-            log_prob_fn=self.distribution.log_probability
-        )
+        try:
+            sampler = emcee.EnsembleSampler(
+                nwalkers=n_walkers,
+                ndim=self.distribution.number_of_parameters,
+                log_prob_fn=self.distribution.log_probability
+            )
+        except TypeError:
+            logger.info('falling back to older emcee version syntax')
+            sampler = emcee.EnsembleSampler(
+                nwalkers=n_walkers,
+                dim=self.distribution.number_of_parameters,
+                lnpostfn=self.distribution.log_probability
+            )
 
         logger.info(f'running the sampler with {n_walkers} walkers and {n_samples} samples')
-        sampler.run_mcmc(
-            initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
-            nsteps=n_samples, progress=progress
-        )
+        try:
+            sampler.run_mcmc(
+                initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
+                nsteps=n_samples,
+                progress=progress
+            )
+        except TypeError:
+            logger.info('falling back to older emcee version syntax')
+            sampler.run_mcmc(
+                pos0=self.distribution.get_initial_state(n_walkers=n_walkers),
+                N=n_samples
+            )
+
+        logger.info('extracting Emcee sampler chain')
+        try:
+            mcmc_chain = sampler.get_chain()
+        except AttributeError:
+            logger.info('falling back to older emcee version syntax')
+            mcmc_chain = sampler.chain.transpose((1, 0, 2))
 
         logger.info(
             'calculating maximum aposteriori values of distribution paramters '
@@ -82,7 +105,7 @@ class Emcee(AbstractModelBaseClass):
         )
         map_estimate = np.zeros(self.distribution.number_of_parameters)
         for i in range(self.distribution.number_of_parameters):
-            parameter_values = sampler.get_chain()[n_samples//3:, :, i].flatten()
+            parameter_values = mcmc_chain[n_samples//3:, :, i].flatten()
             kde = scipy.stats.gaussian_kde(dataset=parameter_values)
             support = np.linspace(
                 *np.quantile(parameter_values, [0.025, 0.975]),
@@ -93,7 +116,7 @@ class Emcee(AbstractModelBaseClass):
 
         logger.info('setting fit parameters and trace')
         self.fit_parameters = dict(zip(self.distribution.free_parameters, map_estimate))
-        self.trace = sampler.get_chain().transpose((1, 0, 2))
+        self.trace = mcmc_chain.transpose((1, 0, 2))
 
     def _encode_kwargs(self, kwargs: dict) -> str:
         burn_in = kwargs['burn_in']
