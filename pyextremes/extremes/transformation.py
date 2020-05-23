@@ -30,7 +30,6 @@ class ExtremesTransformer:
     For extremes_type being 'high' no transform is performed.
     For extremes_type being 'low' the values are flipped around the maximum value.
 
-
     Parameters
     ----------
     extremes : pandas.Series

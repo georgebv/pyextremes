@@ -13,18 +13,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-import pandas as pd
-import pytest
-
-from pyextremes.extremes import get_extremes
-
-
-def test_get_extremes():
-    # Test bad method value
-    with pytest.raises(ValueError):
-        get_extremes(
-            ts=pd.Series([1, 2, 3]),
-            method='BAD METHOD',
-            extremes_type='high'
-        )

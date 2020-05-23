@@ -56,15 +56,15 @@ def get_extremes_peaks_over_threshold(
     elif extremes_type == 'low':
         comparison_function = np.less
     else:
-        raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
+        raise ValueError(f'\'{extremes_type}\' is not a valid value of the \'extremes_type\' argument')
 
     logger.info('getting exceedances')
     exceedances = ts.loc[comparison_function(ts.values, threshold)]
 
-    logger.info('parsing r')
+    logger.info('parsing the \'r\' argument')
     if not isinstance(r, pd.Timedelta):
         if isinstance(r, str):
-            logger.info('converting r to timedelta')
+            logger.info('converting \'r\' to pandas.Timedelta')
             r = pd.to_timedelta(r)
         else:
             raise TypeError(f'invalid type in {type(r)} for the \'r\' argument')

@@ -50,13 +50,6 @@ def test_invalid_arguments():
 
 
 def test_extremes_type_high():
-    extremes_bm_high = get_extremes(
-        ts=test_data,
-        method='BM',
-        block_size='1Y',
-        extremes_type='high',
-        errors='ignore'
-    )
     extremes_pot_high = get_extremes(
             ts=test_data,
             method='POT',
@@ -65,18 +58,11 @@ def test_extremes_type_high():
             r='24H'
         )
     assert len(extremes_pot_high) == 127
-    assert np.isclose(extremes_pot_high.max(), extremes_bm_high.max())
+    assert np.isclose(extremes_pot_high.max(), test_data.max())
     assert np.all(np.diff(extremes_pot_high.index) > pd.to_timedelta('24H').to_numpy())
 
 
 def test_extremes_type_low():
-    extremes_bm_low = get_extremes(
-        ts=test_data,
-        method='BM',
-        block_size='1Y',
-        extremes_type='low',
-        errors='ignore'
-    )
     extremes_pot_low = get_extremes(
         ts=test_data,
         method='POT',
@@ -85,5 +71,5 @@ def test_extremes_type_low():
         r='24H'
     )
     assert len(extremes_pot_low) == 109
-    assert np.isclose(extremes_pot_low.min(), extremes_bm_low.min())
+    assert np.isclose(extremes_pot_low.min(), test_data.min())
     assert np.all(np.diff(extremes_pot_low.index) > pd.to_timedelta('24H').to_numpy())

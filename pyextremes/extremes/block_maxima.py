@@ -16,11 +16,16 @@
 
 import logging
 import typing
+import warnings
 
 import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
+
+
+class NoDataBlockWarning(Warning):
+    pass
 
 
 def get_extremes_block_maxima(
@@ -59,18 +64,18 @@ def get_extremes_block_maxima(
     elif extremes_type == 'low':
         extremes_func = pd.Series.idxmin
     else:
-        raise ValueError(f'\'{extremes_type}\' is not a valid \'extremes_type\' value')
+        raise ValueError(f'\'{extremes_type}\' is not a valid value of the \'extremes_type\' argument')
 
-    logger.info('parsing block_size')
+    logger.info('parsing the \'block_size\' argument')
     if not isinstance(block_size, pd.Timedelta):
         if isinstance(block_size, str):
-            logger.info('converting block_size to timedelta')
+            logger.info('converting \'block_size\' to pandas.Timedelta')
             block_size = pd.to_timedelta(block_size)
         else:
             raise TypeError(f'invalid type in {type(block_size)} for the \'block_size\' argument')
 
-    logger.info('preparing date_time_intervals')
-    periods = int(np.ceil((ts.index[-1] - ts.index[0]) / block_size))
+    logger.info('preparing date-time intervals')
+    periods = int(np.ceil((ts.index.max() - ts.index.min()) / block_size))
     date_time_intervals = pd.interval_range(start=ts.index[0], freq=block_size, periods=periods, closed='left')
 
     logger.info('collecting extreme events')
@@ -88,21 +93,21 @@ def get_extremes_block_maxima(
         else:
             empty_intervals += 1
             if errors == 'coerce':
-                logger.debug(f'coerced error in block [{interval.left} ; {interval.right})')
+                logger.debug(f'coerced an error in block [{interval.left} ; {interval.right})')
                 extreme_indices.append(interval.mid)
                 extreme_values.append(np.nan)
             elif errors == 'ignore':
-                logger.debug(f'ignored error in block [{interval.left} ; {interval.right})')
+                logger.debug(f'ignored an error in block [{interval.left} ; {interval.right})')
             elif errors == 'raise':
                 raise ValueError(
                     f'no data in block [{interval.left} ; {interval.right}), fill gaps in the data '
                     f'or set the argument \'errors\' to \'coerce\' or \'ignore\''
                 )
             else:
-                raise ValueError(f'\'{errors}\' is not a valid \'errors\' value')
+                raise ValueError(f'\'{errors}\' is not a valid value of the \'errors\' argument')
 
     if empty_intervals > 0:
-        logger.warning(f'{empty_intervals} blocks contained no data')
+        warnings.warn(f'{empty_intervals} blocks contained no data', category=NoDataBlockWarning)
 
     logger.info('successfully collected extreme events, returning the series')
     return pd.Series(

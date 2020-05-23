@@ -51,6 +51,8 @@ class Emcee(AbstractModelBaseClass):
             n_samples=n_samples,
             progress=progress
         )
+        self.n_walkers = n_walkers
+        self.n_samples = n_samples
 
     @property
     def name(self) -> str:

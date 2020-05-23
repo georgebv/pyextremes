@@ -70,7 +70,7 @@ class EVA:
             self,
             data: pd.Series
     ) -> None:
-        logger.info('ensuring data has correct types')
+        logger.info('ensuring that data has correct types')
         if not isinstance(data, pd.Series):
             raise TypeError(f'data must be pandas.Series, {type(data)} was passed')
         if not data.index.is_all_dates:
@@ -81,10 +81,12 @@ class EVA:
         logger.info('ensuring that data is sorted and has no invalid entries')
         self.data = data.copy(deep=True)
         if not data.index.is_monotonic_increasing:
-            logger.warning('data index is not sorted - sorting data by index')
+            warnings.warn('data index is not sorted - sorting data by index')
+            logger.info('data index is not sorted - sorting data by index')
             self.data = self.data.sort_index(ascending=True)
         if np.any(pd.isna(data)):
-            logger.warning('nan values found in data - removing invalid entries')
+            warnings.warn('nan values found in data - removing invalid entries')
+            logger.info('nan values found in data - removing invalid entries')
             self.data = self.data.dropna()
 
         logger.info('initializing attributes related to extreme value extraction')
@@ -94,10 +96,8 @@ class EVA:
         self.extremes_kwargs = None
         self.extremes_transformer = None
 
-        # Attributes related to model
         logger.info('initializing attributes related to model fitting')
         self.model = None
-        self.model_kwargs = None
 
     def __repr__(self) -> str:
         # repr parameters
@@ -197,7 +197,7 @@ class EVA:
                 summary.append(
                     align_pair(
                         ('Walkers', 'Samples per walker'),
-                        (f'{self.model_kwargs["n_walkers"]:d}', f'{self.model_kwargs["n_samples"]:d}')
+                        (f'{self.model.n_walkers:d}', f'{self.model.n_samples:d}')
                     )
                 )
             free_parameters = ', '.join(
@@ -276,7 +276,6 @@ class EVA:
 
         logger.info('removing any previously declared models')
         self.model = None
-        self.model_kwargs = None
 
     def plot_extremes(
             self,
@@ -387,14 +386,6 @@ class EVA:
             distribution_kwargs=distribution_kwargs,
             **kwargs
         )
-        self.model_kwargs = kwargs.copy()
-        if self.model.name == 'Emcee':
-            if 'n_walkers' not in self.model_kwargs:
-                self.model_kwargs['n_walkers'] = 100
-            if 'n_samples' not in self.model_kwargs:
-                self.model_kwargs['n_samples'] = 500
-            if 'progress' not in self.model_kwargs:
-                self.model_kwargs['progress'] = 500
 
     def plot_trace(
             self,
