@@ -40,10 +40,10 @@ class Distribution:
     kwargs
         Special keyword arguments, passsed to the .fit method of the continuous distribution.
         These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
-        parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
+        parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default, no parameters are fixed.
         See documentation of a specific scipy.stats distribution for names of available parameters.
         Examples:
-            dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
+            dict(fc=0) holds shape parameter 'c' at 0, essentially eliminating it as an independent parameter
                 of the distribution, reducting its degree of freedom (number of free parameters) by one.
             dict(floc=0) hold the location parameter 'loc' at 0
             dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
@@ -63,7 +63,7 @@ class Distribution:
         elif isinstance(distribution, str):
             self.distribution = getattr(scipy.stats, distribution)
             if not isinstance(self.distribution, scipy.stats.rv_continuous):
-                raise ValueError(f'{distribution} is not a continuous distribution')
+                raise ValueError(f'\'{distribution}\' is not a continuous distribution')
         else:
             raise TypeError(f'invalid type in {type(distribution)} for the \'distribution\' argument')
 
@@ -87,14 +87,16 @@ class Distribution:
                     f'valid keyword arguments: {", ".join(valid_kwargs)}'
                 )
         self._fixed_parameters = {key[1:]: value for key, value in self.fixed_parameters.items()}
+        if len(self.fixed_parameters) == len(self.distribution_parameters):
+            raise ValueError('all parameters of the distribution are fixed, there is nothing to fit')
 
         logger.info('collecting free parameters')
         self.free_parameters = []
         for parameter in self.distribution_parameters:
-            if f'f{parameter}' not in self.fixed_parameters:
+            if parameter not in self._fixed_parameters:
                 self.free_parameters.append(parameter)
 
-        logger.info('fitting the distribution using scipy.stats MLE method')
+        logger.info('fitting the distribution using scipy.stats.rv_continuous.fit method')
         self.mle_parameters = self.fit(data=self.extremes.values)
 
     def fit(self, data: np.ndarray) -> dict:
@@ -121,6 +123,8 @@ class Distribution:
         for i, parameter in enumerate(self.distribution_parameters):
             if parameter in self.free_parameters:
                 free_parameters[parameter] = full_mle[i]
+            else:
+                assert np.isclose(full_mle[i], self._fixed_parameters[parameter])
         return free_parameters
 
     @property
@@ -154,10 +158,9 @@ class Distribution:
 
     def log_probability(self, theta: tuple) -> float:
         """
-        Calculate log-probability of distribution for a given set of distribution parameters
+        Calculate log-probability of distribution for a given free distribution parameters' values
         as a sum of log-prior and log-likelihood.
-        Log-prior is calculated as logpdf of normal distribution
-        with location being the corresponding MLE of the parameter and scale being 100.
+        Log-prior is set to 0, which corresponds to an uninformative prior.
         Log-likelihood is calculated as sum of logpdf values for a distribution with parameters
         set to theta and values being extreme values.
 
@@ -176,17 +179,8 @@ class Distribution:
         assert len(theta) == self.number_of_parameters, f'invalid theta size {len(theta):d}'
         free_parameters = dict(zip(self.free_parameters, theta))
 
-        logger.debug('calculating log-prior')
-        logprior = 0
-        for key, value in free_parameters.items():
-            logprior += scipy.stats.norm.logpdf(x=value, loc=self.mle_parameters[key], scale=100)
-
         logger.debug('calculating log-likelihood')
-        loglikelihood = sum(
-            self.distribution.logpdf(x=self.extremes.values, **free_parameters, **self._fixed_parameters)
-        )
-
-        return logprior + loglikelihood
+        return sum(self.distribution.logpdf(x=self.extremes.values, **free_parameters, **self._fixed_parameters))
 
     def get_initial_state(self, n_walkers: int) -> np.ndarray:
         """

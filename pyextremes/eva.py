@@ -200,12 +200,15 @@ class EVA:
                         (f'{self.model.n_walkers:d}', f'{self.model.n_samples:d}')
                     )
                 )
+
             free_parameters = ', '.join(
                 [
                     f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
                     for parameter in self.model.distribution.free_parameters
                 ]
             )
+            summary.append(align_text('Free parameters', free_parameters))
+
             fixed_parameters = ', '.join(
                 [
                     f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
@@ -213,12 +216,10 @@ class EVA:
             )
             if fixed_parameters == '':
                 fixed_parameters = 'All parameters are free'
+            summary.append(align_text('Fixed parameters', fixed_parameters))
+
             summary.extend(
                 [
-                    align_pair(
-                        ('Free parameters', 'Fixed parameters'),
-                        (free_parameters, fixed_parameters)
-                    ),
                     align_pair(
                         ('Log-likelihood', 'AIC'),
                         (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
@@ -309,8 +310,8 @@ class EVA:
 
     def fit_model(
             self,
-            model: str,
-            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            model: str = 'MLE',
+            distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
             distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
@@ -319,14 +320,15 @@ class EVA:
 
         Parameters
         ----------
-        model : str
-            Name of an extreme value distribution fitting model (not case-sensitive).
+        model : str, optional
+            Name of an extreme value distribution fitting model (not case-sensitive) (default='MLE').
             Supported names:
                 MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
                 Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
-        distribution : str or scipy.stats.rv_continuous
+        distribution : str or scipy.stats.rv_continuous, optional
             Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
             See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
+            By default uses 'genextreme' for BM extremes and 'genpareto' for POT extremes.
         distribution_kwargs : dict, optional
             Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
             These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
@@ -359,6 +361,17 @@ class EVA:
         if self.extremes is None:
             raise AttributeError('extreme values must be extracted before fitting a model, use .get_extremes method')
 
+        if distribution is None:
+            logger.info('assigning default distribution to a model')
+            if self.extremes_method == 'BM':
+                distribution = 'genextreme'
+            elif self.extremes_method == 'POT':
+                distribution = 'genpareto'
+            else:
+                raise NotImplementedError(
+                    f'default distribution for \'{self.extremes_method}\' extremes method is not available'
+                )
+
         logger.info('checking if distribution is valid for extremes type')
         if distribution in ['genextreme', 'gumbel_r']:
             if self.extremes_method != 'BM':
@@ -386,6 +399,13 @@ class EVA:
             distribution_kwargs=distribution_kwargs,
             **kwargs
         )
+
+    @property
+    def distribution(self):
+        try:
+            return self.model.distribution
+        except AttributeError:
+            return None
 
     def plot_trace(
             self,
