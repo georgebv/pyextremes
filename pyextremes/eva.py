@@ -388,8 +388,11 @@ class EVA:
             logger.info('assigning default distribution_kwargs')
             _distribution = Distribution(extremes=self.extremes, distribution=distribution)
             if _distribution.name in ['genpareto', 'expon']:
-                logger.info(f'fixing location parameter at 0 (floc=0) for {_distribution.name} distribution')
-                distribution_kwargs = {'floc': self.extremes_transformer.transformed_extremes.min()}
+                logger.info(f'fixing location parameter (floc) for {_distribution.name} distribution')
+                if self.extremes_method == 'POT':
+                    distribution_kwargs = {'floc': self.extremes_kwargs['threshold']}
+                else:
+                    distribution_kwargs = {'floc': self.extremes_transformer.transformed_extremes.min()}
 
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
