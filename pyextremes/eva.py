@@ -342,10 +342,29 @@ class EVA:
         self.extremes = get_extremes(method=method, ts=self.data, extremes_type=extremes_type, **kwargs)
         self.extremes_method = method
         self.extremes_type = extremes_type
-        self.extremes_kwargs = kwargs.copy()
-        if 'block_size' in self.extremes_kwargs:
-            if isinstance(self.extremes_kwargs['block_size'], str):
-                self.extremes_kwargs['block_size'] = pd.to_timedelta(self.extremes_kwargs['block_size'])
+
+        logger.info('collecting extremes_kwargs')
+        if method == 'BM':
+            if 'block_size' in kwargs:
+                if isinstance(kwargs['block_size'], str):
+                    self.extremes_kwargs['block_size'] = pd.to_timedelta(kwargs['block_size'])
+                elif isinstance(kwargs['block_size'], pd.Timedelta):
+                    self.extremes_kwargs['block_size'] = kwargs['block_size']
+            else:
+                self.extremes_kwargs['block_size'] = pd.to_timedelta('1Y')
+            if 'errors' in kwargs:
+                self.extremes_kwargs['errors'] = kwargs['errors']
+            else:
+                self.extremes_kwargs['errors'] = 'raise'
+        elif method == 'POT':
+            self.extremes_kwargs['threshold'] = kwargs['threshold']
+            if 'r' in kwargs['r']:
+                if isinstance(kwargs['r'], str):
+                    self.extremes_kwargs['r'] = pd.to_timedelta(kwargs['r'])
+                elif isinstance(kwargs['r'], pd.Timedelta):
+                    self.extremes_kwargs['r'] = kwargs['r']
+            else:
+                self.extremes_kwargs = pd.to_timedelta('24H')
 
         logger.info('creating extremes transformer')
         self.extremes_transformer = ExtremesTransformer(extremes=self.extremes, extremes_type=self.extremes_type)
@@ -447,16 +466,16 @@ class EVA:
                     f'default distribution for \'{self.extremes_method}\' extremes method is not available'
                 )
 
-        logger.info('checking if distribution is valid for extremes type')
+        logger.info('checking if distribution is valid for extremes method')
         if distribution in ['genextreme', 'gumbel_r']:
             if self.extremes_method != 'BM':
                 warnings.warn(
-                    f'{distribution} distribution is only applicable to extremes extracted using the BM model'
+                    f'\'{distribution}\' distribution is only applicable to extremes extracted using the BM method'
                 )
         elif distribution in ['genpareto', 'expon']:
             if self.extremes_method != 'POT':
                 warnings.warn(
-                    f'{distribution} distribution is only applicable to extremes extracted using the POT model'
+                    f'\'{distribution}\' distribution is only applicable to extremes extracted using the POT method'
                 )
 
         if distribution_kwargs is None:
@@ -483,7 +502,7 @@ class EVA:
         try:
             return self.model.distribution
         except AttributeError:
-            return None
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
 
     def plot_trace(
             self,
