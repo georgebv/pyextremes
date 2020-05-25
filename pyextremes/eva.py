@@ -47,13 +47,13 @@ class EVA:
     """
     Extreme Value Analysis (EVA) class.
     This class brings together most of the tools available in the pyextremes package
-    bundled together in a pipeline to perform extreme value analysis.
+    bundled together in a pipeline to perform univariate extreme value analysis.
 
     A typical workflow using the EVA class would consist of the following:
-        - extract extreme values (.get_extremes method)
-        - fit a model (.fit_model method)
-        - generate outputs (.get_summary method)
-        - visualize the model (.plot_diagnostic, .plot_return_values methods)
+        - extract extreme values (.get_extremes)
+        - fit a model (.fit_model)
+        - generate outputs (.get_summary)
+        - visualize the model (.plot_diagnostic, .plot_return_values)
 
     Multiple additional graphical and numerical methods are available within this class
     to analyze extracted extreme values, visualize them, assess goodness-of-fit of selected model,
@@ -104,27 +104,86 @@ class EVA:
         sep = 6
         width = 100
 
+        lwidth = (width - sep) // 2
+        rwidth = width - (lwidth + sep)
+
         def center_text(text: str) -> str:
-            lwidth = (width - len(text)) // 2
-            rwidth = width - lwidth - len(text)
+            left_gap = (width - len(text)) // 2
+            right_gap = width - left_gap - len(text)
             return ''.join(
                 [
-                    ' ' * lwidth,
+                    ' ' * left_gap,
                     text,
-                    ' ' * rwidth
+                    ' ' * right_gap
                 ]
             )
 
-        def align_text(text: str, value: str) -> str:
-            value_width = width - (len(text) + 1)
-            return f'{text}:{value:>{value_width:d}}'
+        def align_text(
+                text: str,
+                value: str,
+                position: str = 'left'
+        ) -> str:
+            if text == '':
+                if position == 'left':
+                    return f'{value:>{lwidth:d}}'
+                elif position == 'right':
+                    return f'{value:>{rwidth:d}}'
+                else:
+                    raise ValueError
+
+            text_width = len(text) + 2
+            if position == 'left':
+                free_width = lwidth - text_width
+            elif position == 'right':
+                free_width = rwidth - text_width
+            else:
+                raise ValueError
+
+            value_chunks = [value[i:i+free_width] for i in range(0, len(value), free_width)]
+            assert ''.join(value_chunks) == value
+
+            aligned_text = []
+            for i, chunk in enumerate(value_chunks):
+                if i == 0:
+                    aligned_text.append(f'{text}: {chunk:>{free_width:d}}')
+                else:
+                    aligned_text.append(
+                        ''.join(
+                            [
+                                ' ' * text_width,
+                                f'{chunk:>{free_width:d}}'
+                            ]
+                        )
+                    )
+            return '\n'.join(aligned_text)
 
         def align_pair(text: tuple, value: tuple) -> str:
-            lwidth = int((width - sep) / 2)
-            rwidth = width - (lwidth + sep)
-            ltext = f'{text[0]}:{value[0]:>{lwidth - len(text[0]) - 1:d}}'
-            rtext = f'{text[1]}:{value[1]:>{rwidth - len(text[1]) - 1:d}}'
-            return ''.join([ltext, ' ' * sep, rtext])
+            left_part = align_text(text=text[0], value=value[0], position='left').split('\n')
+            right_part = align_text(text=text[1], value=value[1], position='right').split('\n')
+
+            if len(left_part) < len(right_part):
+                for _ in range(len(right_part) - len(left_part)):
+                    left_part.append(' ' * len(left_part[0]))
+            elif len(left_part) > len(right_part):
+                for _ in range(len(left_part) - len(right_part)):
+                    right_part.append(' ' * len(right_part[0]))
+            else:
+                pass
+            assert len(left_part) == len(right_part)
+
+            aligned_text = []
+            for left, right in zip(left_part, right_part):
+                aligned_text.append(
+                    ''.join(
+                        [
+                            left,
+                            ' ' * sep,
+                            right
+                        ]
+                    )
+                )
+
+            return '\n'.join(aligned_text)
 
         # summary header
         start_date = f'{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}'
@@ -201,22 +260,38 @@ class EVA:
                     )
                 )
 
-            free_parameters = ', '.join(
-                [
-                    f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
-                    for parameter in self.model.distribution.free_parameters
-                ]
-            )
-            summary.append(align_text('Free parameters', free_parameters))
-
-            fixed_parameters = ', '.join(
-                [
-                    f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
-                ]
-            )
-            if fixed_parameters == '':
-                fixed_parameters = 'All parameters are free'
-            summary.append(align_text('Fixed parameters', fixed_parameters))
+            free_parameters = [
+                f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
+                for parameter in self.model.distribution.free_parameters
+            ]
+            fixed_parameters = [
+                f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
+            ]
+            if len(fixed_parameters) == 0:
+                fixed_parameters = ['All parameters are free']
+            if len(free_parameters) < len(fixed_parameters):
+                for _ in range(len(fixed_parameters) - len(free_parameters)):
+                    free_parameters.append('')
+            elif len(fixed_parameters) < len(free_parameters):
+                for _ in range(len(free_parameters) - len(fixed_parameters)):
+                    fixed_parameters.append('')
+            else:
+                pass
+            for j, (frp, fip) in enumerate(zip(free_parameters, fixed_parameters)):
+                if j == 0:
+                    summary.append(
+                        align_pair(
+                            text=('Free parameters', 'Fixed parameters'),
+                            value=(frp, fip)
+                        )
+                    )
+                else:
+                    summary.append(
+                        align_pair(
+                            text=('', ''),
+                            value=(frp, fip)
+                        )
+                    )
 
             summary.extend(
                 [
@@ -974,7 +1049,4 @@ if __name__ == '__main__':
     self.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
     self.fit_model(model='MLE', distribution='genextreme')
     # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
-
-    self.get_extremes(method='POT', extremes_type='high', threshold=1.3)
-    self.fit_model(model='MLE', distribution='genpareto')
-    self.plot_diagnostic()
+    # self.plot_diagnostic()
