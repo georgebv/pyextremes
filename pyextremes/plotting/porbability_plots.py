@@ -59,10 +59,10 @@ def plot_probability(
 
     with plt.rc_context(rc=pyextremes_rc):
         if ax is None:
-            logger.info('creating new figure and axes')
+            logger.info('creating new Figure and Axes')
             fig, ax = plt.subplots(figsize=figsize, dpi=96)
         else:
-            logger.info('plotting to existing axes')
+            logger.info('plotting on existing Axes object')
             fig = None
 
         logger.info('configuring axes')
@@ -70,11 +70,11 @@ def plot_probability(
 
         logger.info('plotting scatter of observed and theoretical probabilities')
         ax.scatter(
-            observed, theoretical,
-            marker='o', s=20, lw=1, facecolor='k', edgecolor='w', zorder=10
+            theoretical, observed,
+            marker='o', s=20, lw=0.75, facecolor='k', edgecolor='w', zorder=10
         )
 
-        logger.info('plotting diagonal perfect fit line')
+        logger.info('plotting diagonal perfect-fit line')
         min_value = min([min(ax.get_xlim()), min(ax.get_ylim())])
         max_value = max([max(ax.get_xlim()), max(ax.get_ylim())])
         ax.plot(
@@ -86,7 +86,7 @@ def plot_probability(
         ax.set_ylim(min_value, max_value)
 
         logger.info('labeling axes')
-        ax.set_xlabel('Observed')
-        ax.set_ylabel('Theoretical')
+        ax.set_xlabel('Theoretical')
+        ax.set_ylabel('Observed')
 
         return fig, ax

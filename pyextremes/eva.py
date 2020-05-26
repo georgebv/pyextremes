@@ -101,11 +101,11 @@ class EVA:
 
     def __repr__(self) -> str:
         # repr parameters
-        sep = 6
-        width = 100
+        width = 101
+        sep = ' ' * 6
 
-        lwidth = (width - sep) // 2
-        rwidth = width - (lwidth + sep)
+        lwidth = (width - len(sep)) // 2
+        rwidth = width - (lwidth + len(sep))
 
         def center_text(text: str) -> str:
             left_gap = (width - len(text)) // 2
@@ -173,15 +173,7 @@ class EVA:
 
             aligned_text = []
             for left, right in zip(left_part, right_part):
-                aligned_text.append(
-                    ''.join(
-                        [
-                            left,
-                            ' ' * sep,
-                            right
-                        ]
-                    )
-                )
+                aligned_text.append(''.join([left, sep, right]))
 
             return '\n'.join(aligned_text)
 
@@ -189,7 +181,7 @@ class EVA:
         start_date = f'{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}'
         end_date = f'{calendar.month_name[self.data.index[-1].month]} {self.data.index[-1].year}'
         summary = [
-            center_text('Extreme Value Analysis'),
+            center_text('Univariate Extreme Value Analysis'),
             '=' * width,
             center_text('Original Data'),
             '-' * width,
@@ -260,6 +252,15 @@ class EVA:
                     )
                 )
 
+            summary.append(
+                align_pair(
+                    ('Log-likelihood', 'AIC'),
+                    (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
+                )
+            )
+
+            summary.append('-' * width)
+
             free_parameters = [
                 f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
                 for parameter in self.model.distribution.free_parameters
@@ -292,16 +293,7 @@ class EVA:
                             value=(frp, fip)
                         )
                     )
-
-            summary.extend(
-                [
-                    align_pair(
-                        ('Log-likelihood', 'AIC'),
-                        (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
-                    ),
-                    '=' * width
-                ]
-            )
+            summary.append('=' * width)
         return '\n'.join(summary)
 
     def get_extremes(
@@ -344,6 +336,7 @@ class EVA:
         self.extremes_type = extremes_type
 
         logger.info('collecting extremes_kwargs')
+        self.extremes_kwargs = {}
         if method == 'BM':
             if 'block_size' in kwargs:
                 if isinstance(kwargs['block_size'], str):

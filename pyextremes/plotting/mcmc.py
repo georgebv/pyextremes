@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 
 def plot_trace(
-    trace: np.ndarray,
-    trace_map: tuple = None,
-    labels: tuple = None,
-    figsize: tuple = None
+        trace: np.ndarray,
+        trace_map: tuple = None,
+        labels: tuple = None,
+        figsize: tuple = None
 ) -> tuple:
     """
     Plot a trace plot for a given MCMC sampler trace.
@@ -103,11 +103,11 @@ def plot_trace(
 
 
 def plot_corner(
-    trace: np.ndarray,
-    trace_map: tuple,
-    labels: tuple = None,
-    burn_in: int = 0,
-    figsize: tuple = (8, 8)
+        trace: np.ndarray,
+        trace_map: tuple,
+        labels: tuple = None,
+        burn_in: int = 0,
+        figsize: tuple = (8, 8)
 ) -> tuple:
     """
     Plot a corner plot for a given MCMC sampler trace.
