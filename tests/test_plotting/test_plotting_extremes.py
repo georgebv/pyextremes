@@ -39,17 +39,6 @@ test_data = test_data - (test_data.index.array - pd.to_datetime('1992')) / pd.to
 
 
 def test_plot_extremes_errors():
-    # Test block size for POT
-    with pytest.raises(ValueError):
-        plot_extremes(
-            ts=test_data,
-            extremes=test_data,
-            extremes_method='POT',
-            extremes_type='high',
-            block_size='1Y',
-            figsize=(8, 5)
-        )
-
     # Test bad extremes_type for POT
     with pytest.raises(ValueError):
         plot_extremes(
@@ -58,6 +47,17 @@ def test_plot_extremes_errors():
             extremes_method='POT',
             extremes_type='BAD TYPE',
             block_size='1Y',
+            figsize=(8, 5)
+        )
+
+    # Test bad block_size for BM
+    with pytest.raises(TypeError):
+        plot_extremes(
+            ts=test_data,
+            extremes=test_data,
+            extremes_method='BM',
+            extremes_type='high',
+            block_size=1,
             figsize=(8, 5)
         )
 

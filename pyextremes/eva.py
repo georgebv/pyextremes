@@ -399,6 +399,7 @@ class EVA:
             extremes_method=self.extremes_method,
             extremes_type=self.extremes_type,
             block_size=self.extremes_kwargs.get('block_size'),
+            threshold=self.extremes_kwargs.get('threshold'),
             figsize=figsize
         )
 
