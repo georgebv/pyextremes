@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 def plot_trace(
         trace: np.ndarray,
         trace_map: tuple = None,
+        burn_in: int = 0,
         labels: tuple = None,
         figsize: tuple = None
 ) -> tuple:
@@ -43,6 +44,8 @@ def plot_trace(
     trace_map : tuple, optional
         Tuple with maximum aposteriori estimate of distribution parameters.
         If provided, MAP values are plotted as orange lines on top of the trace (default=None).
+    burn_in : int, optional
+        Burn-in value (number of first steps to discard for each walker) (default=0).
     labels : tuple, optional
         Tuple with parameter names, used to label axes (default=None).
     figsize : tuple, optional
@@ -56,6 +59,16 @@ def plot_trace(
     axes : tuple
         Tuple with n_parameters Axes objects.
     """
+
+    logger.info('parsing the \'burn_in\' argument')
+    if not isinstance(burn_in, int):
+        raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
+    if burn_in < 0:
+        raise ValueError(f'\'{burn_in}\' is not a valid \'burn_in\' value, it must be a positive integer')
+    if burn_in >= trace.shape[1]:
+        raise ValueError(
+            f'\'burn_in\' value \'{burn_in}\' exceeds number of samples {trace.shape[1]}'
+        )
 
     logger.info('calculating figure size')
     n_parameters = trace.shape[2]
@@ -88,16 +101,21 @@ def plot_trace(
                 ax.tick_params(axis='x', which='both', labelbottom=False)
 
         logger.info('plot the trace plots')
+        x = np.arange(burn_in + 1, trace.shape[1] + 1, 1)
         for i, ax in enumerate(axes):
-            ax.plot(
-                trace[:, :, i].transpose(),
-                color='#231F20', lw=0.1, zorder=5
-            )
+            for walker in trace[:, burn_in:, i]:
+                ax.plot(
+                    x, walker,
+                    color='#231F20', lw=0.1, zorder=5
+                )
             if trace_map is not None:
                 ax.axhline(
                     trace_map[i],
                     color='#F85C50', lw=2, ls='--', zorder=10
                 )
+
+        logger.info('labeling axes')
+        axes[-1].set_xlabel('Sample number')
 
         return fig, axes
 
@@ -105,8 +123,8 @@ def plot_trace(
 def plot_corner(
         trace: np.ndarray,
         trace_map: tuple,
-        labels: tuple = None,
         burn_in: int = 0,
+        labels: tuple = None,
         figsize: tuple = (8, 8)
 ) -> tuple:
     """
@@ -120,10 +138,10 @@ def plot_corner(
     trace_map : tuple, optional
         Tuple with maximum aposteriori estimate of distribution parameters.
         If provided, MAP values are plotted as orange lines on top of the trace (default=None).
-    labels : tuple, optional
-        Tuple with parameter names, used to label axes (default=None).
     burn_in : int, optional
         Burn-in value (number of first steps to discard for each walker) (default=0).
+    labels : tuple, optional
+        Tuple with parameter names, used to label axes (default=None).
     figsize : tuple, optional
         Figure size in inches (default=(8, 8).
 
@@ -135,6 +153,7 @@ def plot_corner(
         Tuple with n_parameters Axes objects.
     """
 
+    logger.info('parsing the \'burn_in\' argument')
     if not isinstance(burn_in, int):
         raise TypeError(f'invalid type in {type(burn_in)} for the \'burn_in\' argument')
     if burn_in < 0:
@@ -194,11 +213,11 @@ def plot_corner(
 
                     if i == j:
                         logger.info(f'plotting histogram for parameter {i}')
-                        parameter_samples = trace[burn_in:, :, i].flatten()
+                        parameter_samples = trace[:, burn_in:, i].flatten()
                         ax.hist(
                             parameter_samples,
                             bins=np.histogram_bin_edges(a=parameter_samples, bins='auto'),
-                            density=True, rwidth=0.8, histtype='step',
+                            density=True, histtype='step',
                             edgecolor='#231F20', lw=0.5, zorder=5
                         )
                         if trace_map is not None:
@@ -209,8 +228,8 @@ def plot_corner(
 
                     if i != j:
                         logger.info(f'plotting KDE distribution for parameters {i} and {j}')
-                        parameter_i = trace[burn_in:, :, i].flatten()
-                        parameter_j = trace[burn_in:, :, j].flatten()
+                        parameter_i = trace[:, burn_in:, i].flatten()
+                        parameter_j = trace[:, burn_in:, j].flatten()
                         ax.scatter(
                             parameter_j,
                             parameter_i,
@@ -230,8 +249,8 @@ def plot_corner(
         for i in range(n_parameters):
             for j in range(n_parameters):
                 if i >= j:
-                    parameter_i = trace[burn_in:, :, i].flatten()
-                    parameter_j = trace[burn_in:, :, j].flatten()
+                    parameter_i = trace[:, burn_in:, i].flatten()
+                    parameter_j = trace[:, burn_in:, j].flatten()
                     ylim = (parameter_i.min(), parameter_i.max())
                     xlim = (parameter_j.min(), parameter_j.max())
                     axes[i][j].set_xlim(xlim)

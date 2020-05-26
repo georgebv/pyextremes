@@ -139,7 +139,7 @@ class EVA:
             else:
                 raise ValueError
 
-            value_chunks = [value[i:i+free_width] for i in range(0, len(value), free_width)]
+            value_chunks = [value[i:i + free_width] for i in range(0, len(value), free_width)]
             assert ''.join(value_chunks) == value
 
             aligned_text = []
@@ -367,7 +367,7 @@ class EVA:
 
     def plot_extremes(
             self,
-            figsize: tuple = (8, 8/1.618)
+            figsize: tuple = (8, 8 / 1.618)
     ) -> tuple:
         """
         Plot time series of extreme events.
@@ -500,6 +500,7 @@ class EVA:
 
     def plot_trace(
             self,
+            burn_in: int = 0,
             labels: tuple = None,
             figsize: tuple = None
     ) -> tuple:
@@ -508,6 +509,8 @@ class EVA:
 
         Parameters
         ----------
+        burn_in : int, optional
+            Burn-in value (number of first steps to discard for each walker) (default=0).
         labels : tuple, optional
             Tuple with parameter names, used to label axes (default=None).
         figsize : tuple, optional
@@ -542,7 +545,7 @@ class EVA:
                 try:
                     labels.append(parameter_names[parameter])
                 except KeyError:
-                    labels.append(parameter)
+                    labels.append(f'Shape {parameter}')
 
         logger.info('preparing distribution parameters MAP tuple')
         trace_map = tuple(
@@ -550,9 +553,11 @@ class EVA:
             for parameter in self.model.distribution.free_parameters
         )
 
+        logger.info('plotting the trace plot')
         return plot_trace(
             trace=self.model.trace,
             trace_map=trace_map,
+            burn_in=burn_in,
             labels=labels,
             figsize=figsize
         )
@@ -568,10 +573,10 @@ class EVA:
 
         Parameters
         ----------
-        labels : tuple, optional
-            Tuple with parameter names, used to label axes (default=None).
         burn_in : int, optional
             Burn-in value (number of first steps to discard for each walker) (default=0).
+        labels : tuple, optional
+            Tuple with parameter names, used to label axes (default=None).
         figsize : tuple, optional
             Figure size in inches (default=(8, 8).
 
@@ -603,7 +608,7 @@ class EVA:
                 try:
                     labels.append(parameter_names[parameter])
                 except KeyError:
-                    labels.append(parameter)
+                    labels.append(f'Shape {parameter}')
 
         logger.info('preparing distribution parameters MAP tuple')
         trace_map = tuple(
@@ -611,6 +616,7 @@ class EVA:
             for parameter in self.model.distribution.free_parameters
         )
 
+        logger.info('plotting the corner plot')
         return plot_corner(
             trace=self.model.trace,
             trace_map=trace_map,
@@ -1049,6 +1055,7 @@ class EVA:
 if __name__ == '__main__':
     import pathlib
     import os
+
     test_path = pathlib.Path(os.getcwd()) / 'tests' / 'data' / 'battery_wl.csv'
     test_data = pd.read_csv(test_path, index_col=0, parse_dates=True, squeeze=True)
     test_data = (
