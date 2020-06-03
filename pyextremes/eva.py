@@ -1009,6 +1009,7 @@ class EVA:
             ax_pdf.grid(False)
             ax_pdf.set_title('Probability density plot')
             ax_pdf.set_ylabel('Probability density')
+            ax_pdf.set_xlabel(self.data.name)
             ax_pdf.hist(
                 self.extremes.values,
                 bins=np.histogram_bin_edges(a=self.extremes.values, bins='auto'),
