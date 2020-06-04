@@ -498,6 +498,20 @@ class EVA:
         except AttributeError:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
 
+    @property
+    def AIC(self):
+        try:
+            return self.model.AIC
+        except AttributeError:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
+    @property
+    def loglikelihood(self):
+        try:
+            return self.model.loglikelihood
+        except AttributeError:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
     def plot_trace(
             self,
             burn_in: int = 0,
