@@ -47,13 +47,13 @@ class EVA:
     """
     Extreme Value Analysis (EVA) class.
     This class brings together most of the tools available in the pyextremes package
-    bundled together in a pipeline to perform extreme value analysis.
+    bundled together in a pipeline to perform univariate extreme value analysis.
 
     A typical workflow using the EVA class would consist of the following:
-        - extract extreme values (.get_extremes method)
-        - fit a model (.fit_model method)
-        - generate outputs (.get_summary method)
-        - visualize the model (.plot_diagnostic, .plot_return_values methods)
+        - extract extreme values (.get_extremes)
+        - fit a model (.fit_model)
+        - generate outputs (.get_summary)
+        - visualize the model (.plot_diagnostic, .plot_return_values)
 
     Multiple additional graphical and numerical methods are available within this class
     to analyze extracted extreme values, visualize them, assess goodness-of-fit of selected model,
@@ -101,36 +101,87 @@ class EVA:
 
     def __repr__(self) -> str:
         # repr parameters
-        sep = 6
-        width = 100
+        width = 101
+        sep = ' ' * 6
+
+        lwidth = (width - len(sep)) // 2
+        rwidth = width - (lwidth + len(sep))
 
         def center_text(text: str) -> str:
-            lwidth = (width - len(text)) // 2
-            rwidth = width - lwidth - len(text)
+            left_gap = (width - len(text)) // 2
+            right_gap = width - left_gap - len(text)
             return ''.join(
                 [
-                    ' ' * lwidth,
+                    ' ' * left_gap,
                     text,
-                    ' ' * rwidth
+                    ' ' * right_gap
                 ]
             )
 
-        def align_text(text: str, value: str) -> str:
-            value_width = width - (len(text) + 1)
-            return f'{text}:{value:>{value_width:d}}'
+        def align_text(
+                text: str,
+                value: str,
+                position: str = 'left'
+        ) -> str:
+            if text == '':
+                if position == 'left':
+                    return f'{value:>{lwidth:d}}'
+                elif position == 'right':
+                    return f'{value:>{rwidth:d}}'
+                else:
+                    raise ValueError
+
+            text_width = len(text) + 2
+            if position == 'left':
+                free_width = lwidth - text_width
+            elif position == 'right':
+                free_width = rwidth - text_width
+            else:
+                raise ValueError
+
+            value_chunks = [value[i:i + free_width] for i in range(0, len(value), free_width)]
+            assert ''.join(value_chunks) == value
+
+            aligned_text = []
+            for i, chunk in enumerate(value_chunks):
+                if i == 0:
+                    aligned_text.append(f'{text}: {chunk:>{free_width:d}}')
+                else:
+                    aligned_text.append(
+                        ''.join(
+                            [
+                                ' ' * text_width,
+                                f'{chunk:>{free_width:d}}'
+                            ]
+                        )
+                    )
+            return '\n'.join(aligned_text)
 
         def align_pair(text: tuple, value: tuple) -> str:
-            lwidth = int((width - sep) / 2)
-            rwidth = width - (lwidth + sep)
-            ltext = f'{text[0]}:{value[0]:>{lwidth - len(text[0]) - 1:d}}'
-            rtext = f'{text[1]}:{value[1]:>{rwidth - len(text[1]) - 1:d}}'
-            return ''.join([ltext, ' ' * sep, rtext])
+            left_part = align_text(text=text[0], value=value[0], position='left').split('\n')
+            right_part = align_text(text=text[1], value=value[1], position='right').split('\n')
+
+            if len(left_part) < len(right_part):
+                for _ in range(len(right_part) - len(left_part)):
+                    left_part.append(' ' * len(left_part[0]))
+            elif len(left_part) > len(right_part):
+                for _ in range(len(left_part) - len(right_part)):
+                    right_part.append(' ' * len(right_part[0]))
+            else:
+                pass
+            assert len(left_part) == len(right_part)
+
+            aligned_text = []
+            for left, right in zip(left_part, right_part):
+                aligned_text.append(''.join([left, sep, right]))
+
+            return '\n'.join(aligned_text)
 
         # summary header
         start_date = f'{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}'
         end_date = f'{calendar.month_name[self.data.index[-1].month]} {self.data.index[-1].year}'
         summary = [
-            center_text('Extreme Value Analysis'),
+            center_text('Univariate Extreme Value Analysis'),
             '=' * width,
             center_text('Original Data'),
             '-' * width,
@@ -200,32 +251,49 @@ class EVA:
                         (f'{self.model.n_walkers:d}', f'{self.model.n_samples:d}')
                     )
                 )
-            free_parameters = ', '.join(
-                [
-                    f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
-                    for parameter in self.model.distribution.free_parameters
-                ]
+
+            summary.append(
+                align_pair(
+                    ('Log-likelihood', 'AIC'),
+                    (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
+                )
             )
-            fixed_parameters = ', '.join(
-                [
-                    f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
-                ]
-            )
-            if fixed_parameters == '':
-                fixed_parameters = 'All parameters are free'
-            summary.extend(
-                [
-                    align_pair(
-                        ('Free parameters', 'Fixed parameters'),
-                        (free_parameters, fixed_parameters)
-                    ),
-                    align_pair(
-                        ('Log-likelihood', 'AIC'),
-                        (f'{self.model.loglikelihood:.3f}', f'{self.model.AIC:.3f}')
-                    ),
-                    '=' * width
-                ]
-            )
+
+            summary.append('-' * width)
+
+            free_parameters = [
+                f'{parameter}={self.model.fit_parameters[parameter]:.3f}'
+                for parameter in self.model.distribution.free_parameters
+            ]
+            fixed_parameters = [
+                f'{key}={value:.3f}' for key, value in self.model.distribution.fixed_parameters.items()
+            ]
+            if len(fixed_parameters) == 0:
+                fixed_parameters = ['All parameters are free']
+            if len(free_parameters) < len(fixed_parameters):
+                for _ in range(len(fixed_parameters) - len(free_parameters)):
+                    free_parameters.append('')
+            elif len(fixed_parameters) < len(free_parameters):
+                for _ in range(len(free_parameters) - len(fixed_parameters)):
+                    fixed_parameters.append('')
+            else:
+                pass
+            for j, (frp, fip) in enumerate(zip(free_parameters, fixed_parameters)):
+                if j == 0:
+                    summary.append(
+                        align_pair(
+                            text=('Free parameters', 'Fixed parameters'),
+                            value=(frp, fip)
+                        )
+                    )
+                else:
+                    summary.append(
+                        align_pair(
+                            text=('', ''),
+                            value=(frp, fip)
+                        )
+                    )
+            summary.append('=' * width)
         return '\n'.join(summary)
 
     def get_extremes(
@@ -266,10 +334,30 @@ class EVA:
         self.extremes = get_extremes(method=method, ts=self.data, extremes_type=extremes_type, **kwargs)
         self.extremes_method = method
         self.extremes_type = extremes_type
-        self.extremes_kwargs = kwargs.copy()
-        if 'block_size' in self.extremes_kwargs:
-            if isinstance(self.extremes_kwargs['block_size'], str):
-                self.extremes_kwargs['block_size'] = pd.to_timedelta(self.extremes_kwargs['block_size'])
+
+        logger.info('collecting extremes_kwargs')
+        self.extremes_kwargs = {}
+        if method == 'BM':
+            if 'block_size' in kwargs:
+                if isinstance(kwargs['block_size'], str):
+                    self.extremes_kwargs['block_size'] = pd.to_timedelta(kwargs['block_size'])
+                elif isinstance(kwargs['block_size'], pd.Timedelta):
+                    self.extremes_kwargs['block_size'] = kwargs['block_size']
+            else:
+                self.extremes_kwargs['block_size'] = pd.to_timedelta('1Y')
+            if 'errors' in kwargs:
+                self.extremes_kwargs['errors'] = kwargs['errors']
+            else:
+                self.extremes_kwargs['errors'] = 'raise'
+        elif method == 'POT':
+            self.extremes_kwargs['threshold'] = kwargs['threshold']
+            if 'r' in kwargs:
+                if isinstance(kwargs['r'], str):
+                    self.extremes_kwargs['r'] = pd.to_timedelta(kwargs['r'])
+                elif isinstance(kwargs['r'], pd.Timedelta):
+                    self.extremes_kwargs['r'] = kwargs['r']
+            else:
+                self.extremes_kwargs['r'] = pd.to_timedelta('24H')
 
         logger.info('creating extremes transformer')
         self.extremes_transformer = ExtremesTransformer(extremes=self.extremes, extremes_type=self.extremes_type)
@@ -279,7 +367,7 @@ class EVA:
 
     def plot_extremes(
             self,
-            figsize: tuple = (8, 8/1.618)
+            figsize: tuple = (8, 8 / 1.618)
     ) -> tuple:
         """
         Plot time series of extreme events.
@@ -304,13 +392,14 @@ class EVA:
             extremes_method=self.extremes_method,
             extremes_type=self.extremes_type,
             block_size=self.extremes_kwargs.get('block_size'),
+            threshold=self.extremes_kwargs.get('threshold'),
             figsize=figsize
         )
 
     def fit_model(
             self,
-            model: str,
-            distribution: typing.Union[str, scipy.stats.rv_continuous],
+            model: str = 'MLE',
+            distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
             distribution_kwargs: dict = None,
             **kwargs
     ) -> None:
@@ -319,14 +408,15 @@ class EVA:
 
         Parameters
         ----------
-        model : str
-            Name of an extreme value distribution fitting model (not case-sensitive).
+        model : str, optional
+            Name of an extreme value distribution fitting model (not case-sensitive) (default='MLE').
             Supported names:
                 MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
                 Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
-        distribution : str or scipy.stats.rv_continuous
+        distribution : str or scipy.stats.rv_continuous, optional
             Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
             See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
+            By default uses 'genextreme' for BM extremes and 'genpareto' for POT extremes.
         distribution_kwargs : dict, optional
             Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
             These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
@@ -359,24 +449,38 @@ class EVA:
         if self.extremes is None:
             raise AttributeError('extreme values must be extracted before fitting a model, use .get_extremes method')
 
-        logger.info('checking if distribution is valid for extremes type')
+        if distribution is None:
+            logger.info('assigning default distribution to a model')
+            if self.extremes_method == 'BM':
+                distribution = 'genextreme'
+            elif self.extremes_method == 'POT':
+                distribution = 'genpareto'
+            else:
+                raise NotImplementedError(
+                    f'default distribution for \'{self.extremes_method}\' extremes method is not available'
+                )
+
+        logger.info('checking if distribution is valid for extremes method')
         if distribution in ['genextreme', 'gumbel_r']:
             if self.extremes_method != 'BM':
                 warnings.warn(
-                    f'{distribution} distribution is only applicable to extremes extracted using the BM model'
+                    f'\'{distribution}\' distribution is only applicable to extremes extracted using the BM method'
                 )
         elif distribution in ['genpareto', 'expon']:
             if self.extremes_method != 'POT':
                 warnings.warn(
-                    f'{distribution} distribution is only applicable to extremes extracted using the POT model'
+                    f'\'{distribution}\' distribution is only applicable to extremes extracted using the POT method'
                 )
 
         if distribution_kwargs is None:
             logger.info('assigning default distribution_kwargs')
             _distribution = Distribution(extremes=self.extremes, distribution=distribution)
             if _distribution.name in ['genpareto', 'expon']:
-                logger.info(f'fixing location parameter at 0 (floc=0) for {_distribution.name} distribution')
-                distribution_kwargs = {'floc': self.extremes_transformer.transformed_extremes.min()}
+                logger.info(f'fixing location parameter (floc) for {_distribution.name} distribution')
+                if self.extremes_method == 'POT':
+                    distribution_kwargs = {'floc': self.extremes_kwargs['threshold']}
+                else:
+                    distribution_kwargs = {'floc': self.extremes_transformer.transformed_extremes.min()}
 
         logger.info(f'fitting {model} model with {distribution} distribution')
         self.model = get_model(
@@ -387,8 +491,30 @@ class EVA:
             **kwargs
         )
 
+    @property
+    def distribution(self):
+        try:
+            return self.model.distribution
+        except AttributeError:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
+    @property
+    def AIC(self):
+        try:
+            return self.model.AIC
+        except AttributeError:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
+    @property
+    def loglikelihood(self):
+        try:
+            return self.model.loglikelihood
+        except AttributeError:
+            raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
+
     def plot_trace(
             self,
+            burn_in: int = 0,
             labels: tuple = None,
             figsize: tuple = None
     ) -> tuple:
@@ -397,6 +523,8 @@ class EVA:
 
         Parameters
         ----------
+        burn_in : int, optional
+            Burn-in value (number of first steps to discard for each walker) (default=0).
         labels : tuple, optional
             Tuple with parameter names, used to label axes (default=None).
         figsize : tuple, optional
@@ -431,7 +559,7 @@ class EVA:
                 try:
                     labels.append(parameter_names[parameter])
                 except KeyError:
-                    labels.append(parameter)
+                    labels.append(f'Shape {parameter}')
 
         logger.info('preparing distribution parameters MAP tuple')
         trace_map = tuple(
@@ -439,9 +567,11 @@ class EVA:
             for parameter in self.model.distribution.free_parameters
         )
 
+        logger.info('plotting the trace plot')
         return plot_trace(
             trace=self.model.trace,
             trace_map=trace_map,
+            burn_in=burn_in,
             labels=labels,
             figsize=figsize
         )
@@ -457,10 +587,10 @@ class EVA:
 
         Parameters
         ----------
-        labels : tuple, optional
-            Tuple with parameter names, used to label axes (default=None).
         burn_in : int, optional
             Burn-in value (number of first steps to discard for each walker) (default=0).
+        labels : tuple, optional
+            Tuple with parameter names, used to label axes (default=None).
         figsize : tuple, optional
             Figure size in inches (default=(8, 8).
 
@@ -492,7 +622,7 @@ class EVA:
                 try:
                     labels.append(parameter_names[parameter])
                 except KeyError:
-                    labels.append(parameter)
+                    labels.append(f'Shape {parameter}')
 
         logger.info('preparing distribution parameters MAP tuple')
         trace_map = tuple(
@@ -500,6 +630,7 @@ class EVA:
             for parameter in self.model.distribution.free_parameters
         )
 
+        logger.info('plotting the corner plot')
         return plot_corner(
             trace=self.model.trace,
             trace_map=trace_map,
@@ -714,6 +845,7 @@ class EVA:
             **kwargs
         )
 
+        logger.info('plotting return values')
         return plot_return_values(
             observed_return_values=observed_return_values,
             modeled_return_values=modeled_return_values,
@@ -792,6 +924,7 @@ class EVA:
         else:
             raise ValueError(f'\'{plot_type}\' is not a valid \'plot_type\' value. Available plot_types: PP, QQ')
 
+        logger.info('plotting the probability plot')
         return plot_probability(
             observed=observed,
             theoretical=theoretical,
@@ -892,6 +1025,7 @@ class EVA:
             ax_pdf.grid(False)
             ax_pdf.set_title('Probability density plot')
             ax_pdf.set_ylabel('Probability density')
+            ax_pdf.set_xlabel(self.data.name)
             ax_pdf.hist(
                 self.extremes.values,
                 bins=np.histogram_bin_edges(a=self.extremes.values, bins='auto'),
@@ -938,6 +1072,7 @@ class EVA:
 if __name__ == '__main__':
     import pathlib
     import os
+
     test_path = pathlib.Path(os.getcwd()) / 'tests' / 'data' / 'battery_wl.csv'
     test_data = pd.read_csv(test_path, index_col=0, parse_dates=True, squeeze=True)
     test_data = (
@@ -951,7 +1086,4 @@ if __name__ == '__main__':
     self.get_extremes(method='BM', extremes_type='high', block_size='1Y', errors='ignore')
     self.fit_model(model='MLE', distribution='genextreme')
     # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
-
-    self.get_extremes(method='POT', extremes_type='high', threshold=1.3)
-    self.fit_model(model='MLE', distribution='genpareto')
-    self.plot_diagnostic()
+    # self.plot_diagnostic()

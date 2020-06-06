@@ -30,7 +30,7 @@ def plot_return_values(
         observed_return_values: pd.DataFrame,
         modeled_return_values: pd.DataFrame,
         ax=None,
-        figsize: tuple = (8, 8/1.618)
+        figsize: tuple = (8, 8 / 1.618)
 ) -> tuple:
     """
     Plot return values and confidence intervals for given return periods.

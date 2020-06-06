@@ -26,8 +26,8 @@ from pyextremes.models.mle import MLE
 logger = logging.getLogger(__name__)
 
 models = {
-    'mle': MLE,
-    'emcee': Emcee
+    'MLE': MLE,
+    'Emcee': Emcee
 }
 
 
@@ -44,7 +44,7 @@ def get_model(
     Parameters
     ----------
     model : str
-        Name of an extreme value distribution fitting model (not case-sensitive).
+        Name of an extreme value distribution fitting model.
         Supported names:
             MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
             Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
@@ -85,9 +85,9 @@ def get_model(
         An extreme value model fitted to the extreme values.
     """
 
-    logger.info(f'fetching {model} model')
+    logger.info(f'fetching \'{model}\' model')
     try:
-        model = models[model.lower()]
+        model = models[model]
     except KeyError:
         raise ValueError(f'\'{model}\' is not a valid \'model\' value, available models: {", ".join(models.keys())}')
 

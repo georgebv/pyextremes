@@ -77,14 +77,8 @@ def test_distribution(distribution_name, theta, kwargs, scipy_parameters):
     assert distribution.name == distribution_name
 
     # Test log-probability
-    logprior = sum(
-        [
-            scipy.stats.norm.logpdf(x=value, loc=distribution.mle_parameters[key], scale=100)
-            for key, value in dict(zip(distribution.free_parameters, theta)).items()
-        ]
-    )
     assert np.isclose(
-        distribution.log_probability(theta=theta) - logprior,
+        distribution.log_probability(theta=theta),
         sum(scipy_distribution.logpdf(distribution.extremes.values, *scipy_parameters))
     )
 

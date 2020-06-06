@@ -54,6 +54,32 @@ class Emcee(AbstractModelBaseClass):
         self.n_walkers = n_walkers
         self.n_samples = n_samples
 
+    def __repr__(self) -> str:
+        free_parameters = ', '.join(
+            [
+                f'{parameter}={self.fit_parameters[parameter]:.3f}'
+                for parameter in self.distribution.free_parameters
+            ]
+        )
+        fixed_parameters = ', '.join(
+            [
+                f'{key}={value:.3f}' for key, value in self.distribution.fixed_parameters.items()
+            ]
+        )
+        if fixed_parameters == '':
+            fixed_parameters = 'All parameters are free'
+        summary = [
+            'Emcee model',
+            '='*9,
+            f'number of walkers: {self.n_walkers:d}',
+            f'number of samples: {self.n_samples:d}',
+            f'free parameters: {free_parameters}',
+            f'fixed parameters: {fixed_parameters}',
+            f'AIC: {self.AIC:.3f}',
+            f'loglikelihood: {self.loglikelihood:.3f}'
+        ]
+        return '\n'.join(summary)
+
     @property
     def name(self) -> str:
         return 'Emcee'
@@ -64,41 +90,47 @@ class Emcee(AbstractModelBaseClass):
             n_samples: int,
             progress: bool
     ) -> None:
+        emcee_version = int(emcee.__version__.split('.')[0])
+        if emcee_version >= 3:
+            logger.info('preparing argument dictionaries for emcee versions 3.0.0 and higher')
+            sampler_kwargs = {
+                'nwalkers': n_walkers,
+                'ndim': self.distribution.number_of_parameters,
+                'log_prob_fn': self.distribution.log_probability
+            }
+            sampler_run_kwargs = {
+                'initial_state': self.distribution.get_initial_state(n_walkers=n_walkers),
+                'nsteps': n_samples,
+                'progress': progress
+            }
+
+            def get_chain(emcee_sampler):
+                return emcee_sampler.get_chain()
+        elif emcee_version >= 2:
+            logger.info('preparing argument dictionaries for emcee versions 2.x.x')
+            sampler_kwargs = {
+                'nwalkers': n_walkers,
+                'dim': self.distribution.number_of_parameters,
+                'lnpostfn': self.distribution.log_probability
+            }
+            sampler_run_kwargs = {
+                'pos0': self.distribution.get_initial_state(n_walkers=n_walkers),
+                'N': n_samples
+            }
+
+            def get_chain(emcee_sampler):
+                return emcee_sampler.chain.transpose((1, 0, 2))
+        else:
+            raise NotImplementedError(f'emcee version \'{emcee.__version__}\' is not supported')
+
         logger.info('defining emcee ensemble sampler')
-        try:
-            sampler = emcee.EnsembleSampler(
-                nwalkers=n_walkers,
-                ndim=self.distribution.number_of_parameters,
-                log_prob_fn=self.distribution.log_probability
-            )
-        except TypeError:
-            logger.info('falling back to older emcee version syntax')
-            sampler = emcee.EnsembleSampler(
-                nwalkers=n_walkers,
-                dim=self.distribution.number_of_parameters,
-                lnpostfn=self.distribution.log_probability
-            )
+        sampler = emcee.EnsembleSampler(**sampler_kwargs)
 
         logger.info(f'running the sampler with {n_walkers} walkers and {n_samples} samples')
-        try:
-            sampler.run_mcmc(
-                initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
-                nsteps=n_samples,
-                progress=progress
-            )
-        except TypeError:
-            logger.info('falling back to older emcee version syntax')
-            sampler.run_mcmc(
-                pos0=self.distribution.get_initial_state(n_walkers=n_walkers),
-                N=n_samples
-            )
+        sampler.run_mcmc(**sampler_run_kwargs)
 
         logger.info('extracting Emcee sampler chain')
-        try:
-            mcmc_chain = sampler.get_chain()
-        except AttributeError:
-            logger.info('falling back to older emcee version syntax')
-            mcmc_chain = sampler.chain.transpose((1, 0, 2))
+        mcmc_chain = get_chain(sampler)
 
         logger.info(
             'calculating maximum aposteriori values of distribution paramters '

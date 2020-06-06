@@ -49,6 +49,31 @@ class MLE(AbstractModelBaseClass):
         logger.info('initializing the fit parameter hash')
         self.hashed_fit_parameters = []
 
+    def __repr__(self) -> str:
+        free_parameters = ', '.join(
+            [
+                f'{parameter}={self.fit_parameters[parameter]:.3f}'
+                for parameter in self.distribution.free_parameters
+            ]
+        )
+        fixed_parameters = ', '.join(
+            [
+                f'{key}={value:.3f}' for key, value in self.distribution.fixed_parameters.items()
+            ]
+        )
+        if fixed_parameters == '':
+            fixed_parameters = 'All parameters are free'
+        summary = [
+            'MLE model',
+            '='*9,
+            f'free parameters: {free_parameters}',
+            f'fixed parameters: {fixed_parameters}',
+            f'AIC: {self.AIC:.3f}',
+            f'loglikelihood: {self.loglikelihood:.3f}',
+            f'hash size: {len(self.hashed_fit_parameters):d}'
+        ]
+        return '\n'.join(summary)
+
     @property
     def name(self) -> str:
         return 'MLE'
