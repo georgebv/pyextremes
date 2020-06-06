@@ -845,6 +845,7 @@ class EVA:
             **kwargs
         )
 
+        logger.info('plotting return values')
         return plot_return_values(
             observed_return_values=observed_return_values,
             modeled_return_values=modeled_return_values,
@@ -923,6 +924,7 @@ class EVA:
         else:
             raise ValueError(f'\'{plot_type}\' is not a valid \'plot_type\' value. Available plot_types: PP, QQ')
 
+        logger.info('plotting the probability plot')
         return plot_probability(
             observed=observed,
             theoretical=theoretical,

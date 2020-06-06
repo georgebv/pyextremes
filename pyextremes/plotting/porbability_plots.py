@@ -18,6 +18,7 @@ import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.stats
 
 from pyextremes.plotting.style import pyextremes_rc
 
@@ -88,5 +89,16 @@ def plot_probability(
         logger.info('labeling axes')
         ax.set_xlabel('Theoretical')
         ax.set_ylabel('Observed')
+
+        logger.info('calculating pearson R statistic and adding text to the figure')
+        pearsonr, p_value = scipy.stats.pearsonr(theoretical, observed)
+        axes_range = max_value - min_value
+        ax.text(
+            x=min_value + 0.05 * axes_range,
+            y=max_value - 0.05 * axes_range,
+            s=f'$R^2={pearsonr:.3f}$\n$p={p_value:.3f}$',
+            horizontalalignment='left',
+            verticalalignment='top'
+        )
 
         return fig, ax
