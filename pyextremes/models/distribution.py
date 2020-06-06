@@ -345,3 +345,5 @@ class Distribution:
 
             else:
                 raise RuntimeError('this is a bug: self.free2full_parameters method returned invalid value')
+        else:
+            raise TypeError(f'invalid type in {type(x)} for the \'x\' argument')

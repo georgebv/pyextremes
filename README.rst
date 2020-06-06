@@ -10,7 +10,7 @@ pyextremes
 ==========
 **pyextremes** is a Python library dedicated to solving problems from the area of `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools to extract extreme events from time series using Block Maxima or Peaks Over Threshold methods, to fit models such as GEV and GPD to the extracted extreme values, and to provide estimates of extreme events and corresponding confidence intervals for given return periods. Models are fitted to the data using the Maximum Likelihood Estimate (MLE, via `scipy <https://www.scipy.org/>`_) or the Markov Chain Monte Calro (MCMC, via `emcee <https://emcee.readthedocs.io/en/stable/>`_) models.
 
-**Version:** 0.2.0
+**Version:** 1.0.0
 
 **License:** GNU General Public License v3.0
 
@@ -20,15 +20,29 @@ pyextremes
 
 Installation
 ============
+Available via pip:
+
 .. code:: bash
 
     pip install pyextremes
 
+And via anaconda:
+
+.. code:: bash
+
+    conda install -c conda-forge pyextremes
+
 Dependencies
 ============
-**Python version:** >=3.7
+**Python version:** 3.7 or later
 
-**Required packages:** emcee matplotlib numpy pandas scipy
+**Required packages:**
+
+- emcee >= 2.2.1
+- matplotlib >= 3.1.3
+- numpy >= 1.18.1
+- pandas >= 1.0.1
+- scipy >= 1.4.1
 
 Tutorials
 =========
