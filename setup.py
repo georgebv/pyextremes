@@ -1,14 +1,11 @@
 import setuptools
-import pyextremes
-
 
 with open('README.rst', encoding='utf-8') as file:
     long_description = file.read()
 
-
 setuptools.setup(
     name='pyextremes',
-    version=pyextremes.__version__,
+    version='1.0.1',
     author='Georgii Bocharov',
     author_email='bocharovgeorgii@gmail.com',
     description='Extreme Value Analysis (EVA) in Python',
