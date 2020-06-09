@@ -5,7 +5,7 @@ with open('README.rst', encoding='utf-8') as file:
 
 setuptools.setup(
     name='pyextremes',
-    version='1.0.1',
+    version='1.0.2',
     author='Georgii Bocharov',
     author_email='bocharovgeorgii@gmail.com',
     description='Extreme Value Analysis (EVA) in Python',

@@ -22,4 +22,4 @@ from pyextremes.tuning import (
     plot_return_value_stability
 )
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
