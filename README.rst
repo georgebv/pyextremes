@@ -4,7 +4,7 @@
 .. role:: python(code)
    :language: python
 
-|build status| |coverage status| |pypi package|
+|build status| |coverage status| |pypi package| |conda version|
 
 pyextremes
 ==========
@@ -67,7 +67,10 @@ Model diagnostic
   :target: https://codecov.io/gh/georgebv/pyextremes
 
 .. |pypi package| image:: https://badge.fury.io/py/pyextremes.svg
-    :target: https://badge.fury.io/py/pyextremes
+    :target: https://pypi.org/project/pyextremes/
+
+.. |conda version| image:: https://img.shields.io/conda/vn/conda-forge/pyextremes.svg
+    :target: https://anaconda.org/conda-forge/pyextremes
 
 .. |extreme events image| image:: ./docs/source/example_images/extremes.png
 
