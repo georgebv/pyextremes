@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 class EVA:
     """
     Extreme Value Analysis (EVA) class.
+
     This class brings together most of the tools available in the pyextremes package
     bundled together in a pipeline to perform univariate extreme value analysis.
 
@@ -100,13 +101,18 @@ class EVA:
         self.model = None
 
     def __repr__(self) -> str:
-        # repr parameters
+        """Representation of the class state."""
+        # Width of repr block
         width = 101
+
+        # Separator used to separate two columns of the repr block
         sep = ' ' * 6
 
+        # Widths of left and ridght columns
         lwidth = (width - len(sep)) // 2
         rwidth = width - (lwidth + len(sep))
 
+        # Function used to center text within repr block line
         def center_text(text: str) -> str:
             left_gap = (width - len(text)) // 2
             right_gap = width - left_gap - len(text)
@@ -118,11 +124,8 @@ class EVA:
                 ]
             )
 
-        def align_text(
-                text: str,
-                value: str,
-                position: str = 'left'
-        ) -> str:
+        # Function used to convert label-value pair into a sequence of lines within a column
+        def align_text(text: str, value: str, position: str = 'left') -> str:
             if text == '':
                 if position == 'left':
                     return f'{value:>{lwidth:d}}'
@@ -134,13 +137,12 @@ class EVA:
             text_width = len(text) + 2
             if position == 'left':
                 free_width = lwidth - text_width
-            elif position == 'right':
-                free_width = rwidth - text_width
             else:
-                raise ValueError
+                free_width = rwidth - text_width
 
             value_chunks = [value[i:i + free_width] for i in range(0, len(value), free_width)]
-            assert ''.join(value_chunks) == value
+            if ''.join(value_chunks) != value:
+                raise AssertionError
 
             aligned_text = []
             for i, chunk in enumerate(value_chunks):
@@ -157,6 +159,8 @@ class EVA:
                     )
             return '\n'.join(aligned_text)
 
+        # Function used to convert a pair pair of label-value pairs
+        # into a sequence of lines of the repr block
         def align_pair(text: tuple, value: tuple) -> str:
             left_part = align_text(text=text[0], value=value[0], position='left').split('\n')
             right_part = align_text(text=text[1], value=value[1], position='right').split('\n')
@@ -164,12 +168,9 @@ class EVA:
             if len(left_part) < len(right_part):
                 for _ in range(len(right_part) - len(left_part)):
                     left_part.append(' ' * len(left_part[0]))
-            elif len(left_part) > len(right_part):
+            else:
                 for _ in range(len(left_part) - len(right_part)):
                     right_part.append(' ' * len(right_part[0]))
-            else:
-                pass
-            assert len(left_part) == len(right_part)
 
             aligned_text = []
             for left, right in zip(left_part, right_part):
@@ -208,7 +209,7 @@ class EVA:
             elif self.extremes_method == 'POT':
                 ev_parameters = ('Threshold', str(self.extremes_kwargs['threshold']))
             else:
-                raise RuntimeError(f'this is a bug - wrong extremes method')
+                raise RuntimeError('this is a bug - wrong extremes method')
             summary.extend(
                 [
                     align_pair(
@@ -304,6 +305,8 @@ class EVA:
     ) -> None:
         """
         Get extreme events from a signal time series using a specified extreme value extraction method.
+
+        Extracts extreme values from self.data attribute.
         Stores extreme values in the self.extremes attribute.
 
         Parameters
@@ -329,7 +332,6 @@ class EVA:
                 r : str or pandas.Timedelta, optional
                     Duration of window used to decluster the exceedances (default='24H').
         """
-
         logger.info(f'getting extremes for method {method} and extremes_type {extremes_type}')
         self.extremes = get_extremes(method=method, ts=self.data, extremes_type=extremes_type, **kwargs)
         self.extremes_method = method
@@ -384,7 +386,6 @@ class EVA:
         axes : matplotlib.axes.Axes
             Axes object.
         """
-
         logger.info('plotting extremes')
         return plot_extremes(
             ts=self.data,
@@ -444,7 +445,6 @@ class EVA:
                     If False, no progress bar will be shown (default=False).
                     This progress bar is a part of the emcee package.
         """
-
         logger.info('making sure extreme values have been extracted')
         if self.extremes is None:
             raise AttributeError('extreme values must be extracted before fitting a model, use .get_extremes method')
@@ -538,7 +538,6 @@ class EVA:
         axes : tuple
             Tuple with n_parameters Axes objects.
         """
-
         logger.info('making sure a model has been fit')
         if self.model is None:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
@@ -601,7 +600,6 @@ class EVA:
         axes : tuple
             Tuple with n_parameters Axes objects.
         """
-
         logger.info('making sure a model has been fit')
         if self.model is None:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
@@ -678,7 +676,6 @@ class EVA:
         upper_ci_bount : float or array-like
             Upper confidence interval bound(s).
         """
-
         logger.info('making sure a model has been fit')
         if self.model is None:
             raise AttributeError('a model must be fit to extracted extremes first, use .fit_model method')
@@ -745,7 +742,6 @@ class EVA:
         summary : pandas.DataFrame
             DataFrame with return values and confidence interval bounds.
         """
-
         logger.info('calculating return values')
         return_values = self.get_return_value(
             return_period=return_period,
@@ -813,7 +809,6 @@ class EVA:
         axes : matplotlib.axes.Axes
             Axes object.
         """
-
         logger.info('getting observed return values')
         try:
             block_size = self.extremes_kwargs['block_size']
@@ -863,6 +858,7 @@ class EVA:
     ) -> tuple:
         """
         Plot a probability plot (QQ or PP).
+
         Used to assess goodness-of-fit of the model.
 
         Parameters
@@ -892,7 +888,6 @@ class EVA:
         axes : matplotlib.axes.Axes
             Axes object.
         """
-
         logger.info('getting observed return values')
         try:
             block_size = self.extremes_kwargs['block_size']
@@ -942,7 +937,9 @@ class EVA:
             **kwargs
     ):
         """
-        Plot a diagnostic plot. This plot can be used to quickly assess goodness-of-fit of the selected model.
+        Plot a diagnostic plot.
+
+        This plot can be used to quickly assess goodness-of-fit of the selected model.
         The diagnostice plot consists of four axes:
             - top left : return values
             - top right : PDF
@@ -986,7 +983,6 @@ class EVA:
         axes : tuple
             Tuple with four Axes objects: return values, pdf, qq, pp
         """
-
         with plt.rc_context(rc=pyextremes_rc):
             logger.info('creating figure')
             fig = plt.figure(figsize=figsize, dpi=96)
