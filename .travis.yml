@@ -5,11 +5,12 @@ python:
     - "3.7"
 
 install:
-    - pip install pytest pytest-cov codecov numpy pandas scipy matplotlib emcee
+    - pip install pipenv
+    - pipenv install --dev
     - python setup.py install
 
 script:
-    - python -m pytest -v tests --cov=pyextremes --ignore=tests/test_plotting
+    - py.test -v tests --cov=pyextremes --ignore=tests/test_plotting
 
 after_success:
     - codecov
