@@ -6,12 +6,23 @@
 
 # Python files
 __pycache__/
-venv/
-
-# pytest
-.pytest_cache/
+*.pyc
 
 # Documentation
 docs/build/
 docs/source/_static/
 docs/source/_templates/
+
+# Linting
+.mypy_cache
+
+# Testing
+.pytest_cache
+.coverage
+
+# Secrets
+.env
+
+# Deployment
+*.egg-info/
+build/

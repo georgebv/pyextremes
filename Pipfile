@@ -4,16 +4,23 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "*"
-scipy = "*"
-pandas = "*"
-matplotlib = "*"
 emcee = "*"
+matplotlib = "*"
+numpy = "*"
+pandas = "*"
+scipy = "*"
 
 [dev-packages]
 pytest = "*"
-codecov = "*"
 pytest-cov = "*"
+black = "==19.10b0"
+pylint = "*"
+flake8 = "*"
+bandit = "*"
+pydocstyle = "*"
+mypy = "*"
+ipykernel = "*"
+"e1839a8" = {path = ".", editable = true}
 
 [requires]
 python_version = "3.8"

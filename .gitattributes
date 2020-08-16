@@ -1,2 +1,9 @@
 # Python files
 *.py text diff=python
+
+# Plain text files
+*.csv text
+*.txt text
+*.md text diff=markdown
+*.rst text
+*.yml text
