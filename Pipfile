@@ -3,8 +3,11 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[requires]
+python_version = "3.8"
+
 [packages]
-emcee = "*"
+emcee = ">=3.0"
 matplotlib = "*"
 numpy = "*"
 pandas = "*"
@@ -19,8 +22,4 @@ flake8 = "*"
 bandit = "*"
 pydocstyle = "*"
 mypy = "*"
-ipykernel = "*"
 "e1839a8" = {path = ".", editable = true}
-
-[requires]
-python_version = "3.8"

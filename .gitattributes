@@ -1,9 +1,11 @@
-# Python files
+# Python source files
 *.py text diff=python
 
 # Plain text files
 *.csv text
 *.txt text
-*.md text diff=markdown
-*.rst text
+*.md text
 *.yml text
+.gitattributes text
+Pipfile text
+Pipfile.lock text

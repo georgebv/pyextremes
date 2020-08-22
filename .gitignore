@@ -1,28 +1,16 @@
-# Visual Studio Code files
-.vscode/
+# Development environment
+.vscode
+.devcontainer
 
-# Pycharm files
-.idea/
-
-# Python files
+# Python
 __pycache__/
 *.pyc
-
-# Documentation
-docs/build/
-docs/source/_static/
-docs/source/_templates/
-
-# Linting
-.mypy_cache
+*.egg-info/
+build/
 
 # Testing
 .pytest_cache
 .coverage
 
-# Secrets
-.env
-
-# Deployment
-*.egg-info/
-build/
+# Linting
+.mypy_cache
