@@ -12,7 +12,7 @@ pyextremes
 
 **Version:** 1.1.0
 
-**License:** GNU General Public License v3.0
+**License:** MIT
 
 **E-Mail:** bocharovgeorgii@gmail.com
 

@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     license="MIT",
     keywords="statistics extreme eva coastal ocean marine engineering",
-    package_dir={"": "src"}
+    package_dir={"": "src"},
     include_package_data=True,
     install_requires=["numpy", "scipy", "pandas", "matplotlib", "emcee>=3.0"],
     python_requires=">=3.7"
