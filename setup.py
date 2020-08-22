@@ -25,5 +25,5 @@ setuptools.setup(
     package_dir={"": "src"},
     include_package_data=True,
     install_requires=["numpy", "scipy", "pandas", "matplotlib", "emcee>=3.0"],
-    python_requires=">=3.7"
+    python_requires=">=3.7",
 )
