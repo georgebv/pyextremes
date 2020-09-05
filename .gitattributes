@@ -1,11 +1,14 @@
 # Python source files
-*.py text diff=python
+*.py text diff=python eol=lf
 
 # Plain text files
-*.csv text
-*.txt text
-*.md text
-*.yml text
-.gitattributes text
-Pipfile text
-Pipfile.lock text
+*.csv text eol=lf
+*.rst text eol=lf
+*.ini text eol=lf
+*.png -diff
+LICENSE text eol=lf
+MANIFEST.in text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+Pipfile text eol=lf
+Pipfile.lock text eol=lf
