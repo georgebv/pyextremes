@@ -25,3 +25,6 @@ def test_extremes_transformer(extremes_type):
     # Ensure transform works both ways
     for value in [-10, 0, 50]:
         assert transformer.transform(value=transformer.transform(value=value)) == value
+
+    # Test null-transform
+    assert transformer.transform(value=None) is None
