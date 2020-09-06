@@ -5,10 +5,11 @@
 *.csv text eol=lf
 *.rst text eol=lf
 *.ini text eol=lf
+*.cfg text eol=lf
 *.png -diff
+.gitattributes text eol=lf
+.gitignore text eol=lf
 LICENSE text eol=lf
 MANIFEST.in text eol=lf
-.gitignore text eol=lf
-.gitattributes text eol=lf
 Pipfile text eol=lf
 Pipfile.lock text eol=lf

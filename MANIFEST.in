@@ -1,6 +1,4 @@
 include LICENSE
 include README.rst
-global-include *.py
-global-include *.txt
-global-include *.png
-global-include *.csv
+graft tests
+global-exclude *.py[cod]

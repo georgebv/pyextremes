@@ -3,7 +3,7 @@ import pathlib
 import pandas as pd
 import pytest
 
-root_directory = pathlib.Path(__file__).parent
+root_directory = pathlib.Path(__file__).parent.resolve()
 
 
 @pytest.fixture(scope="session")
