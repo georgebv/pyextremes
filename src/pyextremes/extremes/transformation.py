@@ -4,6 +4,13 @@ import pandas as pd
 
 
 class ExtremesTransformer:
+
+    __slots__ = [
+        "extremes",
+        "extremes_type",
+        "transformed_extremes",
+    ]
+
     def __init__(self, extremes: pd.Series, extremes_type: str) -> None:
         """
         Extreme value transformer class.
