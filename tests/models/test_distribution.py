@@ -31,9 +31,10 @@ class TestDistribution:
             )
 
     @pytest.mark.parametrize(
-        "distribution_name, theta, kwargs, scipy_parameters",
+        "distribution_input, theta, kwargs, scipy_parameters",
         [
             ("genextreme", (0.5, 10, 2), {}, (0.5, 10, 2)),
+            (scipy.stats.genextreme, (0.5, 10, 2), {}, (0.5, 10, 2)),
             ("gumbel_r", (10, 2), {}, (10, 2)),
             ("genpareto", (0.5, 0, 2), {}, (0.5, 0, 2)),
             ("genpareto", (0.5, 2), {"floc": 0}, (0.5, 0, 2)),
@@ -41,14 +42,19 @@ class TestDistribution:
             ("expon", (2,), {"floc": 0}, (0, 2)),
         ],
     )
-    def test_distribution(self, distribution_name, theta, kwargs, scipy_parameters):
-        scipy_distribution = getattr(scipy.stats, distribution_name)
+    def test_distribution(self, distribution_input, theta, kwargs, scipy_parameters):
+        if isinstance(distribution_input, scipy.stats.rv_continuous):
+            scipy_distribution = distribution_input
+            distribution_name = distribution_input.name
+        else:
+            distribution_name = distribution_input
+            scipy_distribution = getattr(scipy.stats, distribution_name)
         distribution = Distribution(
             extremes=pd.Series(
                 index=pd.date_range(start="2000-01-01", periods=100, freq="1H"),
                 data=scipy_distribution.rvs(*scipy_parameters, size=100),
             ),
-            distribution=distribution_name,
+            distribution=distribution_input,
             **kwargs
         )
 
@@ -121,6 +127,11 @@ class TestDistribution:
         ffp = distribution.free2full_parameters(free_parameters=[theta] * 5)
         assert ffp.shape == (5, len(scipy_parameters),)
         assert np.all([np.allclose(row, scipy_parameters) for row in ffp])
+
+        if len(theta) == 1:
+            ffp = distribution.free2full_parameters(free_parameters=theta[0])
+            assert np.allclose(ffp, scipy_parameters)
+            assert ffp.shape == (len(scipy_parameters),)
 
         with pytest.raises(
             ValueError,
