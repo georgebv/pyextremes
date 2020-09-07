@@ -78,7 +78,7 @@ class AbstractModelBaseClass(abc.ABC):
     @abc.abstractmethod
     def name(self) -> str:
         """Return model name."""
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def fit(self, **kwargs) -> None:
@@ -92,7 +92,7 @@ class AbstractModelBaseClass(abc.ABC):
         (n_walkers, n_samples, n_free_parameters)
 
         """
-        pass
+        raise NotImplementedError
 
     @property
     def trace(self) -> np.ndarray:
@@ -159,7 +159,7 @@ class AbstractModelBaseClass(abc.ABC):
             Upper confidence interval bounds.
 
         """
-        pass
+        raise NotImplementedError
 
     def _get_prop(self, prop: str, x):
         return self.distribution.get_prop(
