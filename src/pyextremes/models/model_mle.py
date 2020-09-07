@@ -117,7 +117,9 @@ class MLE(AbstractModelBaseClass):
             except KeyError:
                 # Value not in cache - calculate new return value
                 rv = self.distribution.distribution.isf(
-                    q=ep, **self.fit_parameters, **self.distribution._fixed_parameters
+                    q=ep,
+                    **self.fit_parameters,
+                    **self.distribution._fixed_parameters,
                 )
 
                 # Calculate confidence intervals
@@ -135,7 +137,8 @@ class MLE(AbstractModelBaseClass):
                             )
                             self.fit_parameter_cache.append(
                                 self.distribution.distribution.fit(
-                                    data=sample, **self.distribution.fixed_parameters
+                                    data=sample,
+                                    **self.distribution.fixed_parameters,
                                 )
                             )
                     # Calculate confidence intervals

@@ -16,7 +16,7 @@ scipy = "*"
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
-black = "==19.10b0"
+black = "==20.8b1"
 pylint = "*"
 flake8 = "*"
 bandit = "*"

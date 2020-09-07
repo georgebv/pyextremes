@@ -70,7 +70,10 @@ def get_extremes_block_maxima(
     # Prepare date-time intervals
     periods = int(np.ceil((ts.index.max() - ts.index.min()) / block_size))
     date_time_intervals = pd.interval_range(
-        start=ts.index[0], freq=block_size, periods=periods, closed="left"
+        start=ts.index[0],
+        freq=block_size,
+        periods=periods,
+        closed="left",
     )
 
     # Collect extreme events

@@ -5,7 +5,10 @@ from pyextremes.extremes.peaks_over_threshold import get_extremes_peaks_over_thr
 
 
 def get_extremes(
-    ts: pd.Series, method: str, extremes_type: str = "high", **kwargs,
+    ts: pd.Series,
+    method: str,
+    extremes_type: str = "high",
+    **kwargs,
 ) -> pd.Series:
     """
     Get extreme events from time series.
@@ -46,10 +49,16 @@ def get_extremes(
 
     """
     if method == "BM":
-        return get_extremes_block_maxima(ts=ts, extremes_type=extremes_type, **kwargs)
+        return get_extremes_block_maxima(
+            ts=ts,
+            extremes_type=extremes_type,
+            **kwargs,
+        )
     elif method == "POT":
         return get_extremes_peaks_over_threshold(
-            ts=ts, extremes_type=extremes_type, **kwargs
+            ts=ts,
+            extremes_type=extremes_type,
+            **kwargs,
         )
     else:
         raise ValueError(

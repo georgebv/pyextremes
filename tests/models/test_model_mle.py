@@ -88,6 +88,8 @@ class TestMLE:
         )
 
     def test_get_return_value(self, mle_model):
+        with pytest.raises(TypeError, match=r"unrecognized arguments.*bad_argument"):
+            mle_model.get_return_value(exceedance_probability=0.1, bad_argument=1)
         with pytest.raises(ValueError, match=r"invalid shape.*exceedance_probability"):
             mle_model.get_return_value(exceedance_probability=[[1, 2, 3], [1, 2, 3]])
 
@@ -228,6 +230,8 @@ class TestMLE:
             assert "all parameters are free" in repr_value
 
         # Test get_return_value
+        with pytest.raises(TypeError, match=r"unrecognized arguments.*bad_argument"):
+            model.get_return_value(exceedance_probability=0.1, bad_argument=1)
         with pytest.raises(ValueError, match=r"invalid shape.*exceedance_probability"):
             model.get_return_value(exceedance_probability=[[1, 2, 3], [1, 2, 3]])
 

@@ -96,8 +96,7 @@ class AbstractModelBaseClass(abc.ABC):
 
     @property
     def trace(self) -> np.ndarray:
-        if len(self.__trace) == 0:
-            raise TypeError(f"trace property is not applicable for '{self.name}' model")
+        raise TypeError(f"trace property is not applicable for '{self.name}' model")
 
     @property
     def loglikelihood(self) -> float:

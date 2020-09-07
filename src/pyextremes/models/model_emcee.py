@@ -1,5 +1,6 @@
 import logging
 import typing
+import warnings
 
 import emcee
 import numpy as np
@@ -64,11 +65,13 @@ class Emcee(AbstractModelBaseClass):
             f"running ensemble sampler with {n_walkers} walkers "
             f"and {n_samples} samples"
         )
-        sampler.run_mcmc(
-            initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
-            nsteps=n_samples,
-            progress=progress,
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter(action="ignore", category=RuntimeWarning)
+            sampler.run_mcmc(
+                initial_state=self.distribution.get_initial_state(n_walkers=n_walkers),
+                nsteps=n_samples,
+                progress=progress,
+            )
         logger.info(
             f"finished run for ensemble sampler with {n_walkers} walkers "
             f"and {n_samples} samples"
@@ -95,6 +98,10 @@ class Emcee(AbstractModelBaseClass):
         # Set fit parameters and trace
         self.fit_parameters = dict(zip(self.distribution.free_parameters, map_estimate))
         self.__trace = mcmc_chain.transpose((1, 0, 2))
+
+    @property
+    def trace(self) -> np.ndarray:
+        return self.__trace
 
     def get_return_value(
         self, exceedance_probability, alpha: typing.Optional[float] = None, **kwargs

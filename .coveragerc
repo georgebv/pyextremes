@@ -7,7 +7,7 @@ exclude_lines =
     raise AssertionError
     raise NotImplementedError
     if __name__ == .__main__.:
-fail_under = 40.0
+fail_under = 50.0
 precision = 1
 skip_empty = True
 sort = Cover
