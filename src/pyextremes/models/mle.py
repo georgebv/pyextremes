@@ -1,22 +1,5 @@
-# pyextremes, Extreme Value Analysis in Python
-# Copyright (C), 2020 Georgii Bocharov
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 import logging
 import typing
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -25,130 +8,191 @@ import scipy.stats
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
-DEFAULT_N_SAMPLES = 100
 
 
 class MLE(AbstractModelBaseClass):
-    """
-    Maximum Likelihood Estimate (MLE) model.
-    Built around the scipy.stats.rv_continuous.fit method.
-    """
-
     def __init__(
-            self,
-            extremes: pd.Series,
-            distribution: typing.Union[str, scipy.stats.rv_continuous],
-            distribution_kwargs: dict = None
+        self,
+        extremes: pd.Series,
+        distribution: typing.Union[str, scipy.stats.rv_continuous],
+        distribution_kwargs: typing.Optional[dict] = None,
     ) -> None:
+        """
+        Maximum Likelihood Estimate (MLE) model.
+
+        Built around the scipy.stats.rv_continuous.fit method.
+
+        """
         super().__init__(
             extremes=extremes,
             distribution=distribution,
-            distribution_kwargs=distribution_kwargs
+            distribution_kwargs=distribution_kwargs,
         )
 
-        logger.info('initializing the fit parameter hash')
-        self.hashed_fit_parameters = []
-
-    def __repr__(self) -> str:
-        free_parameters = ', '.join(
-            [
-                f'{parameter}={self.fit_parameters[parameter]:.3f}'
-                for parameter in self.distribution.free_parameters
-            ]
-        )
-        fixed_parameters = ', '.join(
-            [
-                f'{key}={value:.3f}' for key, value in self.distribution.fixed_parameters.items()
-            ]
-        )
-        if fixed_parameters == '':
-            fixed_parameters = 'All parameters are free'
-        summary = [
-            'MLE model',
-            '='*9,
-            f'free parameters: {free_parameters}',
-            f'fixed parameters: {fixed_parameters}',
-            f'AIC: {self.AIC:.3f}',
-            f'loglikelihood: {self.loglikelihood:.3f}',
-            f'hash size: {len(self.hashed_fit_parameters):d}'
-        ]
-        return '\n'.join(summary)
+        # Initialize 'fit_parameter_cache'
+        self.fit_parameter_cache: typing.List[tuple] = []
 
     @property
     def name(self) -> str:
-        return 'MLE'
+        return "MLE"
 
     def fit(self, **kwargs) -> None:
-        assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
-        self.fit_parameters = self.distribution.mle_parameters
-        self.trace = None
-
-    def _encode_kwargs(
-            self,
-            kwargs: dict
-    ) -> str:
-        n_samples = kwargs.get('n_samples', DEFAULT_N_SAMPLES)
-        if not isinstance(n_samples, int):
+        if len(kwargs) != 0:
             raise TypeError(
-                f'invalid type in {type(n_samples)} for the \'n_samples\' argument, it must be a positive integer'
+                f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
             )
-        if n_samples <= 0:
-            raise ValueError(f'\'{n_samples}\' is not a valid \'n_samples\' value, it must be a positive integer')
-        return f'{n_samples:d}'
-
-    def _get_return_value(
-            self,
-            exceedance_probability: float,
-            alpha: float,
-            **kwargs
-    ) -> tuple:
-        logger.debug('calculating return value')
-        return_value = self.distribution.distribution.isf(
-            q=exceedance_probability,
-            **self.fit_parameters,
-            **self.distribution._fixed_parameters
+        self.fit_parameters = self.distribution.mle_parameters
+        logger.debug(
+            f"fit {self.distribution.name} distribution "
+            f"with parameters {self.distribution.mle_parameters}"
         )
 
-        if alpha is None:
-            if 'n_samples' in kwargs:
-                kwargs.pop('n_samples')
-                warnings.warn(message='n_samples is not used when alpha is None')
-            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+    def get_return_value(
+        self, exceedance_probability, alpha: typing.Optional[float] = None, **kwargs
+    ) -> tuple:
+        """
+        Calculate return value and confidence interval bounds.
 
-            logger.debug('returning confidence interval as None for alpha=None')
-            confidence_interval = (None, None)
+        Parameters
+        ----------
+        exceedance_probability : array-like
+            Exceedance probability or 1D array of exceedance probabilities.
+            Each exceedance probability must be in the [0, 1) range.
+        alpha : float, optional
+            Width of confidence interval (0, 1) (default=None).
+            If None (default), return None
+            for upper and lower confidence interval bounds.
+        kwargs
+            n_samples : int, optional
+                Number of bootstrap samples used to estimate
+                confidence interval bounds (default=100).
 
-        else:
-            n_samples = kwargs.pop('n_samples', DEFAULT_N_SAMPLES)
-            assert len(kwargs) == 0, 'unrecognized arguments passed in: {}'.format(', '.join(kwargs.keys()))
+        Returns
+        -------
+        return_value : array-like
+            Return values.
+        ci_lower : array-like
+            Lower confidence interval bounds.
+        ci_upper : array-like
+            Upper confidence interval bounds.
 
-            if len(self.hashed_fit_parameters) < n_samples:
+        """
+        # Parse 'kwargs'
+        n_samples = kwargs.pop("n_samples", 100)
+        if len(kwargs) != 0:
+            raise TypeError(
+                f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
+            )
+
+        # Convert 'exceedance_probability' to ndarray
+        exceedance_probability = np.asarray(
+            a=exceedance_probability, dtype=np.float64
+        ).copy()
+        if exceedance_probability.ndim == 0:
+            exceedance_probability = exceedance_probability[np.newaxis]
+        if exceedance_probability.ndim != 1:
+            raise ValueError(
+                f"invalid shape in {exceedance_probability.shape} "
+                f"for the 'exceedance_probability' argument, must be 1D array"
+            )
+
+        # Calculate return values
+        return_value = np.full(
+            shape=exceedance_probability.shape, fill_value=np.nan, dtype=np.float64
+        )
+        ci_lower = return_value.copy()
+        ci_upper = return_value.copy()
+        for i, ep in enumerate(exceedance_probability):
+            key: typing.Tuple[float, typing.Optional[float], int] = (
+                ep,
+                alpha,
+                n_samples,
+            )
+            try:
+                # Try to fetch pre-calculated values from cache
+                rv, cil, ciu = self.return_value_cache[key]
                 logger.debug(
-                    f'putting {n_samples-len(self.hashed_fit_parameters):d} additional fit parameters into the hash'
+                    f"fetched return value for {key} from cache as {(rv, cil, ciu)}"
                 )
-                for _ in range(n_samples - len(self.hashed_fit_parameters)):
-                    sample = np.random.choice(a=self.extremes.values, size=len(self.extremes), replace=True)
-                    sample_fit_parameters = self.distribution.distribution.fit(
-                        data=sample,
-                        **self.distribution.fixed_parameters
+            except KeyError:
+                # Value not in cache - calculate new return value
+                rv = self.distribution.distribution.isf(
+                    q=ep, **self.fit_parameters, **self.distribution._fixed_parameters
+                )
+
+                # Calculate confidence intervals
+                if alpha is None:
+                    cil = None
+                    ciu = None
+                else:
+                    # If cache doesn't have enough values, calculate new fit parameters
+                    if len(self.fit_parameter_cache) < n_samples:
+                        for _ in range(n_samples - len(self.fit_parameter_cache)):
+                            sample = np.random.choice(
+                                a=self.extremes.values,
+                                size=len(self.extremes),
+                                replace=True,
+                            )
+                            self.fit_parameter_cache.append(
+                                self.distribution.distribution.fit(
+                                    data=sample, **self.distribution.fixed_parameters
+                                )
+                            )
+                    # Calculate confidence intervals
+                    rv_sample = self.distribution.distribution.isf(
+                        q=ep, *np.transpose(self.fit_parameter_cache)
                     )
-                    self.hashed_fit_parameters.append(sample_fit_parameters)
+                    cil, ciu = np.quantile(
+                        a=rv_sample, q=[(1 - alpha) / 2, (1 + alpha) / 2]
+                    )
 
-            logger.debug(
-                'calculating return values from hashed fit parameters to be used for confidence interval estimation'
-            )
-            rv_sample = [
-                self.distribution.distribution.isf(exceedance_probability, *self.hashed_fit_parameters[i])
-                for i in range(n_samples)
+                # Add calculated return value and intervals to cache
+                self.return_value_cache[key] = (rv, cil, ciu)
+                logger.debug(f"calculated return value for {key} as {(rv, cil, ciu)}")
+
+            return_value[i] = rv
+            ci_lower[i] = cil
+            ci_upper[i] = ciu
+
+        # Return results
+        if len(return_value) == 1:
+            return return_value[0], ci_lower[0], ci_upper[0]
+        else:
+            return return_value, ci_lower, ci_upper
+
+    def __repr__(self) -> str:
+        free_parameters = ", ".join(
+            [
+                f"{parameter}={self.fit_parameters[parameter]:.3f}"
+                for parameter in self.distribution.free_parameters
             ]
+        )
 
-            logger.debug('calculating confidence interval')
-            confidence_interval = tuple(
-                np.quantile(
-                    a=rv_sample,
-                    q=[(1-alpha)/2, (1+alpha)/2]
-                )
-            )
+        fixed_parameters = ", ".join(
+            [
+                f"{key}={value:.3f}"
+                for key, value in self.distribution.fixed_parameters.items()
+            ]
+        )
+        if fixed_parameters == "":
+            fixed_parameters = "all parameters are free"
 
-        logger.debug('returning return value and confidence interval')
-        return return_value, confidence_interval
+        summary = [
+            "MLE model",
+            "",
+            f"free parameters: {free_parameters}",
+            f"fixed parameters: {fixed_parameters}",
+            f"AIC: {self.AIC:.3f}",
+            f"loglikelihood: {self.loglikelihood:.3f}",
+            f"return value cache size: {len(self.return_value_cache):,d}",
+            f"fit parameter cache size: {len(self.fit_parameter_cache):,d}",
+        ]
+
+        longest_row = max(map(len, summary))
+        summary[1] = "-" * longest_row
+        summary.append(summary[1])
+        summary[0] = " " * ((longest_row - len(summary[0])) // 2) + summary[0]
+        for i, row in enumerate(summary):
+            summary[i] += " " * (longest_row - len(row))
+
+        return "\n".join(summary)
