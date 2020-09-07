@@ -1,6 +1,5 @@
 import logging
 import typing
-import warnings
 
 import emcee
 import numpy as np

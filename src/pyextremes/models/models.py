@@ -3,8 +3,8 @@ import typing
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.emcee import Emcee
-from pyextremes.models.mle import MLE
+from pyextremes.models.model_emcee import Emcee
+from pyextremes.models.model_mle import MLE
 
 
 def get_model(

@@ -140,7 +140,7 @@ class MLE(AbstractModelBaseClass):
                             )
                     # Calculate confidence intervals
                     rv_sample = self.distribution.distribution.isf(
-                        q=ep, *np.transpose(self.fit_parameter_cache)
+                        ep, *np.transpose(self.fit_parameter_cache)
                     )
                     cil, ciu = np.quantile(
                         a=rv_sample, q=[(1 - alpha) / 2, (1 + alpha) / 2]
