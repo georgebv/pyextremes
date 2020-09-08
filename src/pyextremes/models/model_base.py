@@ -67,8 +67,8 @@ class AbstractModelBaseClass(abc.ABC):
         )
 
         # Fit the distribution to extremes
-        self.fit_parameters: typing.Dict[str, float] = {}
-        self.__trace = np.array([])
+        self._fit_parameters: typing.Optional[dict] = None
+        self._trace: typing.Optional[np.ndarray] = None
         self.fit(**kwargs)
 
         # Initialize 'return_value_cache'
@@ -95,8 +95,18 @@ class AbstractModelBaseClass(abc.ABC):
         raise NotImplementedError
 
     @property
+    def fit_parameters(self) -> typing.Dict[str, float]:
+        if self._fit_parameters is None:
+            raise AssertionError
+        else:
+            return self._fit_parameters
+
+    @property
     def trace(self) -> np.ndarray:
-        raise TypeError(f"trace property is not applicable for '{self.name}' model")
+        if self._trace is None:
+            raise TypeError(f"trace property is not applicable for '{self.name}' model")
+        else:
+            return self._trace
 
     @property
     def loglikelihood(self) -> float:

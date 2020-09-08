@@ -96,12 +96,10 @@ class Emcee(AbstractModelBaseClass):
         logger.info(f"calculated MAP of distribuion parameters as {map_estimate}")
 
         # Set fit parameters and trace
-        self.fit_parameters = dict(zip(self.distribution.free_parameters, map_estimate))
-        self.__trace = mcmc_chain.transpose((1, 0, 2))
-
-    @property
-    def trace(self) -> np.ndarray:
-        return self.__trace
+        self._fit_parameters = dict(
+            zip(self.distribution.free_parameters, map_estimate)
+        )
+        self._trace = mcmc_chain.transpose((1, 0, 2))
 
     def get_return_value(
         self, exceedance_probability, alpha: typing.Optional[float] = None, **kwargs
@@ -173,7 +171,9 @@ class Emcee(AbstractModelBaseClass):
             except KeyError:
                 # Value not in cache - calculate new return value
                 rv = self.distribution.distribution.isf(
-                    q=ep, **self.fit_parameters, **self.distribution._fixed_parameters
+                    q=ep,
+                    **self.fit_parameters,
+                    **self.distribution._fixed_parameters,
                 )
 
                 # Calculate confidence intervals

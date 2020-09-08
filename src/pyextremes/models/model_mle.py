@@ -41,7 +41,7 @@ class MLE(AbstractModelBaseClass):
             raise TypeError(
                 f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
             )
-        self.fit_parameters = self.distribution.mle_parameters
+        self._fit_parameters = self.distribution.mle_parameters
         logger.debug(
             f"fit {self.distribution.name} distribution "
             f"with parameters {self.distribution.mle_parameters}"
