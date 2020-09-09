@@ -1,0 +1,15 @@
+[run]
+branch = True
+omit =
+    ./src/pyextremes/plotting/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+fail_under = 50.0
+precision = 1
+skip_empty = True
+sort = Cover

@@ -1,0 +1,112 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    name: Test and generate coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --user pipenv
+          PATH=~/.local/bin:$PATH
+          pipenv install --system --ignore-pipfile --deploy
+          pip install pytest pytest-cov
+          pip install -e .
+
+      - name: Run tests and generate coverage report
+        run: |
+          pytest --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+  lint-black:
+    name: Lint Python code using black
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --user pipenv
+          PATH=~/.local/bin:$PATH
+          pipenv install --system --ignore-pipfile --deploy
+          pip install black==20.8b1
+
+      - name: Run black
+        run: |
+          black ./src/pyextremes --check
+
+  lint-pylint:
+    name: Lint Python code using pylint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --user pipenv
+          PATH=~/.local/bin:$PATH
+          pipenv install --system --ignore-pipfile --deploy
+          pip install pylint
+
+      - name: Run pylint
+        run: |
+          pylint ./src/pyextremes --fail-under=8 --max-line-length=88
+
+  lint-flake8:
+    name: Lint Python code using flake8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --user pipenv
+          PATH=~/.local/bin:$PATH
+          pipenv install --system --ignore-pipfile --deploy
+          pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 ./src/pyextremes --max-line-length=88 --ignore=E203

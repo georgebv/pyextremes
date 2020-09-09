@@ -3,17 +3,23 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[requires]
+python_version = "3.8"
+
 [packages]
-numpy = "*"
-scipy = "*"
-pandas = "*"
+emcee = ">=3.0"
 matplotlib = "*"
-emcee = "*"
+numpy = "*"
+pandas = "*"
+scipy = "*"
 
 [dev-packages]
 pytest = "*"
-codecov = "*"
 pytest-cov = "*"
-
-[requires]
-python_version = "3.8"
+black = "==20.8b1"
+pylint = "*"
+flake8 = "*"
+bandit = "*"
+pydocstyle = "*"
+mypy = "*"
+"e1839a8" = {path = ".", editable = true}

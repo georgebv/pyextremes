@@ -6,17 +6,34 @@
 
 |build status| |coverage status| |pypi package| |conda version|
 
-pyextremes
-==========
-**pyextremes** is a Python library dedicated to solving problems from the area of `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools to extract extreme events from time series using Block Maxima or Peaks Over Threshold methods, to fit models such as GEV and GPD to the extracted extreme values, and to provide estimates of extreme events and corresponding confidence intervals for given return periods. Models are fitted to the data using the Maximum Likelihood Estimate (MLE, via `scipy <https://www.scipy.org/>`_) or the Markov Chain Monte Calro (MCMC, via `emcee <https://emcee.readthedocs.io/en/stable/>`_) models.
+.. contents:: Table of Contents
+
+Introduction
+============
 
 **Version:** 1.0.2
 
-**License:** GNU General Public License v3.0
+**License:** MIT
 
 **E-Mail:** bocharovgeorgii@gmail.com
 
-**Documentation:** coming soon
+**Documentation:** see the `Tutorials`_ section
+
+**pyextremes** is a Python library implementing an easy-to-use extensible framework used to perform `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools necessary to perform typical tasks constituting EVA, such as:
+
+- extraction of extreme events from time series using Block Maxima or Peaks Over Threshold methods
+- fitting continuous distributions, such as GEV, GPD, or user specified continous distribution, to the extracted extreme events
+- visualization of model performance and goodness-of-fit statistics
+- estimation of extreme events of given probability (e.g. 100-year event) and corresponding confidence intervals
+- tools assisting with model selection and tuning (block size in BM, threshold in POT)
+- (work-in-progress) multivariate extreme value analysis
+
+Framework provided by the **pyextremes** library is easy to use and requires minimum user input to get good results. Its default parameters are configured in compliance with best industry standards (many concepts are based on the "An Introduction to Statistical Modeling of Extreme Values" book by Stuard Coles).
+
+The framework also supports more in-depth configuration for specific cases. It supports all scipy continous distributions and also custom user-made distributions, which are subclasses of :python:`scipy.stats.rv_continuous`. Any parameter of a distribution may be frozen to investigate degenerate models (e.g. GEV->Gumbel). Distributions are fitted to the data using one of the following models:
+
+- :python:`MLE` (default model) - Maximum Likelihood Estimate, uses `scipy <https://www.scipy.org/>`_
+- :python:`Emcee` - Markov Chain Monte Calro, uses `emcee <https://emcee.readthedocs.io/en/stable/>`_
 
 Installation
 ============
@@ -26,11 +43,17 @@ Available via pip:
 
     pip install pyextremes
 
-And via anaconda:
+Via anaconda:
 
 .. code:: bash
 
     conda install -c conda-forge pyextremes
+
+Or from GitHub directly:
+
+.. code:: bash
+   
+   pip install git+https://github.com/georgebv/pyextremes
 
 Dependencies
 ============
@@ -38,11 +61,11 @@ Dependencies
 
 **Required packages:**
 
-- emcee >= 2.2.1
-- matplotlib >= 3.1.3
-- numpy >= 1.18.1
-- pandas >= 1.0.1
-- scipy >= 1.4.1
+- emcee >= 3.0
+- matplotlib
+- numpy
+- pandas
+- scipy
 
 Tutorials
 =========
@@ -60,8 +83,8 @@ Model diagnostic
 
 |model diagnostic image|
 
-.. |build status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
-   :target: https://travis-ci.org/georgebv/pyextremes
+.. |build status| image:: https://github.com/georgebv/pyextremes/workflows/build/badge.svg
+   :target: https://github.com/georgebv/pyextremes/actions?query=workflow%3Abuild
 
 .. |coverage status| image:: https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/georgebv/pyextremes
