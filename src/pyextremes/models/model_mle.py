@@ -79,6 +79,11 @@ class MLE(AbstractModelBaseClass):
         """
         # Parse 'kwargs'
         n_samples = kwargs.pop("n_samples", 100)
+        if not n_samples > 0:
+            raise ValueError(
+                f"invalid value in {n_samples} for the 'n_samples' "
+                f"argument, must be positive number"
+            )
         if len(kwargs) != 0:
             raise TypeError(
                 f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
@@ -95,6 +100,12 @@ class MLE(AbstractModelBaseClass):
                 f"invalid shape in {exceedance_probability.shape} "
                 f"for the 'exceedance_probability' argument, must be 1D array"
             )
+
+        # If cache doesn't have enough values, calculate new fit parameters
+        if alpha is not None:
+            n_extra_fit_parameters = n_samples - len(self.fit_parameter_cache)
+            if n_extra_fit_parameters > 0:
+                self._extend_fit_parameter_cache(n=n_extra_fit_parameters)
 
         # Calculate return values
         return_value = np.full(
@@ -127,23 +138,9 @@ class MLE(AbstractModelBaseClass):
                     cil = None
                     ciu = None
                 else:
-                    # If cache doesn't have enough values, calculate new fit parameters
-                    if len(self.fit_parameter_cache) < n_samples:
-                        for _ in range(n_samples - len(self.fit_parameter_cache)):
-                            sample = np.random.choice(
-                                a=self.extremes.values,
-                                size=len(self.extremes),
-                                replace=True,
-                            )
-                            self.fit_parameter_cache.append(
-                                self.distribution.distribution.fit(
-                                    data=sample,
-                                    **self.distribution.fixed_parameters,
-                                )
-                            )
                     # Calculate confidence intervals
                     rv_sample = self.distribution.distribution.isf(
-                        ep, *np.transpose(self.fit_parameter_cache)
+                        ep, *np.transpose(self.fit_parameter_cache[:n_samples])
                     )
                     cil, ciu = np.quantile(
                         a=rv_sample, q=[(1 - alpha) / 2, (1 + alpha) / 2]
@@ -162,6 +159,24 @@ class MLE(AbstractModelBaseClass):
             return return_value[0], ci_lower[0], ci_upper[0]
         else:
             return return_value, ci_lower, ci_upper
+
+    def _extend_fit_parameter_cache(self, n: int) -> None:
+        # TODO - multiprocessing
+        #   find number of pools as min between length/20 and n_processors
+        #   for each worker get array of fit parameters and merge using itertools.chain
+
+        extremes = self.extremes.values
+        size = len(extremes)
+        fixed_parameters = self.distribution.fixed_parameters
+        fit_function = self.distribution.distribution.fit
+        fit_parameters: typing.List[tuple] = [
+            fit_function(
+                data=np.random.choice(a=extremes, size=size, replace=True),
+                **fixed_parameters,
+            )
+            for _ in range(n)
+        ]
+        self.fit_parameter_cache.extend(fit_parameters)
 
     def __repr__(self) -> str:
         free_parameters = ", ".join(

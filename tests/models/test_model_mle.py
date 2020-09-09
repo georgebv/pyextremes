@@ -92,6 +92,10 @@ class TestMLE:
             mle_model.get_return_value(exceedance_probability=0.1, bad_argument=1)
         with pytest.raises(ValueError, match=r"invalid shape.*exceedance_probability"):
             mle_model.get_return_value(exceedance_probability=[[1, 2, 3], [1, 2, 3]])
+        with pytest.raises(
+            ValueError, match=r"invalid value.*n_samples.*must be positive"
+        ):
+            mle_model.get_return_value(exceedance_probability=0.1, n_samples=-1)
 
         # Test scalar, no alpha
         rv, cil, ciu = mle_model.get_return_value(exceedance_probability=0.1)
@@ -234,6 +238,10 @@ class TestMLE:
             model.get_return_value(exceedance_probability=0.1, bad_argument=1)
         with pytest.raises(ValueError, match=r"invalid shape.*exceedance_probability"):
             model.get_return_value(exceedance_probability=[[1, 2, 3], [1, 2, 3]])
+        with pytest.raises(
+            ValueError, match=r"invalid value.*n_samples.*must be positive"
+        ):
+            model.get_return_value(exceedance_probability=0.1, n_samples=-1)
 
         # Test scalar, no alpha
         rv, cil, ciu = model.get_return_value(exceedance_probability=0.1)
