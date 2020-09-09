@@ -1,4 +1,7 @@
+import itertools
 import logging
+import multiprocessing
+import os
 import typing
 
 import numpy as np
@@ -8,6 +11,19 @@ import scipy.stats
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
+
+
+def get_fit_parameters(params) -> list:
+    n, fit_function, extremes, fixed_parameters = params
+    sampler = np.random.choice
+    size = len(extremes)
+    return [
+        fit_function(
+            data=sampler(a=extremes, size=size, replace=True),
+            **fixed_parameters,
+        )
+        for _ in range(n)
+    ]
 
 
 class MLE(AbstractModelBaseClass):
@@ -161,22 +177,57 @@ class MLE(AbstractModelBaseClass):
             return return_value, ci_lower, ci_upper
 
     def _extend_fit_parameter_cache(self, n: int) -> None:
-        # TODO - multiprocessing
-        #   find number of pools as min between length/20 and n_processors
-        #   for each worker get array of fit parameters and merge using itertools.chain
-
+        # Prepare local variables used by fit parameter calculator
         extremes = self.extremes.values
-        size = len(extremes)
-        fixed_parameters = self.distribution.fixed_parameters
         fit_function = self.distribution.distribution.fit
-        fit_parameters: typing.List[tuple] = [
-            fit_function(
-                data=np.random.choice(a=extremes, size=size, replace=True),
-                **fixed_parameters,
+        fixed_parameters = self.distribution.fixed_parameters
+
+        min_samples_per_core = 50
+        if n <= min_samples_per_core:
+            # Calculate without multiprocessing
+            logger.debug(f"calculating {n} additional fit parameters using single core")
+            new_fit_parameters = get_fit_parameters(
+                (n, fit_function, extremes, fixed_parameters)
             )
-            for _ in range(n)
-        ]
-        self.fit_parameter_cache.extend(fit_parameters)
+        else:
+            # Find number of cores
+            n_cores = min(
+                os.cpu_count() or 2,
+                int(np.ceil(n / min_samples_per_core)),
+            )
+
+            # Calculate number of samples per core
+            min_samples_per_core = int(n / n_cores)
+            core_samples = [min_samples_per_core for _ in range(n_cores)]
+
+            # Distribute remaining samples evenly across cores
+            for i in range(n - sum(core_samples)):
+                core_samples[i] += 1
+
+            # Calculate new fit parameters using processor pool
+            logger.debug(
+                f"calculating {n} additional fit parameters using {n_cores} cores "
+                f"having {core_samples} samples accordingly"
+            )
+            with multiprocessing.Pool(processes=n_cores) as pool:
+                new_fit_parameters = list(
+                    itertools.chain(
+                        *pool.map(
+                            get_fit_parameters,
+                            zip(
+                                core_samples,
+                                [fit_function for _ in range(n_cores)],
+                                [extremes for _ in range(n_cores)],
+                                [fixed_parameters for _ in range(n_cores)],
+                            ),
+                        )
+                    )
+                )
+
+        # Extrend fit parameter cache
+        logger.debug(f"extending fit parameter cache with {n} new entries")
+        self.fit_parameter_cache.extend(new_fit_parameters)
+        return None
 
     def __repr__(self) -> str:
         free_parameters = ", ".join(
