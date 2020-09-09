@@ -10,6 +10,15 @@
 
 Introduction
 ============
+
+**Version:** 1.0.2
+
+**License:** MIT
+
+**E-Mail:** bocharovgeorgii@gmail.com
+
+**Documentation:** see the `Tutorials`_ section
+
 **pyextremes** is a Python library implementing an easy-to-use extensible framework used to perform `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools necessary to perform typical tasks constituting EVA, such as:
 
 - extraction of extreme events from time series using Block Maxima or Peaks Over Threshold methods
@@ -25,14 +34,6 @@ The framework also supports more in-depth configuration for specific cases. It s
 
 - :python:`MLE` (default model) - Maximum Likelihood Estimate, uses `scipy <https://www.scipy.org/>`_
 - :python:`Emcee` - Markov Chain Monte Calro, uses `emcee <https://emcee.readthedocs.io/en/stable/>`_
-
-**Version:** 1.0.2
-
-**License:** MIT
-
-**E-Mail:** bocharovgeorgii@gmail.com
-
-**Documentation:** see the `Tutorials`_ section
 
 Installation
 ============
