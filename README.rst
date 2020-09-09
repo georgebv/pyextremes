@@ -82,8 +82,8 @@ Model diagnostic
 
 |model diagnostic image|
 
-.. |build status| image:: https://travis-ci.org/georgebv/pyextremes.svg?branch=master
-   :target: https://travis-ci.org/georgebv/pyextremes
+.. |build status| image:: https://github.com/georgebv/pyextremes/workflows/build/badge.svg
+   :target: https://github.com/georgebv/pyextremes/actions?query=workflow%3Abuild
 
 .. |coverage status| image:: https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/georgebv/pyextremes
