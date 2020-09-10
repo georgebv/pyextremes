@@ -111,7 +111,10 @@ class TestMLE:
             exceedance_probability=0.1, alpha=0.95
         )
         assert np.isclose(
-            rv, scipy.stats.genextreme.isf(0.1, c=0, loc=10, scale=2), rtol=0, atol=0.1
+            rv,
+            scipy.stats.genextreme.isf(0.1, c=0, loc=10, scale=2),
+            rtol=0,
+            atol=0.1,
         )
         assert not (np.isnan(cil) or np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 2
@@ -130,6 +133,38 @@ class TestMLE:
         assert not np.any(np.isnan(cil) | np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 3
         assert len(mle_model.fit_parameter_cache) == 100
+
+        # Test small additional n_samples
+        rv, cil, ciu = mle_model.get_return_value(
+            exceedance_probability=0.1,
+            alpha=0.95,
+            n_samples=120,
+        )
+        assert np.isclose(
+            rv,
+            scipy.stats.genextreme.isf(0.1, c=0, loc=10, scale=2),
+            rtol=0,
+            atol=0.1,
+        )
+        assert not (np.isnan(cil) or np.isnan(ciu))
+        assert len(mle_model.return_value_cache) == 4
+        assert len(mle_model.fit_parameter_cache) == 120
+
+        # Test large additional n_samples, not multiple of 50
+        rv, cil, ciu = mle_model.get_return_value(
+            exceedance_probability=0.1,
+            alpha=0.95,
+            n_samples=201,
+        )
+        assert np.isclose(
+            rv,
+            scipy.stats.genextreme.isf(0.1, c=0, loc=10, scale=2),
+            rtol=0,
+            atol=0.1,
+        )
+        assert not (np.isnan(cil) or np.isnan(ciu))
+        assert len(mle_model.return_value_cache) == 5
+        assert len(mle_model.fit_parameter_cache) == 201
 
     def test_repr(self, mle_model):
         repr_value = str(mle_model)
