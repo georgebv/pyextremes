@@ -15,6 +15,7 @@ def plot_extremes(
     block_size: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
     threshold: typing.Optional[float] = None,
     figsize: tuple = (8, 5),
+    ax: typing.Optional[plt.Axes] = None,
 ) -> tuple:
     """
     Plot extreme events.
@@ -45,18 +46,30 @@ def plot_extremes(
     figsize : tuple, optional
         Figure size in inches in format (width, height).
         By default it is (8, 5).
+    ax : matplotlib.axes._axes.Axes, optional
+        Axes onto which extremes plot is drawn.
+        If None (default), a new figure and axes objects are created.
 
     Returns
     -------
     figure : matplotlib.figure.Figure
         Figure object.
-    axes : matplotlib.axes.Axes
+    axes : matplotlib.axes._axes.Axes
         Axes object.
 
     """
     with plt.rc_context(rc=pyextremes_rc):
         # Create figure
-        fig, ax = plt.subplots(figsize=figsize, dpi=96)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=96)
+        else:
+            try:
+                fig = ax.figure
+            except AttributeError as _error:
+                raise TypeError(
+                    f"invalid type in {type(ax)} for the 'ax' argument, "
+                    f"must be matplotlib Axes object"
+                ) from _error
         ax.grid(False)
 
         # Plot signal time series

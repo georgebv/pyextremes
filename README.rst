@@ -95,6 +95,6 @@ Model diagnostic
 .. |conda version| image:: https://img.shields.io/conda/vn/conda-forge/pyextremes.svg
     :target: https://anaconda.org/conda-forge/pyextremes
 
-.. |extreme events image| image:: ./docs/source/example_images/extremes.png
+.. |extreme events image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/extremes.png
 
 .. |model diagnostic image| image:: ./docs/source/example_images/diagnostic.png
