@@ -16,7 +16,7 @@ def plot_extremes(
     threshold: typing.Optional[float] = None,
     figsize: tuple = (8, 5),
     ax: typing.Optional[plt.Axes] = None,
-) -> tuple:
+) -> typing.Tuple[plt.Figure, plt.Axes]:
     """
     Plot extreme events.
 

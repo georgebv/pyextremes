@@ -6,6 +6,7 @@ import emcee
 import numpy as np
 import pandas as pd
 import scipy.stats
+import scipy.optimize
 
 from pyextremes.models.model_base import AbstractModelBaseClass
 
@@ -78,28 +79,40 @@ class Emcee(AbstractModelBaseClass):
         )
 
         # Extract ensemble sampler chain
-        mcmc_chain = sampler.get_chain()
+        self._trace = sampler.get_chain().transpose((1, 0, 2))
 
-        # Calculate MAP estimates of distribution parameters
-        logger.debug("calculating MAP of distribution parameters")
-        map_estimate = np.full(
-            shape=(self.distribution.number_of_parameters,),
-            fill_value=np.nan,
-            dtype=np.float64,
+        # Calculate fit parameters as MAP of distribution parameters
+        kernel = scipy.stats.gaussian_kde(np.vstack(self._trace).transpose())
+
+        def kde_func(x):
+            return -kernel(x)[0]
+
+        fit_paramters = self._trace.mean(axis=(0, 1))
+        solution = scipy.optimize.minimize(
+            kde_func,
+            x0=fit_paramters,
+            method="Nelder-Mead",
         )
-        for i in range(self.distribution.number_of_parameters):
-            parameter_values = mcmc_chain[n_samples // 3 :, :, i].flatten()
-            kde = scipy.stats.gaussian_kde(dataset=parameter_values)
-            support = np.linspace(*np.quantile(parameter_values, [0.025, 0.975]), 1000)
-            density = kde.evaluate(support)
-            map_estimate[i] = support[density.argmax()]
-        logger.info(f"calculated MAP of distribuion parameters as {map_estimate}")
-
-        # Set fit parameters and trace
+        if solution.success:
+            fit_parameters = solution.x
+        else:
+            warnings.warn(
+                message=(
+                    "cannot calculate MAP using Gaussian KDE, "
+                    "setting fit parameters as mean"
+                ),
+                category=RuntimeWarning,
+            )
         self._fit_parameters = dict(
-            zip(self.distribution.free_parameters, map_estimate)
+            zip(self.distribution.free_parameters, fit_parameters)
         )
-        self._trace = mcmc_chain.transpose((1, 0, 2))
+
+    @property
+    def trace_map(self) -> tuple:
+        return tuple(
+            self.fit_parameters[parameter]
+            for parameter in self.distribution.free_parameters
+        )
 
     def get_return_value(
         self, exceedance_probability, alpha: typing.Optional[float] = None, **kwargs
