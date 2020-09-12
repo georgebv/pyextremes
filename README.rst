@@ -75,13 +75,27 @@ Tutorials
 
 Illustrations
 =============
-Extreme value extraction
-
-|extreme events image|
 
 Model diagnostic
+----------------
 
 |model diagnostic image|
+
+Extreme value extraction
+------------------------
+
+|extremes image|
+
+Model fitting (MCMC)
+--------------------
+
+Trace plot
+
+|trace image|
+
+Corner plot
+
+|corner image|
 
 .. |build status| image:: https://github.com/georgebv/pyextremes/workflows/build/badge.svg
    :target: https://github.com/georgebv/pyextremes/actions?query=workflow%3Abuild
@@ -95,6 +109,10 @@ Model diagnostic
 .. |conda version| image:: https://img.shields.io/conda/vn/conda-forge/pyextremes.svg
     :target: https://anaconda.org/conda-forge/pyextremes
 
-.. |extreme events image| image:: ./docs/source/example_images/extremes.png
-
 .. |model diagnostic image| image:: ./docs/source/example_images/diagnostic.png
+
+.. |extremes image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/extremes.png
+
+.. |trace image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/trace.png
+
+.. |corner image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/corner.png

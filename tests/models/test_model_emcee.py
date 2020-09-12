@@ -64,6 +64,16 @@ class TestEmcee:
                 bad_argument=1,
             )
 
+    def test_trace_map(self, emcee_model):
+        assert (
+            len(emcee_model.trace_map) == emcee_model.distribution.number_of_parameters
+        )
+        trace_map = tuple(
+            emcee_model.fit_parameters[parameter]
+            for parameter in emcee_model.distribution.free_parameters
+        )
+        assert emcee_model.trace_map == trace_map
+
     def test_loglikelihood(self, extremes, emcee_model):
         assert np.allclose(
             np.sum(
