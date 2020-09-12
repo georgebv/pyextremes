@@ -79,7 +79,6 @@ def plot_return_values(
                     f"invalid type in {type(ax)} for the 'ax' argument, "
                     f"must be matplotlib Axes object"
                 ) from _error
-        ax.grid(False)
 
         # Configure axes
         ax.semilogx()

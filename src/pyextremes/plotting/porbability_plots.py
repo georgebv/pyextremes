@@ -1,20 +1,4 @@
-# pyextremes, Extreme Value Analysis in Python
-# Copyright (C), 2020 Georgii Bocharov
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-import logging
+import typing
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,18 +6,15 @@ import scipy.stats
 
 from pyextremes.plotting.style import pyextremes_rc
 
-logger = logging.getLogger(__name__)
-
 
 def plot_probability(
-        observed: np.ndarray,
-        theoretical: np.ndarray,
-        ax=None,
-        figsize: tuple = (8, 8)
-) -> tuple:
+    observed: np.ndarray,
+    theoretical: np.ndarray,
+    ax: typing.Optional[plt.Axes] = None,
+    figsize: tuple = (8, 5),
+) -> typing.Tuple[plt.Figure, plt.Axes]:
     """
     Plot a probability plot (QQ or PP).
-    Used to assess goodness-of-fit of the model.
 
     Parameters
     ----------
@@ -41,64 +22,78 @@ def plot_probability(
         Observed values.
     theoretical : numpy.ndarray
         Theoretical values.
-    ax : matplotlib.axes.Axes, optional
-        Axes onto which the figure is drawn (default=None).
-        If None, a new figure and axes is created.
+    ax : matplotlib.axes._axes.Axes, optional
+        Axes onto which the probability plot is drawn.
+        If None (default), a new figure and axes objects are created.
     figsize : tuple, optional
-        Figure size in inches (default=(8, 8/1.618)).
+        Figure size in inches in format (width, height).
+        By default it is (8, 5).
 
     Returns
     -------
-    if ax is None:
-        figure : matplotlib.figure.Figure
-            Figure object.
-    else:
-        None
-    axes : matplotlib.axes.Axes
+    figure : matplotlib.figure.Figure
+        Figure object.
+    axes : matplotlib.axes._axes.Axes
         Axes object.
-    """
 
+    """
     with plt.rc_context(rc=pyextremes_rc):
+        # Create figure
         if ax is None:
-            logger.info('creating new Figure and Axes')
             fig, ax = plt.subplots(figsize=figsize, dpi=96)
         else:
-            logger.info('plotting on existing Axes object')
-            fig = None
+            try:
+                fig = ax.figure
+            except AttributeError as _error:
+                raise TypeError(
+                    f"invalid type in {type(ax)} for the 'ax' argument, "
+                    f"must be matplotlib Axes object"
+                ) from _error
 
-        logger.info('configuring axes')
+        # Configure axes
         ax.grid(False)
 
-        logger.info('plotting scatter of observed and theoretical probabilities')
+        # Plot scatter of observed and theoretical probabilities
         ax.scatter(
-            theoretical, observed,
-            marker='o', s=20, lw=0.75, facecolor='k', edgecolor='w', zorder=10
+            theoretical,
+            observed,
+            marker="o",
+            s=20,
+            lw=0.75,
+            facecolor="k",
+            edgecolor="w",
+            zorder=10,
         )
 
-        logger.info('plotting diagonal perfect-fit line')
+        # Plot a diagonal perfect-fit line
         min_value = min([min(ax.get_xlim()), min(ax.get_ylim())])
         max_value = max([max(ax.get_xlim()), max(ax.get_ylim())])
         ax.plot(
             [min_value, max_value],
             [min_value, max_value],
-            color='#5199FF', lw=1, ls='--', zorder=5
+            color="#5199FF",
+            lw=1,
+            ls="--",
+            zorder=5,
         )
-        ax.set_xlim(min_value, max_value)
-        ax.set_ylim(min_value, max_value)
 
-        logger.info('labeling axes')
-        ax.set_xlabel('Theoretical')
-        ax.set_ylabel('Observed')
+        # Label axes
+        ax.set_xlabel("Theoretical")
+        ax.set_ylabel("Observed")
 
-        logger.info('calculating pearson R statistic and adding text to the figure')
+        # Calculate Pearson R statistic and show it in the figure
         pearsonr, p_value = scipy.stats.pearsonr(theoretical, observed)
         axes_range = max_value - min_value
         ax.text(
             x=min_value + 0.05 * axes_range,
             y=max_value - 0.05 * axes_range,
-            s=f'$R^2={pearsonr:.3f}$\n$p={p_value:.3f}$',
-            horizontalalignment='left',
-            verticalalignment='top'
+            s=f"$R^2={pearsonr:.3f}$\n$p={p_value:.3f}$",
+            horizontalalignment="left",
+            verticalalignment="top",
         )
+
+        # Set axes limits
+        ax.set_xlim(min_value, max_value)
+        ax.set_ylim(min_value, max_value)
 
         return fig, ax

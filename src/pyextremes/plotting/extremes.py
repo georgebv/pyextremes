@@ -70,6 +70,8 @@ def plot_extremes(
                     f"invalid type in {type(ax)} for the 'ax' argument, "
                     f"must be matplotlib Axes object"
                 ) from _error
+
+        # Configure axes
         ax.grid(False)
 
         # Plot signal time series
