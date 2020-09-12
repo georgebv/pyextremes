@@ -95,7 +95,7 @@ class Emcee(AbstractModelBaseClass):
         )
         if solution.success:
             fit_parameters = solution.x
-        else:
+        else:  # pragma: no cover
             warnings.warn(
                 message=(
                     "cannot calculate MAP using Gaussian KDE, "
