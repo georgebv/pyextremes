@@ -395,25 +395,12 @@ class EVA:
         logger.debug("collecting extreme value properties ")
         self.__extremes_kwargs = {}
         if method == "BM":
-            # Get 'block_size' argument value
-            try:
-                block_size = pd.to_timedelta(kwargs["block_size"])
-            except KeyError:
-                block_size = pd.to_timedelta("1Y")
+            block_size = pd.to_timedelta(kwargs.get("block_size", "1Y"))
             self.__extremes_kwargs["block_size"] = block_size
-            # Get 'errors' argument value
-            try:
-                errors = kwargs["errors"]
-            except KeyError:
-                errors = "raise"
-            self.__extremes_kwargs["errors"] = errors
+            self.__extremes_kwargs["errors"] = kwargs.get("errors", "raise")
         elif method == "POT":
             self.__extremes_kwargs["threshold"] = kwargs["threshold"]
-            try:
-                r = pd.to_timedelta(kwargs["r"])
-            except KeyError:
-                r = pd.to_timedelta("24H")
-            self.__extremes_kwargs["r"] = r
+            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24H"))
         logger.info("successfully collected extreme value properties")
 
         logger.debug("creating extremes transformer")
@@ -426,31 +413,40 @@ class EVA:
         logger.info("removing any previously declared models")
         self.__model = None
 
-    def plot_extremes(self, figsize: tuple = (8, 8 / 1.618)) -> tuple:
+    def plot_extremes(
+        self,
+        figsize: tuple = (8, 5),
+        ax: typing.Optional[plt.Axes] = None,
+    ) -> typing.Tuple[plt.Figure, plt.Axes]:  # pragma: no cover
         """
-        Plot time series of extreme events.
+        Plot extreme events.
 
         Parameters
         ----------
         figsize : tuple, optional
-            Figure size in inches (default=(8, 8/1.618)).
+            Figure size in inches in format (width, height).
+            By default it is (8, 5).
+        ax : matplotlib.axes._axes.Axes, optional
+            Axes onto which extremes plot is drawn.
+            If None (default), a new figure and axes objects are created.
 
         Returns
         -------
         figure : matplotlib.figure.Figure
             Figure object.
-        axes : matplotlib.axes.Axes
+        axes : matplotlib.axes._axes.Axes
             Axes object.
+
         """
-        logger.info("plotting extremes")
         return plot_extremes(
             ts=self.data,
             extremes=self.extremes,
             extremes_method=self.extremes_method,
             extremes_type=self.extremes_type,
-            block_size=self.extremes_kwargs.get("block_size"),
-            threshold=self.extremes_kwargs.get("threshold"),
+            block_size=self.extremes_kwargs.get("block_size", None),
+            threshold=self.extremes_kwargs.get("threshold", None),
             figsize=figsize,
+            ax=ax,
         )
 
     def fit_model(
