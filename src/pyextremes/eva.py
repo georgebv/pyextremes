@@ -48,37 +48,61 @@ class EVA:
             Index must be date-time and values must be numeric.
 
         """
-        # Ensurw that 'data' has correct types
+        # Ensure that 'data' has correct types
         if not isinstance(data, pd.Series):
             raise TypeError(
                 f"invalid type in {type(data)} for the 'data' argument, "
                 f"must be pandas.Series"
             )
-        if not data.index.is_all_dates:
-            raise TypeError("index of 'data' must be a sequence of date-time objects")
         if not np.issubdtype(data.dtype, np.number):
-            raise TypeError(f"data must be numeric, {data.dtype} dtype was passed")
+            raise TypeError(
+                f"invalid dtype in {data.dtype} for the 'data' argument, "
+                f"must be numeric (subdtype of numpy.number)"
+            )
+        if not data.index.is_all_dates:
+            raise TypeError(
+                f"index of 'data' must be a sequence of date-time objects, "
+                f"not {data.index.dtype}"
+            )
 
-        logger.info("ensuring that data is sorted and has no invalid entries")
+        # Copy 'data' to ensure the original Series object it is not mutated
         self.data = data.copy(deep=True)
+
+        # Ensure that 'data' is sorted and has no invalid entries
         if not data.index.is_monotonic_increasing:
-            warnings.warn("data index is not sorted - sorting data by index")
-            logger.info("data index is not sorted - sorting data by index")
+            warnings.warn(
+                message=(
+                    "'data' index is not sorted in ascending order - "
+                    "sorting data by index"
+                ),
+                category=RuntimeWarning,
+            )
             self.data = self.data.sort_index(ascending=True)
-        if np.any(pd.isna(data)):
-            warnings.warn("nan values found in data - removing invalid entries")
-            logger.info("nan values found in data - removing invalid entries")
+        n_nans = self.data.isna().sum()
+        if n_nans > 0:
+            warnings.warn(
+                message=(
+                    f"{n_nans:,d} nan values found in 'data' - "
+                    f"removing invalid entries"
+                ),
+                category=RuntimeWarning,
+            )
             self.data = self.data.dropna()
 
-        logger.info("initializing attributes related to extreme value extraction")
+        # Initialize attributes related to extreme value extraction
         self.extremes = None
         self.extremes_method = None
         self.extremes_type = None
         self.extremes_kwargs = None
         self.extremes_transformer = None
 
-        logger.info("initializing attributes related to model fitting")
+        # Initialize attributes related to model fitting
         self.model = None
+
+        logger.info(
+            f"successfully initialized EVA object "
+            f"with data of length {len(self.data):,d}"
+        )
 
     def __repr__(self) -> str:
         """Representation of the class state."""
