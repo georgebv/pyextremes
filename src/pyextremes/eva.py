@@ -10,7 +10,7 @@ import pandas as pd
 import scipy.stats
 
 from pyextremes.extremes import ExtremesTransformer, get_extremes, get_return_periods
-from pyextremes.models import get_model, Distribution
+from pyextremes.models import MLE, Emcee, Distribution
 from pyextremes.plotting import (
     plot_extremes,
     plot_corner,
@@ -22,8 +22,21 @@ from pyextremes.plotting import (
 
 logger = logging.getLogger(__name__)
 
+_extremes_error = "extreme values must first be extracted using '.get_extremes' method"
+
 
 class EVA:
+
+    __slots__ = [
+        "__data",
+        "__extremes",
+        "__extremes_method",
+        "__extremes_type",
+        "__extremes_kwargs",
+        "__extremes_transformer",
+        "__model",
+    ]
+
     def __init__(self, data: pd.Series) -> None:
         """
         Extreme Value Analysis (EVA) class.
@@ -48,61 +61,111 @@ class EVA:
             Index must be date-time and values must be numeric.
 
         """
-        # Ensure that 'data' has correct types
+        # Ensure that 'data' is pandas Series
         if not isinstance(data, pd.Series):
             raise TypeError(
                 f"invalid type in {type(data)} for the 'data' argument, "
                 f"must be pandas.Series"
             )
-        if not np.issubdtype(data.dtype, np.number):
-            raise TypeError(
-                f"invalid dtype in {data.dtype} for the 'data' argument, "
-                f"must be numeric (subdtype of numpy.number)"
-            )
-        if not data.index.is_all_dates:
-            raise TypeError(
-                f"index of 'data' must be a sequence of date-time objects, "
-                f"not {data.index.dtype}"
-            )
 
         # Copy 'data' to ensure the original Series object it is not mutated
-        self.data = data.copy(deep=True)
+        self.__data = data.copy(deep=True)
+
+        # Ensure that 'data' has correct index and value dtypes
+        if not np.issubdtype(self.data.dtype, np.number):
+            try:
+                self.__data = self.data.astype(np.float64)
+                message = "'data' values are not numeric - converted to numeric"
+                logger.info(message)
+                warnings.warn(message=message, category=RuntimeWarning)
+            except ValueError as _error:
+                raise TypeError(
+                    f"invalid dtype in {self.data.dtype} for the 'data' argument, "
+                    f"must be numeric (subdtype of numpy.number)"
+                ) from _error
+        if not self.data.index.is_all_dates:
+            raise TypeError(
+                f"index of 'data' must be a sequence of date-time objects, "
+                f"not {self.data.index.dtype}"
+            )
 
         # Ensure that 'data' is sorted and has no invalid entries
-        if not data.index.is_monotonic_increasing:
-            warnings.warn(
-                message=(
-                    "'data' index is not sorted in ascending order - "
-                    "sorting data by index"
-                ),
-                category=RuntimeWarning,
+        if not self.data.index.is_monotonic_increasing:
+            message = (
+                "'data' index is not sorted in ascending order - sorting data by index"
             )
-            self.data = self.data.sort_index(ascending=True)
+            logger.info(message)
+            warnings.warn(message=message, category=RuntimeWarning)
+            self.__data = self.data.sort_index(ascending=True)
         n_nans = self.data.isna().sum()
         if n_nans > 0:
-            warnings.warn(
-                message=(
-                    f"{n_nans:,d} nan values found in 'data' - "
-                    f"removing invalid entries"
-                ),
-                category=RuntimeWarning,
+            message = (
+                f"{n_nans:,d} Null values found in 'data' - removing invalid entries"
             )
-            self.data = self.data.dropna()
+            logger.info(message)
+            warnings.warn(message=message, category=RuntimeWarning)
+            self.__data = self.data.dropna()
 
         # Initialize attributes related to extreme value extraction
-        self.extremes = None
-        self.extremes_method = None
-        self.extremes_type = None
-        self.extremes_kwargs = None
-        self.extremes_transformer = None
+        self.__extremes: typing.Optional[pd.Series] = None
+        self.__extremes_method: typing.Optional[str] = None
+        self.__extremes_type: typing.Optional[str] = None
+        self.__extremes_kwargs: typing.Optional[dict] = None
+        self.__extremes_transformer: typing.Optional[ExtremesTransformer] = None
 
         # Initialize attributes related to model fitting
-        self.model = None
+        self.__model: typing.Optional[typing.Union[MLE, Emcee]] = None
 
         logger.info(
             f"successfully initialized EVA object "
             f"with data of length {len(self.data):,d}"
         )
+
+    @property
+    def data(self) -> pd.Series:
+        return self.__data
+
+    @property
+    def extremes(self) -> pd.Series:
+        if self.__extremes is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__extremes
+
+    @property
+    def extremes_method(self) -> str:
+        if self.__extremes_method is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__extremes_method
+
+    @property
+    def extremes_type(self) -> str:
+        if self.__extremes_type is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__extremes_type
+
+    @property
+    def extremes_kwargs(self) -> typing.Dict[str, typing.Any]:
+        if self.__extremes_kwargs is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__extremes_kwargs
+
+    @property
+    def extremes_transformer(self) -> ExtremesTransformer:
+        if self.__extremes_transformer is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__extremes_transformer
+
+    @property
+    def model(self) -> typing.Union[MLE, Emcee]:
+        if self.__model is None:
+            raise AttributeError(_extremes_error)
+        else:
+            return self.__model
 
     def __repr__(self) -> str:
         """Representation of the class state."""
@@ -286,16 +349,18 @@ class EVA:
 
     def get_extremes(self, method: str, extremes_type: str = "high", **kwargs) -> None:
         """
-        Get extreme events from a signal time series using a specified extreme value extraction method.
+        Get extreme events from time series.
 
-        Extracts extreme values from self.data attribute.
-        Stores extreme values in the self.extremes attribute.
+        Extracts extreme values from the 'self.data' attribute.
+        Stores extreme values in the 'self.extremes' attribute.
 
         Parameters
         ----------
         method : str
             Extreme value extraction method.
-            Supported values: BM or POT.
+            Supported values:
+                BM - Block Maxima
+                POT - Peaks Over Threshold
         extremes_type : str, optional
             high (default) - get extreme high values
             low - get extreme low values
@@ -304,58 +369,62 @@ class EVA:
                 block_size : str or pandas.Timedelta, optional
                     Block size (default='1Y').
                 errors : str, optional
-                    raise (default) - raise an exception when encountering a block with no data
+                    raise (default) - raise an exception
+                        when encountering a block with no data
                     ignore - ignore blocks with no data
-                    coerce - get extreme values for blocks with no data as mean of all other extreme events
-                        in the series with index being the middle point of corresponding interval
+                    coerce - get extreme values for blocks with no data
+                        as mean of all other extreme events in the series
+                        with index being the middle point of corresponding interval
             if method is POT:
-                threshold : int or float
+                threshold : float
                     Threshold used to find exceedances.
                 r : str or pandas.Timedelta, optional
-                    Duration of window used to decluster the exceedances (default='24H').
+                    Duration of window used to decluster the exceedances.
+                    By default r='24H' (24 hours).
+
         """
-        logger.info(
-            f"getting extremes for method {method} and extremes_type {extremes_type}"
-        )
-        self.extremes = get_extremes(
+        message = f"for method='{method}' and extremes_type='{extremes_type}'"
+        logger.debug(f"extracting extreme values {message}")
+        self.__extremes = get_extremes(
             method=method, ts=self.data, extremes_type=extremes_type, **kwargs
         )
-        self.extremes_method = method
-        self.extremes_type = extremes_type
+        self.__extremes_method = method
+        self.__extremes_type = extremes_type
+        logger.info(f"successfully extracted extreme values {message}")
 
-        logger.info("collecting extremes_kwargs")
-        self.extremes_kwargs = {}
+        logger.debug("collecting extreme value properties ")
+        self.__extremes_kwargs = {}
         if method == "BM":
-            if "block_size" in kwargs:
-                if isinstance(kwargs["block_size"], str):
-                    self.extremes_kwargs["block_size"] = pd.to_timedelta(
-                        kwargs["block_size"]
-                    )
-                elif isinstance(kwargs["block_size"], pd.Timedelta):
-                    self.extremes_kwargs["block_size"] = kwargs["block_size"]
-            else:
-                self.extremes_kwargs["block_size"] = pd.to_timedelta("1Y")
-            if "errors" in kwargs:
-                self.extremes_kwargs["errors"] = kwargs["errors"]
-            else:
-                self.extremes_kwargs["errors"] = "raise"
+            # Get 'block_size' argument value
+            try:
+                block_size = pd.to_timedelta(kwargs["block_size"])
+            except KeyError:
+                block_size = pd.to_timedelta("1Y")
+            self.__extremes_kwargs["block_size"] = block_size
+            # Get 'errors' argument value
+            try:
+                errors = kwargs["errors"]
+            except KeyError:
+                errors = "raise"
+            self.__extremes_kwargs["errors"] = errors
         elif method == "POT":
-            self.extremes_kwargs["threshold"] = kwargs["threshold"]
-            if "r" in kwargs:
-                if isinstance(kwargs["r"], str):
-                    self.extremes_kwargs["r"] = pd.to_timedelta(kwargs["r"])
-                elif isinstance(kwargs["r"], pd.Timedelta):
-                    self.extremes_kwargs["r"] = kwargs["r"]
-            else:
-                self.extremes_kwargs["r"] = pd.to_timedelta("24H")
+            self.__extremes_kwargs["threshold"] = kwargs["threshold"]
+            try:
+                r = pd.to_timedelta(kwargs["r"])
+            except KeyError:
+                r = pd.to_timedelta("24H")
+            self.__extremes_kwargs["r"] = r
+        logger.info("successfully collected extreme value properties")
 
-        logger.info("creating extremes transformer")
-        self.extremes_transformer = ExtremesTransformer(
-            extremes=self.extremes, extremes_type=self.extremes_type
+        logger.debug("creating extremes transformer")
+        self.__extremes_transformer = ExtremesTransformer(
+            extremes=self.__extremes,
+            extremes_type=self.__extremes_type,
         )
+        logger.info("successfully created extremes transformer")
 
         logger.info("removing any previously declared models")
-        self.model = None
+        self.__model = None
 
     def plot_extremes(self, figsize: tuple = (8, 8 / 1.618)) -> tuple:
         """

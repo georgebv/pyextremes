@@ -17,6 +17,15 @@ class TestEVA:
         ):
             EVA(data=1)
 
+        with pytest.warns(RuntimeWarning, match=r"'data'.*not numeric.*converted"):
+            eva_model = EVA(
+                data=pd.Series(
+                    data=["1", "2", "3"],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                )
+            )
+            assert np.allclose(eva_model.data.values, [1, 2, 3])
+
         with pytest.raises(TypeError, match=r"invalid dtype.*'data' argument.*numeric"):
             EVA(
                 data=pd.Series(
@@ -37,7 +46,7 @@ class TestEVA:
             )
             assert np.allclose(eva_model.data.index.year.values, [2020, 2021, 2022])
 
-        with pytest.warns(RuntimeWarning, match=r"nan values found.*removing invalid"):
+        with pytest.warns(RuntimeWarning, match=r"Null values found.*removing invalid"):
             eva_model = EVA(
                 data=pd.Series(
                     data=[1, 2, np.nan, 3],
@@ -64,4 +73,49 @@ class TestEVA:
             "extremes_transformer",
             "model",
         ]:
-            assert getattr(eva_model, param) is None
+            with pytest.raises(AttributeError, match=r"extreme values must first"):
+                getattr(eva_model, param)
+
+    @pytest.mark.parametrize(
+        "input_params",
+        [
+            {
+                "method": "BM",
+                "extremes_type": "high",
+                "block_size": "1Y",
+                "errors": "raise",
+            },
+            {
+                "method": "BM",
+                "extremes_type": "high",
+            },
+            {
+                "method": "POT",
+                "extremes_type": "high",
+                "threshold": 1.35,
+                "r": "24H",
+            },
+            {
+                "method": "POT",
+                "extremes_type": "high",
+                "threshold": 1.35,
+            },
+        ],
+    )
+    def test_get_extremes(self, eva_model, input_params):
+        # Get extremes
+        eva_model.get_extremes(**input_params)
+
+        # Test attributes
+        assert eva_model.extremes_method == input_params["method"]
+        assert eva_model.extremes_type == input_params["extremes_type"]
+        if input_params["method"] == "BM":
+            assert len(eva_model.extremes_kwargs) == 2
+            assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta("1Y")
+            assert eva_model.extremes_kwargs["errors"] == "raise"
+        else:
+            assert len(eva_model.extremes_kwargs) == 2
+            assert eva_model.extremes_kwargs["threshold"] == 1.35
+            assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
+        with pytest.raises(AttributeError, match=r"extreme values must first"):
+            eva_model.model
