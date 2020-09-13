@@ -71,10 +71,12 @@ class TestEVA:
             "extremes_type",
             "extremes_kwargs",
             "extremes_transformer",
-            "model",
         ]:
             with pytest.raises(AttributeError, match=r"extreme values must first"):
                 getattr(eva_model, param)
+
+        with pytest.raises(AttributeError, match=r"model must first"):
+            eva_model.model
 
     @pytest.mark.parametrize(
         "input_params",
@@ -117,5 +119,5 @@ class TestEVA:
             assert len(eva_model.extremes_kwargs) == 2
             assert eva_model.extremes_kwargs["threshold"] == 1.35
             assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
-        with pytest.raises(AttributeError, match=r"extreme values must first"):
+        with pytest.raises(AttributeError, match=r"model must first"):
             eva_model.model

@@ -163,7 +163,9 @@ class EVA:
     @property
     def model(self) -> typing.Union[MLE, Emcee]:
         if self.__model is None:
-            raise AttributeError(_extremes_error)
+            raise AttributeError(
+                "model must first be assigned using '.fit_model' method"
+            )
         else:
             return self.__model
 
@@ -395,8 +397,9 @@ class EVA:
         logger.debug("collecting extreme value properties ")
         self.__extremes_kwargs = {}
         if method == "BM":
-            block_size = pd.to_timedelta(kwargs.get("block_size", "1Y"))
-            self.__extremes_kwargs["block_size"] = block_size
+            self.__extremes_kwargs["block_size"] = pd.to_timedelta(
+                kwargs.get("block_size", "1Y")
+            )
             self.__extremes_kwargs["errors"] = kwargs.get("errors", "raise")
         elif method == "POT":
             self.__extremes_kwargs["threshold"] = kwargs["threshold"]
@@ -553,30 +556,15 @@ class EVA:
 
     @property
     def distribution(self):
-        try:
-            return self.model.distribution
-        except AttributeError:
-            raise AttributeError(
-                "a model must be fit to extracted extremes first, use .fit_model method"
-            )
+        return self.model.distribution
 
     @property
     def AIC(self):
-        try:
-            return self.model.AIC
-        except AttributeError:
-            raise AttributeError(
-                "a model must be fit to extracted extremes first, use .fit_model method"
-            )
+        return self.model.AIC
 
     @property
     def loglikelihood(self):
-        try:
-            return self.model.loglikelihood
-        except AttributeError:
-            raise AttributeError(
-                "a model must be fit to extracted extremes first, use .fit_model method"
-            )
+        return self.model.loglikelihood
 
     def plot_trace(
         self, burn_in: int = 0, labels: tuple = None, figsize: tuple = None
