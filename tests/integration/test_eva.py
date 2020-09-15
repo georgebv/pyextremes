@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyextremes import EVA
+from pyextremes import EVA, get_model
 
 
 @pytest.fixture(scope="function")
@@ -121,3 +121,33 @@ class TestEVA:
             assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
         with pytest.raises(AttributeError, match=r"model must first"):
             eva_model.model
+
+    @pytest.mark.parametrize(
+        "extremes_params",
+        [
+            {"method": "BM", "block_size": "1Y"},
+            {"method": "POT", "threshold": 1.35},
+        ],
+    )
+    def test_fit_model_default_distribution(self, eva_model, extremes_params):
+        eva_model.get_extremes(**extremes_params)
+        eva_model.fit_model()
+        distributions = {
+            "BM": ["genextreme", "gumbel_r"],
+            "POT": ["genpareto", "expon"],
+        }[extremes_params["method"]]
+        distribution_kwargs = {
+            "BM": {},
+            "POT": {"floc": 1.35},
+        }[extremes_params["method"]]
+        assert eva_model.distribution.name in distributions
+        aic = [
+            get_model(
+                model="MLE",
+                extremes=eva_model.extremes,
+                distribution=distribution,
+                distribution_kwargs=distribution_kwargs,
+            ).AIC
+            for distribution in distributions
+        ]
+        assert np.isclose(eva_model.AIC, min(aic))

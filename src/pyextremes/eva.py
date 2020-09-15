@@ -1,4 +1,5 @@
 import calendar
+import copy
 import logging
 import typing
 import warnings
@@ -61,15 +62,15 @@ class EVA:
             Index must be date-time and values must be numeric.
 
         """
-        # Copy 'data' to ensure the original Series object it is not mutated
-        data = data.copy(deep=True)
-
         # Ensure that 'data' is pandas Series
         if not isinstance(data, pd.Series):
             raise TypeError(
                 f"invalid type in {type(data)} for the 'data' argument, "
                 f"must be pandas.Series"
             )
+
+        # Copy 'data' to ensure the original Series object it is not mutated
+        data = data.copy(deep=True)
 
         # Ensure that 'data' has correct index and value dtypes
         if not np.issubdtype(data.dtype, np.number):
@@ -186,6 +187,7 @@ class EVA:
     def loglikelihood(self) -> float:
         return self.model.loglikelihood
 
+    # TODO
     def __repr__(self) -> str:
         """Representation of the class state."""
         # Width of repr block
@@ -535,8 +537,15 @@ class EVA:
             # Prepare list of candidate distributions
             if self.extremes_method == "BM":
                 candidate_distributions = ["genextreme", "gumbel_r"]
+                _distribution_kwargs = None
             elif self.extremes_method == "POT":
                 candidate_distributions = ["genpareto", "expon"]
+                _distribution_kwargs = {
+                    "floc": self.extremes_kwargs.get(
+                        "threshold",
+                        self.extremes_transformer.transformed_extremes.min(),
+                    )
+                }
             else:
                 raise AssertionError
 
@@ -546,7 +555,7 @@ class EVA:
                 distribution_name: MLE(
                     extremes=self.extremes,
                     distribution=distribution_name,
-                    distribution_kwargs=None,
+                    distribution_kwargs=_distribution_kwargs,
                 ).AIC
                 for distribution_name in candidate_distributions
             }
@@ -622,9 +631,13 @@ class EVA:
             **kwargs,
         )
 
+    # TODO
     def plot_trace(
-        self, burn_in: int = 0, labels: tuple = None, figsize: tuple = None
-    ) -> tuple:
+        self,
+        burn_in: int = 0,
+        labels: tuple = None,
+        figsize: tuple = None,
+    ) -> tuple:  # pragma: no cover
         """
         Plot a trace plot for a given MCMC sampler trace.
 
@@ -688,8 +701,11 @@ class EVA:
         )
 
     def plot_corner(
-        self, burn_in: int = 0, labels: tuple = None, figsize: tuple = (8, 8)
-    ) -> tuple:
+        self,
+        burn_in: int = 0,
+        labels: tuple = None,
+        figsize: tuple = (8, 8),
+    ) -> tuple:  # pragma: no cover
         """
         Plot a corner plot for a given MCMC sampler trace.
 
@@ -883,7 +899,7 @@ class EVA:
         ax=None,
         figsize: tuple = (8, 8 / 1.618),
         **kwargs,
-    ) -> tuple:
+    ) -> tuple:  # pragma: no cover
         """
         Plot return values and confidence intervals for given return periods.
 
@@ -972,7 +988,7 @@ class EVA:
         plotting_position: str = "weibull",
         ax=None,
         figsize: tuple = (8, 8),
-    ) -> tuple:
+    ) -> tuple:  # pragma: no cover
         """
         Plot a probability plot (QQ or PP).
 
@@ -1057,7 +1073,7 @@ class EVA:
         plotting_position: str = "weibull",
         figsize: tuple = (8, 8),
         **kwargs,
-    ):
+    ):  # pragma: no cover
         """
         Plot a diagnostic plot.
 
@@ -1198,26 +1214,3 @@ class EVA:
             ax_pp.set_title("P-P plot")
 
             return fig, (ax_rv, ax_pdf, ax_qq, ax_pp)
-
-
-if __name__ == "__main__":
-    import pathlib
-    import os
-
-    test_path = pathlib.Path(os.getcwd()) / "tests" / "data" / "battery_wl.csv"
-    test_data = pd.read_csv(test_path, index_col=0, parse_dates=True, squeeze=True)
-    test_data = test_data.sort_index(ascending=True).dropna()
-    test_data = test_data.loc[pd.to_datetime("1925") :]
-    test_data = (
-        test_data
-        - (test_data.index.array - pd.to_datetime("1992"))
-        / pd.to_timedelta("1Y")
-        * 2.87e-3
-    )
-    self = EVA(data=test_data)
-    self.get_extremes(
-        method="BM", extremes_type="high", block_size="1Y", errors="ignore"
-    )
-    self.fit_model(model="MLE", distribution="genextreme")
-    # self.fit_model(model='Emcee', distribution='genextreme', n_walkers=100, n_samples=500, progress=True)
-    # self.plot_diagnostic()
