@@ -10,10 +10,10 @@ import pandas as pd
 import scipy.stats
 
 from pyextremes.extremes import ExtremesTransformer, get_extremes, get_return_periods
-from pyextremes.models import MLE, Emcee, Distribution
+from pyextremes.models import MLE, Distribution, Emcee, get_model
 from pyextremes.plotting import (
-    plot_extremes,
     plot_corner,
+    plot_extremes,
     plot_probability,
     plot_return_values,
     plot_trace,
@@ -61,6 +61,9 @@ class EVA:
             Index must be date-time and values must be numeric.
 
         """
+        # Copy 'data' to ensure the original Series object it is not mutated
+        data = data.copy(deep=True)
+
         # Ensure that 'data' is pandas Series
         if not isinstance(data, pd.Series):
             raise TypeError(
@@ -68,43 +71,45 @@ class EVA:
                 f"must be pandas.Series"
             )
 
-        # Copy 'data' to ensure the original Series object it is not mutated
-        self.__data = data.copy(deep=True)
-
         # Ensure that 'data' has correct index and value dtypes
-        if not np.issubdtype(self.data.dtype, np.number):
+        if not np.issubdtype(data.dtype, np.number):
             try:
-                self.__data = self.data.astype(np.float64)
+                data = data.astype(np.float64)
                 message = "'data' values are not numeric - converted to numeric"
                 logger.info(message)
                 warnings.warn(message=message, category=RuntimeWarning)
             except ValueError as _error:
                 raise TypeError(
-                    f"invalid dtype in {self.data.dtype} for the 'data' argument, "
+                    f"invalid dtype in {data.dtype} for the 'data' argument, "
                     f"must be numeric (subdtype of numpy.number)"
                 ) from _error
-        if not self.data.index.is_all_dates:
+        if not data.index.is_all_dates:
             raise TypeError(
                 f"index of 'data' must be a sequence of date-time objects, "
-                f"not {self.data.index.dtype}"
+                f"not {data.index.dtype}"
             )
 
-        # Ensure that 'data' is sorted and has no invalid entries
-        if not self.data.index.is_monotonic_increasing:
+        # Ensure that 'data' is sorted
+        if not data.index.is_monotonic_increasing:
             message = (
                 "'data' index is not sorted in ascending order - sorting data by index"
             )
             logger.info(message)
             warnings.warn(message=message, category=RuntimeWarning)
-            self.__data = self.data.sort_index(ascending=True)
-        n_nans = self.data.isna().sum()
+            data = data.sort_index(ascending=True)
+
+        # Ensure that 'data' has no invalid entries
+        n_nans = data.isna().sum()
         if n_nans > 0:
             message = (
                 f"{n_nans:,d} Null values found in 'data' - removing invalid entries"
             )
             logger.info(message)
             warnings.warn(message=message, category=RuntimeWarning)
-            self.__data = self.data.dropna()
+            data = data.dropna()
+
+        # Set the 'data' attribute
+        self.__data = data
 
         # Initialize attributes related to extreme value extraction
         self.__extremes: typing.Optional[pd.Series] = None
@@ -168,6 +173,18 @@ class EVA:
             )
         else:
             return self.__model
+
+    @property
+    def distribution(self) -> Distribution:
+        return self.model.distribution
+
+    @property
+    def AIC(self) -> float:
+        return self.model.AIC
+
+    @property
+    def loglikelihood(self) -> float:
+        return self.model.loglikelihood
 
     def __repr__(self) -> str:
         """Representation of the class state."""
@@ -456,7 +473,7 @@ class EVA:
         self,
         model: str = "MLE",
         distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
-        distribution_kwargs: dict = None,
+        distribution_kwargs: typing.Optional[dict] = None,
         **kwargs,
     ) -> None:
         """
@@ -465,25 +482,31 @@ class EVA:
         Parameters
         ----------
         model : str, optional
-            Name of an extreme value distribution fitting model (not case-sensitive) (default='MLE').
-            Supported names:
-                MLE - Maximum Likelihood Estimate (MLE) model, based on scipy (scipy.stats.rv_continuous.fit)
-                Emcee - Markov Chain Monte Carlo (MCMC) model, based on the emcee package by Daniel Foreman-Mackey
+            Name of model. By default it is 'MLE'.
+            Name of model.
+            Supported models:
+                MLE - Maximum Likelihood Estimate (MLE) model.
+                    Based on 'scipy' package (scipy.stats.rv_continuous.fit).
+                Emcee - Markov Chain Monte Carlo (MCMC) model.
+                    Based on 'emcee' package by Daniel Foreman-Mackey.
         distribution : str or scipy.stats.rv_continuous, optional
-            Distribution name compatible with scipy.stats or a subclass of scipy.stats.rv_continuous
-            See https://docs.scipy.org/doc/scipy/reference/stats.html for a list of continuous distributions
-            By default uses 'genextreme' for BM extremes and 'genpareto' for POT extremes.
+            Distribution name compatible with scipy.stats
+            or a subclass of scipy.stats.rv_continuous.
+            See https://docs.scipy.org/doc/scipy/reference/stats.html
+            By default the distribution is selected automatically
+            as best between 'genextreme' and 'gumbel_r' for 'BM' extremes
+            and 'genpareto' and 'expon' for 'POT' extremes.
+            Best distribution is selected using the AIC metric.
         distribution_kwargs : dict, optional
-            Dictionary with special keyword arguments, passsed to the .fit method of the continuous distribution.
-            These keyword arguments represent parameters to be held fixed and must be shape, scale, or location
-            parameter names with sufix 'f', e.g. 'fc', 'floc', or 'fscale'. By default no parameters are fixed.
-            See documentation of a specific scipy.stats distribution for names of available parameters.
-            By default (None) assigns fixed parameters automatically based on selected model and extremes type.
-            Examples:
-                dict(fc=0) holds shape parameter 'c' at 0 essentially eliminating it as an independent parameter
-                    of the distribution, reducting its degree of freedom (number of free parameters) by one.
-                dict(floc=0) hold the location parameter 'loc' at 0
-                dict(fc=0, floc=10) holds shape and location parameters fixed at 0 and 10 respectively
+            Special keyword arguments, passsed to the `.fit` method of the distribution.
+            These keyword arguments represent parameters to be held fixed.
+            Names of parameters to be fixed must have 'f' prefixes. Valid parameters:
+                - shape(s): 'fc', e.g. fc=0
+                - location: 'floc', e.g. floc=0
+                - scale: 'fscale', e.g. fscale=1
+            By default, no parameters are fixed.
+            See documentation of a specific scipy.stats distribution
+            for names of available parameters.
         kwargs
             Keyword arguments passed to a model .fit method.
             MLE model:
@@ -495,76 +518,109 @@ class EVA:
                     The number of steps to run (default=500).
                 progress : bool or str, optional
                     If True, a progress bar will be shown as the sampler progresses.
-                    If a string, will select a specific tqdm progress bar - most notable is
-                    'notebook', which shows a progress bar suitable for Jupyter notebooks.
-                    If False, no progress bar will be shown (default=False).
-                    This progress bar is a part of the emcee package.
+                    If a string, will select a specific tqdm progress bar.
+                    Most notable is 'notebook', which shows a progress bar
+                    suitable for Jupyter notebooks.
+                    If False (default), no progress bar will be shown.
+                    This progress bar is a part of the `emcee` package.
+
         """
-        logger.info("making sure extreme values have been extracted")
-        if self.extremes is None:
-            raise AttributeError(
-                "extreme values must be extracted before fitting a model, use .get_extremes method"
-            )
-
+        # Select default distribution
         if distribution is None:
-            logger.info("assigning default distribution to a model")
-            if self.extremes_method == "BM":
-                distribution = "genextreme"
-            elif self.extremes_method == "POT":
-                distribution = "genpareto"
-            else:
-                raise NotImplementedError(
-                    f"default distribution for '{self.extremes_method}' extremes method is not available"
-                )
-
-        logger.info("checking if distribution is valid for extremes method")
-        if distribution in ["genextreme", "gumbel_r"]:
-            if self.extremes_method != "BM":
-                warnings.warn(
-                    f"'{distribution}' distribution is only applicable to extremes extracted using the BM method"
-                )
-        elif distribution in ["genpareto", "expon"]:
-            if self.extremes_method != "POT":
-                warnings.warn(
-                    f"'{distribution}' distribution is only applicable to extremes extracted using the POT method"
-                )
-
-        if distribution_kwargs is None:
-            logger.info("assigning default distribution_kwargs")
-            _distribution = Distribution(
-                extremes=self.extremes, distribution=distribution
+            logger.debug(
+                f"selecting default distribution for extremes extracted using the "
+                f"'{self.extremes_method}' method"
             )
-            if _distribution.name in ["genpareto", "expon"]:
-                logger.info(
-                    f"fixing location parameter (floc) for {_distribution.name} distribution"
-                )
-                if self.extremes_method == "POT":
-                    distribution_kwargs = {"floc": self.extremes_kwargs["threshold"]}
-                else:
-                    distribution_kwargs = {
-                        "floc": self.extremes_transformer.transformed_extremes.min()
-                    }
 
-        logger.info(f"fitting {model} model with {distribution} distribution")
-        self.model = get_model(
+            # Prepare list of candidate distributions
+            if self.extremes_method == "BM":
+                candidate_distributions = ["genextreme", "gumbel_r"]
+            elif self.extremes_method == "POT":
+                candidate_distributions = ["genpareto", "expon"]
+            else:
+                raise AssertionError
+
+            # Fit MLE model for candidate distributions
+            # and select distribution with smallest AIC
+            candidate_models = {
+                distribution_name: MLE(
+                    extremes=self.extremes,
+                    distribution=distribution_name,
+                    distribution_kwargs=None,
+                ).AIC
+                for distribution_name in candidate_distributions
+            }
+            distribution = min(candidate_models, key=candidate_models.get)
+            logger.info(
+                f"selected '{distribution}' distribution "
+                f"with AIC score {candidate_models[distribution]}"
+            )
+
+        # Get distribution name
+        if isinstance(distribution, str):
+            distribution_name = distribution
+        elif isinstance(distribution, scipy.stats.rv_continuous):
+            try:
+                distribution_name = getattr(distribution, "name")
+            except AttributeError:
+                warnings.warn(
+                    message="provided distribution doesn't have 'name' attribute",
+                    category=RuntimeWarning,
+                )
+                distribution_name = "UNKNOWN"
+        else:
+            raise TypeError(
+                f"invalid type in {type(distribution)} "
+                f"for the 'distribution' argument, "
+                f"must be string or scipy.stats.rv_continuous"
+            )
+
+        # Checking if distribution is valid per extreme value theory:
+        # Fisher-Tippet-Gnedenko theorem for 'BM'
+        # Pickands–Balkema–de Haan theorem for 'POT'
+        if self.extremes_method == "BM":
+            if distribution_name not in ["genextreme", "gumbel_r"]:
+                warnings.warn(
+                    message=(
+                        f"'{distribution_name}' distribution is not "
+                        f"recommended to be used with extremes extracted "
+                        f"using the 'BM' method, 'genextreme' or 'gumebel_r' "
+                        f"should be used per the Fisher-Tippet-Gnedenko theorem"
+                    ),
+                    category=RuntimeWarning,
+                )
+        elif self.extremes_method == "POT":
+            if distribution_name not in ["genpareto", "expon"]:
+                warnings.warn(
+                    message=(
+                        f"'{distribution_name}' distribution is not "
+                        f"recommended to be used with extremes extracted "
+                        f"using the 'POT' method, 'genpareto' or 'expon' "
+                        f"should be used per the Pickands–Balkema–de Haan theorem"
+                    ),
+                    category=RuntimeWarning,
+                )
+
+        # Freeze (fix) location parameter for genpareto/expon distributions
+        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"]:
+            distribution_kwargs = {
+                "floc": self.extremes_kwargs.get(
+                    "threshold", self.extremes_transformer.transformed_extremes.min()
+                )
+            }
+            logger.debug(
+                f"freezing location parameter (floc) at {distribution_kwargs['floc']} "
+                f"for '{distribution_name}' distribution"
+            )
+
+        # Fit model
+        self.__model = get_model(
             model=model,
             extremes=self.extremes_transformer.transformed_extremes,
             distribution=distribution,
             distribution_kwargs=distribution_kwargs,
             **kwargs,
         )
-
-    @property
-    def distribution(self):
-        return self.model.distribution
-
-    @property
-    def AIC(self):
-        return self.model.AIC
-
-    @property
-    def loglikelihood(self):
-        return self.model.loglikelihood
 
     def plot_trace(
         self, burn_in: int = 0, labels: tuple = None, figsize: tuple = None
@@ -588,6 +644,7 @@ class EVA:
             Figure object.
         axes : tuple
             Tuple with n_parameters Axes objects.
+
         """
         logger.info("making sure a model has been fit")
         if self.model is None:

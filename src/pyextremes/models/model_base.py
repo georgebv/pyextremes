@@ -20,7 +20,7 @@ class AbstractModelBaseClass(abc.ABC):
         **kwargs,
     ) -> None:
         """
-        Initialize the distribution model object.
+        Initialize the model.
 
         Parameters
         ----------
