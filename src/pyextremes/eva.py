@@ -423,6 +423,8 @@ class EVA:
         elif method == "POT":
             self.__extremes_kwargs["threshold"] = kwargs["threshold"]
             self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24H"))
+        else:
+            raise AssertionError
         logger.info("successfully collected extreme value properties")
 
         logger.debug("creating extremes transformer")
@@ -553,7 +555,7 @@ class EVA:
             # and select distribution with smallest AIC
             candidate_models = {
                 distribution_name: MLE(
-                    extremes=self.extremes,
+                    extremes=self.extremes_transformer.transformed_extremes,
                     distribution=distribution_name,
                     distribution_kwargs=_distribution_kwargs,
                 ).AIC
@@ -569,14 +571,7 @@ class EVA:
         if isinstance(distribution, str):
             distribution_name = distribution
         elif isinstance(distribution, scipy.stats.rv_continuous):
-            try:
-                distribution_name = getattr(distribution, "name")
-            except AttributeError:
-                warnings.warn(
-                    message="provided distribution doesn't have 'name' attribute",
-                    category=RuntimeWarning,
-                )
-                distribution_name = "UNKNOWN"
+            distribution_name = getattr(distribution, "name", None)
         else:
             raise TypeError(
                 f"invalid type in {type(distribution)} "
@@ -587,8 +582,11 @@ class EVA:
         # Checking if distribution is valid per extreme value theory:
         # Fisher-Tippet-Gnedenko theorem for 'BM'
         # Pickands–Balkema–de Haan theorem for 'POT'
-        if self.extremes_method == "BM":
-            if distribution_name not in ["genextreme", "gumbel_r"]:
+        if distribution_name is not None:
+            if self.extremes_method == "BM" and distribution_name not in [
+                "genextreme",
+                "gumbel_r",
+            ]:
                 warnings.warn(
                     message=(
                         f"'{distribution_name}' distribution is not "
@@ -598,8 +596,10 @@ class EVA:
                     ),
                     category=RuntimeWarning,
                 )
-        elif self.extremes_method == "POT":
-            if distribution_name not in ["genpareto", "expon"]:
+            elif self.extremes_method == "POT" and distribution_name not in [
+                "genpareto",
+                "expon",
+            ]:
                 warnings.warn(
                     message=(
                         f"'{distribution_name}' distribution is not "

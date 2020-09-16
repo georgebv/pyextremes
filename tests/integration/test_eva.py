@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import scipy.stats
 
 from pyextremes import EVA, get_model
 
@@ -8,6 +9,30 @@ from pyextremes import EVA, get_model
 @pytest.fixture(scope="function")
 def eva_model(battery_wl_preprocessed) -> EVA:
     return EVA(data=battery_wl_preprocessed)
+
+
+@pytest.fixture(scope="function")
+def eva_model_bm(battery_wl_preprocessed) -> EVA:
+    eva_model = EVA(data=battery_wl_preprocessed)
+    eva_model.get_extremes(
+        method="BM",
+        extremes_type="high",
+        block_size="1Y",
+        errors="raise",
+    )
+    return eva_model
+
+
+@pytest.fixture(scope="function")
+def eva_model_pot(battery_wl_preprocessed) -> EVA:
+    eva_model = EVA(data=battery_wl_preprocessed)
+    eva_model.get_extremes(
+        method="POT",
+        extremes_type="high",
+        threshold=1.35,
+        r="24H",
+    )
+    return eva_model
 
 
 class TestEVA:
@@ -151,3 +176,18 @@ class TestEVA:
             for distribution in distributions
         ]
         assert np.isclose(eva_model.AIC, min(aic))
+
+    def test_fit_model_errors(self, eva_model_bm, eva_model_pot):
+        # Bad distribution type
+        with pytest.raises(
+            TypeError, match=r"invalid type.*distribution.*rv_continuous"
+        ):
+            eva_model_bm.fit_model(distribution=scipy.stats.poisson)
+
+        # Non-recommended distribution
+        with pytest.warns(RuntimeWarning, match=r"is not recommended.*Fisher"):
+            eva_model_bm.fit_model(distribution="genpareto")
+            assert eva_model_bm.distribution.name == "genpareto"
+        with pytest.warns(RuntimeWarning, match=r"is not recommended.*Pickands"):
+            eva_model_pot.fit_model(distribution="genextreme")
+            assert eva_model_pot.distribution.name == "genextreme"
