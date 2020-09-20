@@ -35,6 +35,32 @@ def eva_model_pot(battery_wl_preprocessed) -> EVA:
     return eva_model
 
 
+@pytest.fixture(scope="function")
+def eva_model_bm_mle(battery_wl_preprocessed) -> EVA:
+    eva_model = EVA(data=battery_wl_preprocessed)
+    eva_model.get_extremes(
+        method="BM",
+        extremes_type="high",
+        block_size="1Y",
+        errors="raise",
+    )
+    eva_model.fit_model("MLE")
+    return eva_model
+
+
+@pytest.fixture(scope="function")
+def eva_model_bm_emcee(battery_wl_preprocessed) -> EVA:
+    eva_model = EVA(data=battery_wl_preprocessed)
+    eva_model.get_extremes(
+        method="BM",
+        extremes_type="high",
+        block_size="1Y",
+        errors="raise",
+    )
+    eva_model.fit_model("Emcee", n_walkers=10, n_samples=100)
+    return eva_model
+
+
 class TestEVA:
     def test_init_errors(self):
         with pytest.raises(
@@ -264,3 +290,16 @@ class TestEVA:
                     eva_model.distribution.fixed_parameters["floc"]
                     == input_parameters["distribution_kwargs"]["floc"]
                 )
+
+    def test_get_mcmc_plot_inputs(self, eva_model_bm_mle, eva_model_bm_emcee):
+        # Test trying to plot MCMC-only plots for MLE model
+        with pytest.raises(TypeError, match=r"this method.*MCMC-like"):
+            eva_model_bm_mle.plot_trace()
+        with pytest.raises(TypeError, match=r"this method.*MCMC-like"):
+            eva_model_bm_mle.plot_corner()
+
+        # Test default behaviour
+        trace, trace_map, labels = eva_model_bm_emcee._get_mcmc_plot_inputs()
+        assert np.allclose(trace, eva_model_bm_emcee.model.trace)
+        assert len(trace_map) == len(eva_model_bm_emcee.distribution.free_parameters)
+        assert labels == [r"Shape, $\xi$", r"Location, $\mu$", r"Scale, $\sigma$"]
