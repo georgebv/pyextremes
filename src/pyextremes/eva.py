@@ -180,7 +180,7 @@ class EVA:
         return self.model.AIC
 
     # TODO
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         """Representation of the class state."""
         # Width of repr block
         width = 101
@@ -901,15 +901,14 @@ class EVA:
             columns=["return value", "lower ci", "upper ci"],
         )
 
-    # TODO
     def plot_return_values(
         self,
-        return_period: typing.Iterable = None,
+        return_period=None,
         return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
-        alpha: float = 0.95,
+        alpha: typing.Optional[float] = None,
         plotting_position: str = "weibull",
-        ax=None,
-        figsize: tuple = (8, 8 / 1.618),
+        ax: typing.Optional[plt.Axes] = None,
+        figsize: tuple = (8, 5),
         **kwargs,
     ) -> tuple:  # pragma: no cover
         """
@@ -918,66 +917,82 @@ class EVA:
         Parameters
         ----------
         return_period : array-like, optional
-            Return period or array of return periods.
-            If None, calculates as 100 values uniformly spaced within the range
-            of return periods of the extracted extreme values.
+            Return period or 1D array of return periods.
+            Given as a multiple of `return_period_size`.
+            If None (default), calculates as 100 values uniformly spaced
+            within the range of return periods of the extracted extreme values.
         return_period_size : str or pandas.Timedelta, optional
             Size of return periods (default='1Y').
-            If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
+            If set to '30D', then a return period of 12
+            would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
-            Width of confidence interval, from 0 to 1 (default=0.95).
+            Width of confidence interval (0, 1).
+            If None (default), confidence interval bounds are not plotted.
         plotting_position : str, optional
             Plotting position name (default='weibull'), not case-sensitive.
             Supported plotting positions:
                 ecdf, hazen, weibull, tukey, blom, median, cunnane, gringorten, beard
-        ax : matplotlib.axes.Axes, optional
-            Axes onto which the figure is drawn (default=None).
-            If None, a new figure and axes is created.
+        ax : matplotlib.axes._axes.Axes, optional
+            Axes onto which the return value plot is drawn.
+            If None (default), a new figure and axes objects are created.
         figsize : tuple, optional
-            Figure size in inches (default=(8, 8/1.618)).
+            Figure size in inches in format (width, height).
+            By default it is (8, 5).
         kwargs
             Model-specific keyword arguments.
+            If alpha is None, keyword arguments are ignored
+            (error still raised for unrecognized arguments).
             MLE model:
-                n_samples : int
-                    Number of samles used to get confidence interval.
+                n_samples : int, optional
+                    Number of bootstrap samples used to estimate
+                    confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
 
         Returns
         -------
-        if ax is None:
-            figure : matplotlib.figure.Figure
-                Figure object.
-        else:
-            None
-        axes : matplotlib.axes.Axes
+        figure : matplotlib.figure.Figure
+            Figure object.
+        axes : matplotlib.axes._axes.Axes
             Axes object.
+
         """
-        logger.info("getting observed return values")
-        try:
-            block_size = self.extremes_kwargs["block_size"]
-        except KeyError:
-            block_size = None
+        # Get observed return values
         observed_return_values = get_return_periods(
             ts=self.data,
             extremes=self.extremes,
             extremes_method=self.extremes_method,
             extremes_type=self.extremes_type,
-            block_size=block_size,
+            block_size=self.extremes_kwargs.get("block_size", None),
             return_period_size=return_period_size,
             plotting_position=plotting_position,
         )
 
+        # Parse the 'return_period' argument
         if return_period is None:
-            logger.info("creating default return_period array")
             return_period = np.linspace(
                 observed_return_values.loc[:, "return period"].min(),
                 observed_return_values.loc[:, "return period"].max(),
                 100,
             )
+        else:
+            # Convert 'return_period' to ndarray
+            return_period = np.asarray(a=return_period, dtype=np.float64).copy()
+            if return_period.ndim == 0:
+                return_period = return_period[np.newaxis]
+            if return_period.ndim != 1:
+                raise ValueError(
+                    f"invalid shape in {return_period.shape} "
+                    f"for the 'return_period' argument, must be 1D array"
+                )
+            if len(return_period) < 2:
+                raise ValueError(
+                    f"'return_period' must have at least 2 return periods, "
+                    f"{len(return_period)} was given"
+                )
 
-        logger.info("getting modeled return values")
+        # Get modeled return values
         modeled_return_values = self.get_summary(
             return_period=return_period,
             return_period_size=return_period_size,
@@ -985,7 +1000,7 @@ class EVA:
             **kwargs,
         )
 
-        logger.info("plotting return values")
+        # Plot return values
         return plot_return_values(
             observed_return_values=observed_return_values,
             modeled_return_values=modeled_return_values,
@@ -993,6 +1008,7 @@ class EVA:
             figsize=figsize,
         )
 
+    # TODO
     def plot_probability(
         self,
         plot_type: str,
@@ -1032,6 +1048,7 @@ class EVA:
             None
         axes : matplotlib.axes.Axes
             Axes object.
+
         """
         logger.info("getting observed return values")
         try:
