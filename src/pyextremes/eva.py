@@ -746,9 +746,9 @@ class EVA:
 
     def get_return_value(
         self,
-        return_period: typing.Union[float, tuple, list, np.ndarray],
+        return_period,
         return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
-        alpha: float = None,
+        alpha: typing.Optional[float] = None,
         **kwargs,
     ) -> tuple:
         """
@@ -756,69 +756,79 @@ class EVA:
 
         Parameters
         ----------
-        return_period : float or array-like
-            Return period or array of return periods.
+        return_period : array-like
+            Return period or 1D array of return periods.
+            Given as a multiple of `return_period_size`.
         return_period_size : str or pandas.Timedelta, optional
             Size of return periods (default='1Y').
-            If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
+            If set to '30D', then a return period of 12
+            would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
-            Width of confidence interval, from 0 to 1 (default=None).
-            If None, return None for upper and lower confidence interval bounds.
+            Width of confidence interval (0, 1) (default=None).
+            If None (default), return None
+            for upper and lower confidence interval bounds.
         kwargs
-            Keyword arguments specific to a model.
-            If alpha is None, keyword arguments are ignored (error still raised for unrecognized arguments).
+            Model-specific keyword arguments.
+            If alpha is None, keyword arguments are ignored
+            (error still raised for unrecognized arguments).
             MLE model:
                 n_samples : int, optional
-                    Number of bootstrap samples used to estimate confidence interval bounds (default=100).
+                    Number of bootstrap samples used to estimate
+                    confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
 
         Returns
         -------
-        return_value : float or array-like
-            Return value(s).
-        lower_ci_bound : float or array-like
-            Lower confidence interval bound(s).
-        upper_ci_bount : float or array-like
-            Upper confidence interval bound(s).
-        """
-        logger.info("making sure a model has been fit")
-        if self.model is None:
-            raise AttributeError(
-                "a model must be fit to extracted extremes first, use .fit_model method"
-            )
+        return_value : array-like
+            Return values.
+        ci_lower : array-like
+            Lower confidence interval bounds.
+        ci_upper : array-like
+            Upper confidence interval bounds.
 
-        logger.info(
-            "calculating rate of extreme events as number of events per return_period_size"
-        )
+        """
+        # Parse the 'return_period_size' argument
+        if not isinstance(return_period_size, pd.Timedelta):
+            if isinstance(return_period_size, str):
+                return_period_size = pd.to_timedelta(return_period_size)
+            else:
+                raise TypeError(
+                    f"invalid type in {type(return_period_size)} "
+                    f"for the 'return_period_size' argument"
+                )
+
+        # Calculate rate of extreme events
+        # as number of extreme events per `return_period_size`
         if self.extremes_method == "BM":
             extremes_rate = return_period_size / self.extremes_kwargs["block_size"]
-            logger.debug("calculated extremes_rate for BM method")
         elif self.extremes_method == "POT":
             n_periods = (self.data.index[-1] - self.data.index[0]) / return_period_size
             extremes_rate = len(self.extremes) / n_periods
-            logger.debug("calculated extremes_rate for POT method")
         else:
-            raise RuntimeError("this is a bug - invalid extremes method")
+            raise AssertionError
 
-        logger.info("calculating exceedance probability")
-        if isinstance(return_period, (tuple, list, np.ndarray)):
-            logger.info("getting a list of exceedance probabilities")
-            exceedance_probability = 1 / np.array(return_period) / extremes_rate
-        elif isinstance(return_period, (int, float, np.number)):
-            logger.info("getting a single exceedance probability")
-            exceedance_probability = 1 / return_period / extremes_rate
-        else:
-            raise TypeError(
-                f"invalid type in {type(return_period)} for the 'return_period' argument"
+        # Convert 'return_period' to ndarray
+        return_period = np.asarray(a=return_period, dtype=np.float64).copy()
+        if return_period.ndim == 0:
+            return_period = return_period[np.newaxis]
+        if return_period.ndim != 1:
+            raise ValueError(
+                f"invalid shape in {return_period.shape} "
+                f"for the 'return_period' argument, must be 1D array"
             )
 
-        logger.info("calculating return value using the model")
-        rv = self.model.get_return_value(
-            exceedance_probability=exceedance_probability, alpha=alpha, **kwargs
+        # Calculate exceedance probability
+        exceedance_probability = 1 / return_period / extremes_rate
+
+        # Calculate return values
+        return tuple(
+            self.extremes_transformer.transform(value)
+            for value in self.model.get_return_value(
+                exceedance_probability=exceedance_probability, alpha=alpha, **kwargs
+            )
         )
-        return tuple(self.extremes_transformer.transform(value) for value in rv)
 
     def get_summary(
         self,

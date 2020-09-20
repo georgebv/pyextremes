@@ -61,6 +61,19 @@ def eva_model_bm_emcee(battery_wl_preprocessed) -> EVA:
     return eva_model
 
 
+@pytest.fixture(scope="function")
+def eva_model_pot_mle(battery_wl_preprocessed) -> EVA:
+    eva_model = EVA(data=battery_wl_preprocessed)
+    eva_model.get_extremes(
+        method="POT",
+        extremes_type="high",
+        threshold=1.35,
+        r="24H",
+    )
+    eva_model.fit_model("MLE")
+    return eva_model
+
+
 class TestEVA:
     def test_init_errors(self):
         with pytest.raises(
@@ -303,3 +316,39 @@ class TestEVA:
         assert np.allclose(trace, eva_model_bm_emcee.model.trace)
         assert len(trace_map) == len(eva_model_bm_emcee.distribution.free_parameters)
         assert labels == [r"Shape, $\xi$", r"Location, $\mu$", r"Scale, $\sigma$"]
+
+    @pytest.mark.parametrize("extremes_method", ["BM", "POT"])
+    def test_get_return_value(
+        self, eva_model_bm_mle, eva_model_pot_mle, extremes_method
+    ):
+        eva_model = {
+            "BM": eva_model_bm_mle,
+            "POT": eva_model_pot_mle,
+        }[extremes_method]
+
+        # Test invalid 'return_period_size' type
+        with pytest.raises(TypeError, match=r"invalid type.*return_period_size"):
+            eva_model.get_return_value(return_period=1, return_period_size=1)
+
+        # Test invalid 'return_period' shape
+        with pytest.raises(
+            ValueError, match=r"invalid shape.*'return_period' argument"
+        ):
+            eva_model.get_return_value(return_period=[[1, 2], [3, 4]])
+
+        # Test scalar outputs
+        rv, cil, ciu = eva_model.get_return_value(
+            return_period=100, return_period_size="1Y", alpha=0.95
+        )
+        assert all(isinstance(value, float) for value in (rv, cil, ciu))
+        assert cil < rv < ciu
+        assert np.allclose(eva_model.extremes.max(), rv, rtol=0, atol=2)
+
+        # Test array-like outputs
+        rv, cil, ciu = eva_model.get_return_value(
+            return_period=[10, 100], return_period_size="1Y", alpha=0.95
+        )
+        for value in (rv, cil, ciu):
+            assert isinstance(value, np.ndarray)
+            assert value[1] > value[0]
+        assert np.all((cil < rv) & (rv < ciu))
