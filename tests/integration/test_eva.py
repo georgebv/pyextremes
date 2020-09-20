@@ -184,6 +184,12 @@ class TestEVA:
         ):
             eva_model_bm.fit_model(distribution=scipy.stats.poisson)
 
+        # Distribution without name
+        distribution = scipy.stats.genextreme.__class__()
+        distribution.name = None
+        with pytest.warns(RuntimeWarning, match=r"provided.*'name'.*validity"):
+            eva_model_bm.fit_model(distribution=distribution)
+
         # Non-recommended distribution
         with pytest.warns(RuntimeWarning, match=r"is not recommended.*Fisher"):
             eva_model_bm.fit_model(distribution="genpareto")
@@ -191,3 +197,70 @@ class TestEVA:
         with pytest.warns(RuntimeWarning, match=r"is not recommended.*Pickands"):
             eva_model_pot.fit_model(distribution="genextreme")
             assert eva_model_pot.distribution.name == "genextreme"
+
+    @pytest.mark.parametrize("model", ["MLE", "Emcee"])
+    @pytest.mark.parametrize(
+        "input_parameters",
+        [
+            {
+                "extremes_method": "BM",
+                "distribution": scipy.stats.genextreme,
+                "distribution_kwargs": None,
+            },
+            {
+                "extremes_method": "BM",
+                "distribution": scipy.stats.genextreme,
+                "distribution_kwargs": {"floc": 0},
+            },
+            {
+                "extremes_method": "POT",
+                "distribution": scipy.stats.genpareto,
+                "distribution_kwargs": None,
+            },
+            {
+                "extremes_method": "POT",
+                "distribution": scipy.stats.genpareto,
+                "distribution_kwargs": {"floc": 1.0},
+            },
+        ],
+    )
+    def test_fit_model(self, eva_model_bm, eva_model_pot, model, input_parameters):
+        eva_model = {
+            "BM": eva_model_bm,
+            "POT": eva_model_pot,
+        }[input_parameters["extremes_method"]]
+        model_kwargs = {}
+        if model == "Emcee":
+            model_kwargs["n_walkers"] = 10
+            model_kwargs["n_samples"] = 100
+        eva_model.fit_model(
+            model=model,
+            distribution=input_parameters["distribution"],
+            distribution_kwargs=input_parameters["distribution_kwargs"],
+            **model_kwargs
+        )
+
+        assert eva_model.model.name == model
+        assert eva_model.distribution.name == input_parameters["distribution"].name
+        if eva_model.distribution.name == "genextreme":
+            if input_parameters["distribution_kwargs"] is None:
+                assert len(eva_model.distribution.fixed_parameters) == 0
+            else:
+                assert len(eva_model.distribution.fixed_parameters) == len(
+                    input_parameters["distribution_kwargs"]
+                )
+                for key, value in input_parameters["distribution_kwargs"].items():
+                    assert value == eva_model.distribution.fixed_parameters[key]
+        elif eva_model.distribution.name == "genpareto":
+            if input_parameters["distribution_kwargs"] is None:
+                assert len(eva_model.distribution.fixed_parameters) == 1
+                assert (
+                    eva_model.distribution.fixed_parameters["floc"]
+                    == eva_model.extremes_kwargs["threshold"]
+                )
+            else:
+                assert len(eva_model.distribution.fixed_parameters) == 1
+                assert (
+                    eva_model.distribution.fixed_parameters["floc"]
+                    == input_parameters["distribution_kwargs"]["floc"]
+                )

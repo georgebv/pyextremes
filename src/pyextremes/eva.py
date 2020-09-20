@@ -1,5 +1,4 @@
 import calendar
-import copy
 import logging
 import typing
 import warnings
@@ -22,8 +21,6 @@ from pyextremes.plotting import (
 )
 
 logger = logging.getLogger(__name__)
-
-_extremes_error = "extreme values must first be extracted using '.get_extremes' method"
 
 
 class EVA:
@@ -131,46 +128,41 @@ class EVA:
     def data(self) -> pd.Series:
         return self.__data
 
+    def __get_extremes_attribute(self, attribute_name: str) -> typing.Any:
+        value = getattr(self, f"_EVA__{attribute_name}")
+        if value is None:
+            raise AttributeError(
+                "extreme values must first be extracted "
+                "using the '.get_extremes' method"
+            )
+        else:
+            return value
+
     @property
     def extremes(self) -> pd.Series:
-        if self.__extremes is None:
-            raise AttributeError(_extremes_error)
-        else:
-            return self.__extremes
+        return self.__get_extremes_attribute("extremes")
 
     @property
     def extremes_method(self) -> str:
-        if self.__extremes_method is None:
-            raise AttributeError(_extremes_error)
-        else:
-            return self.__extremes_method
+        return self.__get_extremes_attribute("extremes_method")
 
     @property
     def extremes_type(self) -> str:
-        if self.__extremes_type is None:
-            raise AttributeError(_extremes_error)
-        else:
-            return self.__extremes_type
+        return self.__get_extremes_attribute("extremes_type")
 
     @property
     def extremes_kwargs(self) -> typing.Dict[str, typing.Any]:
-        if self.__extremes_kwargs is None:
-            raise AttributeError(_extremes_error)
-        else:
-            return self.__extremes_kwargs
+        return self.__get_extremes_attribute("extremes_kwargs")
 
     @property
     def extremes_transformer(self) -> ExtremesTransformer:
-        if self.__extremes_transformer is None:
-            raise AttributeError(_extremes_error)
-        else:
-            return self.__extremes_transformer
+        return self.__get_extremes_attribute("extremes_transformer")
 
     @property
     def model(self) -> typing.Union[MLE, Emcee]:
         if self.__model is None:
             raise AttributeError(
-                "model must first be assigned using '.fit_model' method"
+                "model must first be assigned using the '.fit_model' method"
             )
         else:
             return self.__model
@@ -180,12 +172,12 @@ class EVA:
         return self.model.distribution
 
     @property
-    def AIC(self) -> float:
-        return self.model.AIC
-
-    @property
     def loglikelihood(self) -> float:
         return self.model.loglikelihood
+
+    @property
+    def AIC(self) -> float:
+        return self.model.AIC
 
     # TODO
     def __repr__(self) -> str:
@@ -508,9 +500,11 @@ class EVA:
                 - shape(s): 'fc', e.g. fc=0
                 - location: 'floc', e.g. floc=0
                 - scale: 'fscale', e.g. fscale=1
-            By default, no parameters are fixed.
             See documentation of a specific scipy.stats distribution
             for names of available parameters.
+            By default, location parameter for 'genpareto' and 'expon' distributions
+            is fixed to threshold (POT) or to minimum extremes (BM) value.
+            Set to empty dictionary (distribution_kwargs={}) to avoid this behaviour.
         kwargs
             Keyword arguments passed to a model .fit method.
             MLE model:
@@ -582,7 +576,15 @@ class EVA:
         # Checking if distribution is valid per extreme value theory:
         # Fisher-Tippet-Gnedenko theorem for 'BM'
         # Pickands–Balkema–de Haan theorem for 'POT'
-        if distribution_name is not None:
+        if distribution_name is None:
+            warnings.warn(
+                message=(
+                    "provided distribution 'name' attribute cannot be resolved "
+                    "and distribution validity cannot be verified"
+                ),
+                category=RuntimeWarning,
+            )
+        else:
             if self.extremes_method == "BM" and distribution_name not in [
                 "genextreme",
                 "gumbel_r",
@@ -622,7 +624,7 @@ class EVA:
                 f"for '{distribution_name}' distribution"
             )
 
-        # Fit model
+        # Fit model to transformed extremes
         self.__model = get_model(
             model=model,
             extremes=self.extremes_transformer.transformed_extremes,
