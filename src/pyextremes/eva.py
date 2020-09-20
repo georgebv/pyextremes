@@ -633,12 +633,11 @@ class EVA:
             **kwargs,
         )
 
-    # TODO
     def plot_trace(
         self,
         burn_in: int = 0,
-        labels: tuple = None,
-        figsize: tuple = None,
+        labels=None,
+        figsize: typing.Optional[tuple] = None,
     ) -> tuple:  # pragma: no cover
         """
         Plot a trace plot for a given MCMC sampler trace.
@@ -646,56 +645,52 @@ class EVA:
         Parameters
         ----------
         burn_in : int, optional
-            Burn-in value (number of first steps to discard for each walker) (default=0).
-        labels : tuple, optional
-            Tuple with parameter names, used to label axes (default=None).
+            Burn-in value (number of first steps to discard for each walker).
+            By default it is 0 (no values are discarded).
+        labels : array-like, optional
+            Sequence of strings with parameter names, used to label axes.
+            If None (default), then axes are labeled sequentially.
         figsize : tuple, optional
-            Figure size in inches (default=None).
-            If None, calculated automatically as 8 by 2 times number of parameters.
+            Figure size in inches.
+            If None (default), then figure size is calculated automatically
+            as 8 by 2 times number of parameters.
 
         Returns
         -------
         figure : matplotlib.figure.Figure
             Figure object.
-        axes : tuple
-            Tuple with n_parameters Axes objects.
+        axes : list
+            List with n_parameters Axes objects.
 
         """
-        logger.info("making sure a model has been fit")
-        if self.model is None:
-            raise AttributeError(
-                "a model must be fit to extracted extremes first, use .fit_model method"
+        try:
+            trace = self.model.trace
+            trace_map = tuple(
+                self.model.fit_parameters[parameter]
+                for parameter in self.model.distribution.free_parameters
             )
-
-        logger.info("making sure the fitting model has trace")
-        if self.model.trace is None:
-            raise AttributeError(
-                "this method is applicable only for MCMC-like models with .trace attribute"
-            )
+        except TypeError as _error:
+            raise TypeError(
+                f"the '.plot_trace' method is only applicable to MCMC-like models, "
+                f"not to '{self.model.name}' model"
+            ) from _error
 
         parameter_names = {
-            "c": r"Shape, $\xi$",
             "loc": r"Location, $\mu$",
             "scale": r"Scale, $\sigma$",
         }
+        if self.model.distribution.name in ["genextreme", "genpareto"]:
+            parameter_names["c"] = r"Shape, $\xi$"
         if labels is None:
-            logger.info("assigning distribution parameter labels")
             labels = []
             for parameter in self.model.distribution.free_parameters:
                 try:
                     labels.append(parameter_names[parameter])
                 except KeyError:
-                    labels.append(f"Shape {parameter}")
+                    labels.append(f"Shape parameter '{parameter}'")
 
-        logger.info("preparing distribution parameters MAP tuple")
-        trace_map = tuple(
-            self.model.fit_parameters[parameter]
-            for parameter in self.model.distribution.free_parameters
-        )
-
-        logger.info("plotting the trace plot")
         return plot_trace(
-            trace=self.model.trace,
+            trace=trace,
             trace_map=trace_map,
             burn_in=burn_in,
             labels=labels,
