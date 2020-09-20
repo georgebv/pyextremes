@@ -352,3 +352,30 @@ class TestEVA:
             assert isinstance(value, np.ndarray)
             assert value[1] > value[0]
         assert np.all((cil < rv) & (rv < ciu))
+
+    @pytest.mark.parametrize("extremes_method", ["BM", "POT"])
+    def test_get_summary(self, eva_model_bm_mle, eva_model_pot_mle, extremes_method):
+        eva_model = {
+            "BM": eva_model_bm_mle,
+            "POT": eva_model_pot_mle,
+        }[extremes_method]
+
+        # Test invalid 'return_period' shape
+        with pytest.raises(
+            ValueError, match=r"invalid shape.*'return_period' argument"
+        ):
+            eva_model.get_summary(return_period=[[1, 2], [3, 4]])
+
+        # Test scalar outputs
+        rv_summary = eva_model.get_summary(
+            return_period=100, return_period_size="1Y", alpha=0.95
+        )
+        assert isinstance(rv_summary, pd.DataFrame)
+        assert len(rv_summary) == 1
+
+        # Test array-like outputs
+        rv_summary = eva_model.get_summary(
+            return_period=[10, 100], return_period_size="1Y", alpha=0.95
+        )
+        assert isinstance(rv_summary, pd.DataFrame)
+        assert len(rv_summary) == 2

@@ -764,7 +764,7 @@ class EVA:
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
-            Width of confidence interval (0, 1) (default=None).
+            Width of confidence interval (0, 1).
             If None (default), return None
             for upper and lower confidence interval bounds.
         kwargs
@@ -832,28 +832,35 @@ class EVA:
 
     def get_summary(
         self,
-        return_period: typing.Union[tuple, list, np.ndarray],
+        return_period,
         return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
-        alpha: float = 0.95,
+        alpha: typing.Optional[float] = None,
         **kwargs,
     ) -> pd.DataFrame:
         """
-        Generate a pandas DataFrame with return values and confidence interval bounds for given return periods.
+        Generate a pandas DataFrame with return values and confidence interval bounds.
 
         Parameters
         ----------
         return_period : array-like
-            Return period or array of return periods.
+            Return period or 1D array of return periods.
+            Given as a multiple of `return_period_size`.
         return_period_size : str or pandas.Timedelta, optional
             Size of return periods (default='1Y').
-            If set to '30D', then a return period of 12 would be equivalent to 1 year return period.
+            If set to '30D', then a return period of 12
+            would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
-            Width of confidence interval, from 0 to 1 (default=0.95).
+            Width of confidence interval (0, 1).
+            If None (default), return None
+            for upper and lower confidence interval bounds.
         kwargs
             Model-specific keyword arguments.
+            If alpha is None, keyword arguments are ignored
+            (error still raised for unrecognized arguments).
             MLE model:
-                n_samples : int
-                    Number of samles used to get confidence interval.
+                n_samples : int, optional
+                    Number of bootstrap samples used to estimate
+                    confidence interval bounds (default=100).
             Emcee model:
                 burn_in : int
                     Burn-in value (number of first steps to discard for each walker).
@@ -862,22 +869,39 @@ class EVA:
         -------
         summary : pandas.DataFrame
             DataFrame with return values and confidence interval bounds.
+
         """
-        logger.info("calculating return values")
-        return_values = self.get_return_value(
+        # Convert 'return_period' to ndarray
+        return_period = np.asarray(a=return_period, dtype=np.float64).copy()
+        if return_period.ndim == 0:
+            return_period = return_period[np.newaxis]
+        if return_period.ndim != 1:
+            raise ValueError(
+                f"invalid shape in {return_period.shape} "
+                f"for the 'return_period' argument, must be 1D array"
+            )
+
+        # Calculate return values
+        rv = self.get_return_value(
             return_period=return_period,
             return_period_size=return_period_size,
             alpha=alpha,
             **kwargs,
         )
+        return_values = []
+        for value in rv:
+            value = np.asarray(a=value, dtype=np.float64)
+            if value.ndim == 0:
+                value = value[np.newaxis]
+            return_values.append(value)
 
-        logger.info("preparing the summary dataframe")
         return pd.DataFrame(
             data=np.transpose(return_values),
             index=pd.Index(data=return_period, name="return period"),
             columns=["return value", "lower ci", "upper ci"],
         )
 
+    # TODO
     def plot_return_values(
         self,
         return_period: typing.Iterable = None,
