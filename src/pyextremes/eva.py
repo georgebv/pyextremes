@@ -179,11 +179,9 @@ class EVA:
     def AIC(self) -> float:
         return self.model.AIC
 
-    # TODO
     def __repr__(self) -> str:  # pragma: no cover
-        """Representation of the class state."""
         # Width of repr block
-        width = 101
+        width = 88
 
         # Separator used to separate two columns of the repr block
         sep = " " * 6
@@ -192,120 +190,161 @@ class EVA:
         lwidth = (width - len(sep)) // 2
         rwidth = width - (lwidth + len(sep))
 
-        # Function used to center text within repr block line
+        # Function used to center text within a row
         def center_text(text: str) -> str:
             left_gap = (width - len(text)) // 2
             right_gap = width - left_gap - len(text)
-            return "".join([" " * left_gap, text, " " * right_gap])
+            return "".join(
+                [
+                    " " * left_gap,
+                    text,
+                    " " * right_gap,
+                ]
+            )
 
-        # Function used to convert label-value pair into a sequence of lines within a column
-        def align_text(text: str, value: str, position: str = "left") -> str:
-            if text == "":
+        # Function used to convert label-value pair
+        # into a sequence of lines within a column
+        def align_text(label: str, value: str, position: str) -> str:
+            if label == "":
                 if position == "left":
                     return f"{value:>{lwidth:d}}"
                 elif position == "right":
                     return f"{value:>{rwidth:d}}"
                 else:
-                    raise ValueError
+                    raise AssertionError
 
-            text_width = len(text) + 2
+            # Find width available for the value
+            # +2 stands for colon and space (label: value)
+            label_width = len(label) + 2
             if position == "left":
-                free_width = lwidth - text_width
+                free_width = lwidth - label_width
+            elif position == "right":
+                free_width = rwidth - label_width
             else:
-                free_width = rwidth - text_width
+                raise AssertionError
 
+            # Split value into chunks using 'free_width'
             value_chunks = [
                 value[i : i + free_width] for i in range(0, len(value), free_width)
             ]
             if "".join(value_chunks) != value:
                 raise AssertionError
 
+            # Collect text row-by-row using 'value_chunks'
             aligned_text = []
             for i, chunk in enumerate(value_chunks):
                 if i == 0:
-                    aligned_text.append(f"{text}: {chunk:>{free_width:d}}")
+                    aligned_text.append(f"{label}: {chunk:>{free_width:d}}")
                 else:
                     aligned_text.append(
-                        "".join([" " * text_width, f"{chunk:>{free_width:d}}"])
+                        "".join(
+                            [
+                                " " * label_width,
+                                f"{chunk:>{free_width:d}}",
+                            ]
+                        )
                     )
             return "\n".join(aligned_text)
 
-        # Function used to convert a pair pair of label-value pairs
-        # into a sequence of lines of the repr block
-        def align_pair(text: tuple, value: tuple) -> str:
-            left_part = align_text(text=text[0], value=value[0], position="left").split(
-                "\n"
-            )
+        # Function used to convert two label-value pairs
+        # into a sequence of rows representing two columns
+        def align_pair(label: tuple, value: tuple) -> str:
+            # Create list of rows for each label-value pair
+            left_part = align_text(
+                label=label[0],
+                value=value[0],
+                position="left",
+            ).split("\n")
             right_part = align_text(
-                text=text[1], value=value[1], position="right"
+                label=label[1],
+                value=value[1],
+                position="right",
             ).split("\n")
 
-            if len(left_part) < len(right_part):
-                for _ in range(len(right_part) - len(left_part)):
+            # Extend the shorter label-value pair column
+            delta_lines = len(left_part) - len(right_part)
+            if delta_lines < 0:
+                for _ in range(-delta_lines):
                     left_part.append(" " * len(left_part[0]))
             else:
-                for _ in range(len(left_part) - len(right_part)):
+                for _ in range(delta_lines):
                     right_part.append(" " * len(right_part[0]))
 
-            aligned_text = []
-            for left, right in zip(left_part, right_part):
-                aligned_text.append("".join([left, sep, right]))
+            # Merge the two columns into a sequence of rows
+            return "\n".join(
+                "".join([left, sep, right])
+                for left, right in zip(left_part, right_part)
+            )
 
-            return "\n".join(aligned_text)
-
-        # summary header
+        # Create summary header
         start_date = (
-            f"{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}"
+            f"{calendar.month_name[self.data.index[0].month]} "
+            f"{self.data.index[0].year}"
         )
-        end_date = f"{calendar.month_name[self.data.index[-1].month]} {self.data.index[-1].year}"
+        end_date = (
+            f"{calendar.month_name[self.data.index[-1].month]} "
+            f"{self.data.index[-1].year}"
+        )
         summary = [
             center_text("Univariate Extreme Value Analysis"),
             "=" * width,
-            center_text("Original Data"),
+            center_text("Source Data"),
             "-" * width,
             align_pair(
-                ("Data label", "Data range"),
-                (str(self.data.name), f"{start_date} to {end_date}"),
+                ("Data label", "Size"),
+                (str(self.data.name), f"{len(self.data):,d}"),
+            ),
+            align_pair(
+                ("Start", "End"),
+                (start_date, end_date),
             ),
             "=" * width,
-            center_text("Extreme Values"),
-            "-" * width,
         ]
 
-        # extremes section
-        if self.extremes is None:
-            summary.extend(["Extreme values have not been extracted", "=" * width])
-        else:
+        # Fill the extremes section
+        summary.extend(
+            [
+                center_text("Extreme Values"),
+                "-" * width,
+            ]
+        )
+        try:
             if self.extremes_method == "BM":
-                ev_parameters = ("Block size", str(self.extremes_kwargs["block_size"]))
+                ev_parameters = (
+                    "Block size",
+                    str(self.extremes_kwargs["block_size"]),
+                )
             elif self.extremes_method == "POT":
-                ev_parameters = ("Threshold", str(self.extremes_kwargs["threshold"]))
+                ev_parameters = (
+                    "Threshold",
+                    str(self.extremes_kwargs["threshold"]),
+                )
             else:
-                raise RuntimeError("this is a bug - wrong extremes method")
+                raise AssertionError
             summary.extend(
                 [
                     align_pair(
-                        ("Number of extreme events", "Extraction method"),
-                        (f"{len(self.extremes):d}", str(self.extremes_method)),
+                        ("Count", "Extraction method"),
+                        (f"{len(self.extremes):,d}", self.extremes_method),
                     ),
                     align_pair(
-                        ("Type of extreme events", ev_parameters[0]),
-                        (str(self.extremes_type), ev_parameters[1]),
+                        ("Type", ev_parameters[0]),
+                        (self.extremes_type, ev_parameters[1]),
                     ),
-                    "=" * width,
                 ]
             )
+        except AttributeError:
+            summary.append("Extreme values have not been extracted")
+        summary.append("=" * width)
 
-        # model section
+        # Fill the model section
         summary.extend(
             [
                 center_text("Model"),
                 "-" * width,
             ]
         )
-        if self.model is None:
-            summary.extend(["Model has not been fit to the extremes", "=" * width])
-        else:
+        try:
             summary.append(
                 align_pair(
                     ("Model", "Distribution"),
@@ -313,10 +352,12 @@ class EVA:
                 )
             )
             if self.model.name == "Emcee":
+                n_walkers = getattr(self.model, "n_walkers")
+                n_samples = getattr(self.model, "n_samples")
                 summary.append(
                     align_pair(
                         ("Walkers", "Samples per walker"),
-                        (f"{self.model.n_walkers:d}", f"{self.model.n_samples:d}"),
+                        (f"{n_walkers:,d}", f"{n_samples:,d}"),
                     )
                 )
 
@@ -339,25 +380,35 @@ class EVA:
             ]
             if len(fixed_parameters) == 0:
                 fixed_parameters = ["All parameters are free"]
-            if len(free_parameters) < len(fixed_parameters):
-                for _ in range(len(fixed_parameters) - len(free_parameters)):
+            delta_parameters = len(free_parameters) - len(fixed_parameters)
+            if delta_parameters < 0:
+                for _ in range(-delta_parameters):
                     free_parameters.append("")
-            elif len(fixed_parameters) < len(free_parameters):
-                for _ in range(len(free_parameters) - len(fixed_parameters)):
-                    fixed_parameters.append("")
             else:
-                pass
-            for j, (frp, fip) in enumerate(zip(free_parameters, fixed_parameters)):
-                if j == 0:
+                for _ in range(delta_parameters):
+                    fixed_parameters.append("")
+
+            for i, (frp, fip) in enumerate(zip(free_parameters, fixed_parameters)):
+                if i == 0:
                     summary.append(
                         align_pair(
-                            text=("Free parameters", "Fixed parameters"),
-                            value=(frp, fip),
+                            ("Free parameters", "Fixed parameters"),
+                            (frp, fip),
                         )
                     )
                 else:
-                    summary.append(align_pair(text=("", ""), value=(frp, fip)))
-            summary.append("=" * width)
+                    summary.append(
+                        align_pair(
+                            ("", ""),
+                            (frp, fip),
+                        )
+                    )
+
+        except AttributeError:
+            summary.append("Model has not been fit to the extremes")
+
+        summary.append("=" * width)
+
         return "\n".join(summary)
 
     def get_extremes(self, method: str, extremes_type: str = "high", **kwargs) -> None:
