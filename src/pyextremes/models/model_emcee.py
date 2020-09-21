@@ -126,7 +126,7 @@ class Emcee(AbstractModelBaseClass):
             Exceedance probability or 1D array of exceedance probabilities.
             Each exceedance probability must be in the [0, 1) range.
         alpha : float, optional
-            Width of confidence interval (0, 1) (default=None).
+            Width of confidence interval (0, 1).
             If None (default), return None
             for upper and lower confidence interval bounds.
         kwargs

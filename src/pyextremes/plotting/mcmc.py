@@ -224,7 +224,8 @@ def plot_corner(
                             ax.set_ylabel(f"Parameter {i}")
                         else:
                             ax.set_ylabel(labels[i])
-                    elif j != 0 or i == j == 0:
+
+                    if j != 0 or i == j == 0:
                         # Remove y-axis ticks for axes located right of the first column
                         # and for the first axes along the main diagonal
                         ax.tick_params(

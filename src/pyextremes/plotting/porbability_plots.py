@@ -11,7 +11,7 @@ def plot_probability(
     observed: np.ndarray,
     theoretical: np.ndarray,
     ax: typing.Optional[plt.Axes] = None,
-    figsize: tuple = (8, 5),
+    figsize: tuple = (8, 8),
 ) -> typing.Tuple[plt.Figure, plt.Axes]:
     """
     Plot a probability plot (QQ or PP).
@@ -27,7 +27,7 @@ def plot_probability(
         If None (default), a new figure and axes objects are created.
     figsize : tuple, optional
         Figure size in inches in format (width, height).
-        By default it is (8, 5).
+        By default it is (8, 8).
 
     Returns
     -------

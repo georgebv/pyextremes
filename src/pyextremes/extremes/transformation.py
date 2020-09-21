@@ -31,9 +31,9 @@ class ExtremesTransformer:
             low - provided extreme values are extreme low values
 
         """
-        self.extremes = extremes
-        self.extremes_type = extremes_type
-        self.transformed_extremes = self.transform(value=extremes)
+        self.extremes: pd.Series = extremes
+        self.extremes_type: str = extremes_type
+        self.transformed_extremes: pd.Series = self.transform(value=extremes)
 
     def transform(
         self, value: typing.Union[None, float, pd.Series]

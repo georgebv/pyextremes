@@ -11,7 +11,7 @@ def get_model(
     model: str,
     extremes: pd.Series,
     distribution: typing.Union[str, scipy.stats.rv_continuous],
-    distribution_kwargs: dict = None,
+    distribution_kwargs: typing.Optional[dict] = None,
     **kwargs,
 ) -> typing.Union[MLE, Emcee]:
     """
@@ -20,7 +20,7 @@ def get_model(
     Parameters
     ----------
     model : str
-        Name of distribution fitting model.
+        Name of model.
         Supported models:
             MLE - Maximum Likelihood Estimate (MLE) model.
                 Based on 'scipy' package (scipy.stats.rv_continuous.fit).

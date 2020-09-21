@@ -26,7 +26,8 @@ def get_extremes_peaks_over_threshold(
     threshold : float
         Threshold used to find exceedances.
     r : str or pandas.Timedelta, optional
-        Duration of window used to decluster the exceedances (default='24H').
+        Duration of window used to decluster the exceedances.
+        By default r='24H' (24 hours).
 
     Returns
     -------
