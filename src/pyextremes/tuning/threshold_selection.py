@@ -6,37 +6,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats
-
 from pyextremes import EVA
-from pyextremes.extremes import get_extremes, ExtremesTransformer
+from pyextremes.extremes import ExtremesTransformer, get_extremes
 from pyextremes.plotting import pyextremes_rc
 
 logger = logging.getLogger(__name__)
 
 
-def get_default_thresholds(ts: pd.Series, extremes_type: str, num: int) -> np.ndarray:
+def get_default_thresholds(
+    ts,
+    extremes_type: str,
+    num: int = 100,
+) -> np.ndarray:
     """
     Get an array of threshold values for given time series.
-    This array is used to find optimal threshold value in other methods.
-    Thresholds are generated as an array of equally spaced values between 90th percentile
-    and 10th largest value in the series.
+
+    Used to generate an array of thresholds used to find
+    optimal threshold values in other methods.
+    Thresholds are generated as an array of equally spaced values
+    between 90th percentile and 10th largest value in the series for 'extremes_type'
+    being 'high' and between 10th smallest value and 10th percentile in the series
+    for 'extremes_type' being 'low'.
 
     Parameters
     ----------
-    ts : pandas.Series
+    ts : array-like
         Time series of the signal.
     extremes_type : str
-        high - extreme high values
-        low - extreme low values
+        high - get extreme high values
+        low - get extreme low values
     num : int
-        Number of thresholds to generate.
+        Number of threshold values to generate.
 
     Returns
     -------
     thresholds : numpy.ndarray
         Array with threshold values.
-    """
 
+    """
     if extremes_type == "high":
         start = np.quantile(ts.values, 0.9)
         stop = ts.sort_values(ascending=False).iloc[9]
@@ -45,7 +52,7 @@ def get_default_thresholds(ts: pd.Series, extremes_type: str, num: int) -> np.nd
         stop = ts.sort_values(ascending=True).iloc[9]
     else:
         raise ValueError(
-            f"'{extremes_type}' is not a valid value of the 'extremes_type' argument"
+            f"invalid value in '{extremes_type}' for the 'extremes_type' argument"
         )
 
     return np.linspace(start=start, stop=stop, num=num)
@@ -57,7 +64,7 @@ def plot_mean_residual_life(
     extremes_type: str = "high",
     alpha: float = 0.95,
     figsize: tuple = (8, 5),
-) -> tuple:
+) -> tuple:  # pragma: no cover
     """
     Make a mean residual life plot for given threshold values.
     The mean residual life plot should be approximately linear above a threshold for which
@@ -156,7 +163,7 @@ def plot_parameter_stability(
     r: typing.Union[str, pd.Timedelta] = "24H",
     extremes_type: str = "high",
     figsize: tuple = (8, 5),
-) -> tuple:
+) -> tuple:  # pragma: no cover
     """
     Make a parameter stability plot for given threshold values.
     The parameter stability plot shows shape and modified scale parameters of the GPD distribution.
@@ -256,7 +263,7 @@ def plot_return_value_stability(
     r: typing.Union[str, pd.Timedelta] = "24H",
     extremes_type: str = "high",
     figsize: tuple = (8, 5),
-) -> tuple:
+) -> tuple:  # pragma: no cover
     """
     Make a return value stability plot for given threshold values.
     The return value stability plot shows return value of given probability (return period) for a given
