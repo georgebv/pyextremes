@@ -15,7 +15,7 @@ def get_version():
         version_line = [
             line.strip() for line in file.readlines() if "__version__" in line
         ][0]
-        return version_line.split("=")[1]
+        return version_line.split("=")[-1].strip().strip('"')
 
 
 setuptools.setup(
@@ -23,7 +23,7 @@ setuptools.setup(
     version=get_version(),
     description="Extreme Value Analysis (EVA) in Python",
     long_description=get_long_description(),
-    long_description_content_type="test/x-rst",
+    long_description_content_type="text/x-rst",
     author="Georgii Bocharov",
     author_email="bocharovgeorgii@gmail.com",
     url="https://github.com/georgebv/pyextremes",
