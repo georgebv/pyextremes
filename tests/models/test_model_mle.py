@@ -1,8 +1,9 @@
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
 import scipy.stats
-
 from pyextremes.models import MLE, get_model
 
 
@@ -105,6 +106,11 @@ class TestMLE:
         assert np.isnan(cil) and np.isnan(ciu)
         assert len(mle_model.return_value_cache) == 1
         assert len(mle_model.fit_parameter_cache) == 0
+        assert len(np.unique(mle_model.fit_parameter_cache, axis=0)) == len(
+            mle_model.fit_parameter_cache
+        )
+        seed_cahe_size = 0
+        assert len(mle_model.seed_cache) == seed_cahe_size
 
         # Test scalar, with alpha
         rv, cil, ciu = mle_model.get_return_value(
@@ -119,6 +125,11 @@ class TestMLE:
         assert not (np.isnan(cil) or np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 2
         assert len(mle_model.fit_parameter_cache) == 100
+        assert len(np.unique(mle_model.fit_parameter_cache, axis=0)) == len(
+            mle_model.fit_parameter_cache
+        )
+        seed_cahe_size = min(2, os.cpu_count())
+        assert len(mle_model.seed_cache) == seed_cahe_size
 
         # Test array, with alpha
         rv, cil, ciu = mle_model.get_return_value(
@@ -133,6 +144,11 @@ class TestMLE:
         assert not np.any(np.isnan(cil) | np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 3
         assert len(mle_model.fit_parameter_cache) == 100
+        assert len(np.unique(mle_model.fit_parameter_cache, axis=0)) == len(
+            mle_model.fit_parameter_cache
+        )
+        seed_cahe_size = min(2, os.cpu_count())
+        assert len(mle_model.seed_cache) == seed_cahe_size
 
         # Test small additional n_samples
         rv, cil, ciu = mle_model.get_return_value(
@@ -148,7 +164,11 @@ class TestMLE:
         )
         assert not (np.isnan(cil) or np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 4
-        assert len(mle_model.fit_parameter_cache) == 120
+        assert len(np.unique(mle_model.fit_parameter_cache, axis=0)) == len(
+            mle_model.fit_parameter_cache
+        )
+        seed_cahe_size = min(2, os.cpu_count()) + 1
+        assert len(mle_model.seed_cache) == seed_cahe_size
 
         # Test large additional n_samples, not multiple of 50
         rv, cil, ciu = mle_model.get_return_value(
@@ -165,6 +185,11 @@ class TestMLE:
         assert not (np.isnan(cil) or np.isnan(ciu))
         assert len(mle_model.return_value_cache) == 5
         assert len(mle_model.fit_parameter_cache) == 201
+        assert len(np.unique(mle_model.fit_parameter_cache, axis=0)) == len(
+            mle_model.fit_parameter_cache
+        )
+        seed_cahe_size += min(2, os.cpu_count())
+        assert len(mle_model.seed_cache) == seed_cahe_size
 
     def test_repr(self, mle_model):
         repr_value = str(mle_model)
@@ -291,6 +316,11 @@ class TestMLE:
         assert np.isnan(cil) and np.isnan(ciu)
         assert len(model.return_value_cache) == 1
         assert len(model.fit_parameter_cache) == 0
+        assert len(np.unique(model.fit_parameter_cache, axis=0)) == len(
+            model.fit_parameter_cache
+        )
+        seed_cahe_size = 0
+        assert len(model.seed_cache) == seed_cahe_size
 
         # Test scalar, with alpha
         rv, cil, ciu = model.get_return_value(exceedance_probability=0.1, alpha=0.95)
@@ -305,6 +335,11 @@ class TestMLE:
         assert not (np.isnan(cil) or np.isnan(ciu))
         assert len(model.return_value_cache) == 2
         assert len(model.fit_parameter_cache) == 100
+        assert len(np.unique(model.fit_parameter_cache, axis=0)) == len(
+            model.fit_parameter_cache
+        )
+        seed_cahe_size = min(2, os.cpu_count())
+        assert len(model.seed_cache) == seed_cahe_size
 
         # Test array, with alpha
         rv, cil, ciu = model.get_return_value(
@@ -323,3 +358,8 @@ class TestMLE:
         assert not np.any(np.isnan(cil) | np.isnan(ciu))
         assert len(model.return_value_cache) == 3
         assert len(model.fit_parameter_cache) == 100
+        assert len(np.unique(model.fit_parameter_cache, axis=0)) == len(
+            model.fit_parameter_cache
+        )
+        seed_cahe_size = min(2, os.cpu_count())
+        assert len(model.seed_cache) == seed_cahe_size

@@ -8,10 +8,10 @@
 
 .. contents:: Table of Contents
 
-Introduction
-============
+About
+=====
 
-**Version:** 1.0.2
+**Version:** 2.0.0
 
 **License:** MIT
 
@@ -109,7 +109,7 @@ Corner plot
 .. |conda version| image:: https://img.shields.io/conda/vn/conda-forge/pyextremes.svg
     :target: https://anaconda.org/conda-forge/pyextremes
 
-.. |model diagnostic image| image:: ./docs/source/example_images/diagnostic.png
+.. |model diagnostic image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/diagnostic.png
 
 .. |extremes image| image:: https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/extremes.png
 

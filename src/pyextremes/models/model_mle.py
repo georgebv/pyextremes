@@ -13,10 +13,11 @@ from pyextremes.models.model_base import AbstractModelBaseClass
 logger = logging.getLogger(__name__)
 
 
-def get_fit_parameters(params) -> list:
-    n, fit_function, extremes, fixed_parameters = params
-    sampler = np.random.choice
+def get_fit_parameters(params) -> typing.List[tuple]:
+    n, fit_function, extremes, fixed_parameters, seed = params
     size = len(extremes)
+    rng_generator = np.random.default_rng(seed=seed)
+    sampler = rng_generator.choice
     return [
         fit_function(
             data=sampler(a=extremes, size=size, replace=True),
@@ -45,8 +46,9 @@ class MLE(AbstractModelBaseClass):
             distribution_kwargs=distribution_kwargs,
         )
 
-        # Initialize 'fit_parameter_cache'
+        # Initialize 'fit_parameter_cache' and 'seed_cache'
         self.fit_parameter_cache: typing.List[tuple] = []
+        self.seed_cache: typing.Set[int] = set()
 
     @property
     def name(self) -> str:
@@ -185,9 +187,23 @@ class MLE(AbstractModelBaseClass):
         min_samples_per_core = 50
         if n <= min_samples_per_core:
             # Calculate without multiprocessing
+            logger.debug("getting random seed value for fit parameter sampler")
+            seed = None
+            while seed is None:
+                _seed = np.random.randint(low=0, high=1e6, size=None)
+                if _seed not in self.seed_cache:
+                    seed = _seed
+                    self.seed_cache.add(_seed)
+
             logger.debug(f"calculating {n} additional fit parameters using single core")
             new_fit_parameters = get_fit_parameters(
-                (n, fit_function, extremes, fixed_parameters)
+                params=(
+                    n,
+                    fit_function,
+                    extremes,
+                    fixed_parameters,
+                    seed,
+                )
             )
         else:
             # Find number of cores
@@ -204,6 +220,15 @@ class MLE(AbstractModelBaseClass):
             for i in range(n - sum(core_samples)):
                 core_samples[i] += 1
 
+            # Get unique random seed for each core and add it to `self.seed_cache`
+            logger.debug("getting random seed values for each core")
+            seeds: typing.List[int] = []
+            while len(seeds) < n_cores:
+                seed = np.random.randint(low=0, high=1e6, size=None)
+                if seed not in self.seed_cache:
+                    seeds.append(seed)
+                    self.seed_cache.add(seed)
+
             # Calculate new fit parameters using processor pool
             logger.debug(
                 f"calculating {n} additional fit parameters using {n_cores} cores "
@@ -219,12 +244,13 @@ class MLE(AbstractModelBaseClass):
                                 [fit_function for _ in range(n_cores)],
                                 [extremes for _ in range(n_cores)],
                                 [fixed_parameters for _ in range(n_cores)],
+                                seeds,
                             ),
                         )
                     )
                 )
 
-        # Extrend fit parameter cache
+        # Extend fit parameter cache
         logger.debug(f"extending fit parameter cache with {n} new entries")
         self.fit_parameter_cache.extend(new_fit_parameters)
         return None
