@@ -22,4 +22,5 @@ flake8 = "*"
 bandit = "*"
 pydocstyle = "*"
 mypy = "*"
+twine = "*"
 "e1839a8" = {path = ".", editable = true}

@@ -1,5 +1,6 @@
 # Development environment
 .devcontainer
+.vscode
 
 # Python
 __pycache__/
