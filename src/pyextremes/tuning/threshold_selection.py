@@ -371,7 +371,7 @@ def plot_parameter_stability(
         # Plot central estimates of shape and modified scale parameters
         ax_shape.plot(
             thresholds,
-            shape_parameters,
+            shape_parameters["values"],
             ls="-",
             color="#F85C50",
             lw=2,
@@ -379,7 +379,7 @@ def plot_parameter_stability(
         )
         ax_scale.plot(
             thresholds,
-            scale_parameters,
+            scale_parameters["values"],
             ls="-",
             color="#F85C50",
             lw=2,
