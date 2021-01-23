@@ -70,8 +70,13 @@ Dependencies
 Tutorials
 =========
 - `Basic usage <https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb>`_
-- Models
+- Fitting models
 - Statistical distributions
+- Block maxima
+   - Selecting block size
+- Peaks over threshold
+   - Selecting threshold
+- Extreme high and extreme low values
 
 Illustrations
 =============
