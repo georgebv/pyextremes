@@ -11,7 +11,7 @@
 About
 =====
 
-**Version:** 2.0.0
+**Version:** 2.0.1
 
 **License:** MIT
 
@@ -57,15 +57,15 @@ Or from GitHub directly:
 
 Dependencies
 ============
-**Python version:** 3.7 or later
+**Python version:** 3.8 or later
 
 **Required packages:**
 
 - emcee >= 3.0
-- matplotlib
-- numpy
-- pandas
-- scipy
+- matplotlib >= 3.3
+- numpy >= 1.19
+- pandas >= 1.0
+- scipy >= 1.5
 
 Tutorials
 =========
