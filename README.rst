@@ -73,9 +73,13 @@ Tutorials
 - Fitting models
 - Statistical distributions
 - Block maxima
-   - Selecting block size
+  
+  - Selecting block size
+
 - Peaks over threshold
-   - Selecting threshold
+  
+  - Selecting threshold
+
 - Extreme high and extreme low values
 
 Illustrations
