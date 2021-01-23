@@ -81,10 +81,10 @@ class EVA:
                     f"invalid dtype in {data.dtype} for the 'data' argument, "
                     f"must be numeric (subdtype of numpy.number)"
                 ) from _error
-        if not data.index.is_all_dates:
+        if not isinstance(data.index, pd.DatetimeIndex):
             raise TypeError(
                 f"index of 'data' must be a sequence of date-time objects, "
-                f"not {data.index.dtype}"
+                f"not {data.index.inferred_type}"
             )
 
         # Ensure that 'data' is sorted

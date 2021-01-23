@@ -444,6 +444,10 @@ def plot_return_value_stability(
     thresholds=None,
     r: typing.Union[str, pd.Timedelta] = "24H",
     extremes_type: str = "high",
+    distributions: typing.List[typing.Union[str, scipy.stats.rv_continuous]] = [
+        "genpareto",
+        "expon",
+    ],
     alpha: typing.Optional[float] = None,
     n_samples: int = 100,
     figsize: tuple = (8, 5),
@@ -480,6 +484,12 @@ def plot_return_value_stability(
     extremes_type : str, optional
         high (default) - extreme high values
         low - extreme low values
+    distributions : list, optional
+        List of distributions for which the return value curves are plotted.
+        By default these are "genpareto" and "expon".
+        A distribution must be either a name of distribution from with scipy.stats
+        or a subclass of scipy.stats.rv_continuous.
+        See https://docs.scipy.org/doc/scipy/reference/stats.html
     alpha : float, optional
         Confidence interval width in the range (0, 1).
         If None (default), then confidence interval is not shown.
@@ -510,31 +520,36 @@ def plot_return_value_stability(
     # Instantiate model
     model = EVA(data=ts)
 
-    # Calculate return values for each threshold
-    return_values = []
-    ci_lower = []
-    ci_upper = []
-    for threshold in thresholds:
-        model.get_extremes(
-            method="POT",
-            extremes_type=extremes_type,
-            threshold=threshold,
-            r=r,
-        )
-        model.fit_model(
-            model="MLE",
-            distribution="genpareto",
-            distribution_kwargs={"floc": threshold},
-        )
-        rv, cil, ciu = model.get_return_value(
-            return_period=return_period,
-            return_period_size=return_period_size,
-            alpha=None,
-            n_samples=n_samples,
-        )
-        return_values.append(rv)
-        ci_lower.append(cil)
-        ci_upper.append(ciu)
+    # Calculate return values for each threshold and distribution
+    return_values: typing.Dict[str, typing.List[float]] = {}
+    ci_lower: typing.Dict[str, typing.List[float]] = {}
+    ci_upper: typing.Dict[str, typing.List[float]] = {}
+    for distribution in distributions:
+        for threshold in thresholds:
+            model.get_extremes(
+                method="POT",
+                extremes_type=extremes_type,
+                threshold=threshold,
+                r=r,
+            )
+            model.fit_model(
+                model="MLE",
+                distribution=distribution,
+            )
+            rv, cil, ciu = model.get_return_value(
+                return_period=return_period,
+                return_period_size=return_period_size,
+                alpha=alpha,
+                n_samples=n_samples,
+            )
+            try:
+                return_values[distribution].append(rv)
+                ci_lower[distribution].append(cil)
+                ci_upper[distribution].append(ciu)
+            except KeyError:
+                return_values[distribution] = [rv]
+                ci_lower[distribution] = [cil]
+                ci_upper[distribution] = [ciu]
 
     with plt.rc_context(rc=pyextremes_rc):
         # Create figure and axes
@@ -542,35 +557,44 @@ def plot_return_value_stability(
         ax.grid(False)
 
         # Plot central estimate of return values
-        ax.plot(
-            thresholds,
-            return_values,
-            color="#1771F1",
-            lw=2,
-            ls="-",
-            zorder=15,
-        )
-
-        # Plot confidence bounds
-        if alpha is not None:
-            for ci in [ci_lower, ci_upper]:
-                ax.plot(
-                    thresholds,
-                    ci,
-                    color="#5199FF",
-                    lw=1,
-                    ls="--",
-                    zorder=10,
-                )
-            ax.fill_between(
+        for i, distribution in enumerate(distributions):
+            color = pyextremes_rc["axes.prop_cycle"].by_key()["color"][i]
+            ax.plot(
                 thresholds,
-                ci_lower,
-                ci_upper,
-                facecolor="#5199FF",
-                edgecolor="None",
-                alpha=0.25,
-                zorder=5,
+                return_values[distribution],
+                color=color,
+                lw=2,
+                ls="-",
+                label=distribution,
+                zorder=(i + 3) * 5,
             )
+
+            # Plot confidence bounds
+            if alpha is not None:
+                for ci in [ci_lower[distribution], ci_upper[distribution]]:
+                    ax.plot(
+                        thresholds,
+                        ci,
+                        color=color,
+                        lw=1,
+                        ls="--",
+                        zorder=(i + 2) * 5,
+                    )
+                ax.fill_between(
+                    thresholds,
+                    ci_lower[distribution],
+                    ci_upper[distribution],
+                    facecolor=color,
+                    edgecolor="None",
+                    alpha=0.25,
+                    zorder=(i + 1) * 5,
+                )
+
+        # Plot legend
+        ax.legend(
+            frameon=True,
+            framealpha=0.9,
+        )
 
         # Label axes
         ax.set_xlabel("Threshold")

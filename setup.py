@@ -56,8 +56,14 @@ setuptools.setup(
     package_dir={"": "src"},
     include_package_data=True,
     zip_safe=True,
-    install_requires=["emcee>=3.0", "matplotlib", "numpy", "pandas", "scipy"],
-    python_requires=">=3.7",
+    install_requires=[
+        "emcee>=3.0",
+        "matplotlib>=3.3",
+        "numpy>=1.19",
+        "pandas>=1.0",
+        "scipy>=1.5",
+    ],
+    python_requires=">=3.8",
     project_urls={
         "GitHub": "https://github.com/georgebv/pyextremes",
         "PyPI": "https://pypi.org/project/pyextremes/",

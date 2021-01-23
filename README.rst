@@ -78,7 +78,7 @@ Tutorials
 
 - Peaks over threshold
   
-  - Selecting threshold
+  - `Threshold selection <https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/tutorials/threshold%20selection.ipynb>`_
 
 - Extreme high and extreme low values
 
