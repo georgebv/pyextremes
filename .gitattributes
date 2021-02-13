@@ -6,6 +6,8 @@
 *.rst text eol=lf
 *.ini text eol=lf
 *.cfg text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
 *.png -diff
 .gitattributes text eol=lf
 .gitignore text eol=lf

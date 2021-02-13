@@ -17,7 +17,7 @@ About
 
 **E-Mail:** bocharovgeorgii@gmail.com
 
-**Documentation:** see the `Tutorials`_ section
+**Documentation:** https://georgebv.github.io/pyextremes/
 
 **pyextremes** is a Python library implementing an easy-to-use extensible framework used to perform `Extreme Value Analysis (EVA) <https://en.wikipedia.org/wiki/Extreme_value_theory>`_. It provides tools necessary to perform typical tasks constituting EVA, such as:
 
