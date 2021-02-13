@@ -28,7 +28,7 @@ def get_extremes(
     kwargs
         if method is BM:
             block_size : str or pandas.Timedelta, optional
-                Block size (default='1Y').
+                Block size (default='365.2425D').
             errors : str, optional
                 raise (default) - raise an exception
                     when encountering a block with no data

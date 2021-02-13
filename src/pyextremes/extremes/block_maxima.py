@@ -15,7 +15,7 @@ class NoDataBlockWarning(Warning):
 def get_extremes_block_maxima(
     ts: pd.Series,
     extremes_type: str,
-    block_size: typing.Union[str, pd.Timedelta] = "1Y",
+    block_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     errors: str = "raise",
 ) -> pd.Series:
     """
@@ -29,7 +29,7 @@ def get_extremes_block_maxima(
         high - get extreme high values
         low - get extreme low values
     block_size : str or pandas.Timedelta, optional
-        Block size (default='1Y').
+        Block size (default='365.2425D').
     errors : str, optional
         raise (default) - raise an exception when encountering a block with no data
         ignore - ignore blocks with no data

@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[test]
+          pip install -e .[test]
 
       - name: Run tests and generate coverage report
         run: |
@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[lint]
+          pip install -e .[lint]
 
       - name: Run black
         run: |
@@ -71,11 +71,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[lint]
+          pip install -e .[lint]
 
       - name: Run pylint
         run: |
-          pylint ./src/pyextremes --fail-under=8 --max-line-length=88 --disable=C0114,E0401
+          pylint ./src/pyextremes --fail-under=8 --max-line-length=88 --disable=C0103,C0114,C0015,C0302,E0401
 
   lint-flake8:
     name: Lint Python code using flake8
@@ -92,7 +92,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[lint]
+          pip install -e .[lint]
 
       - name: Run flake8
         run: |

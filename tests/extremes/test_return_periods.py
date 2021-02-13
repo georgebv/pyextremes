@@ -13,7 +13,7 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes_method="BM",
             extremes_type="high",
             block_size=1,
-            return_period_size="1Y",
+            return_period_size="365.2425D",
             plotting_position="weibull",
         )
 
@@ -24,8 +24,8 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes=extremes_bm_high,
             extremes_method="POT",
             extremes_type="high",
-            block_size="1Y",
-            return_period_size="1Y",
+            block_size="365.2425D",
+            return_period_size="365.2425D",
             plotting_position="weibull",
         )
 
@@ -36,7 +36,7 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes=extremes_bm_high,
             extremes_method="BM",
             extremes_type="high",
-            block_size="1Y",
+            block_size="365.2425D",
             return_period_size=1,
             plotting_position="weibull",
         )
@@ -49,7 +49,7 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes_method="BAD EXTREMES_METHOD VALUE",
             extremes_type="high",
             block_size=None,
-            return_period_size="1Y",
+            return_period_size="365.2425D",
             plotting_position="weibull",
         )
 
@@ -60,8 +60,8 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes=extremes_bm_high,
             extremes_method="BM",
             extremes_type="BAD EXTREMES_TYPE VALUE",
-            block_size="1Y",
-            return_period_size="1Y",
+            block_size="365.2425D",
+            return_period_size="365.2425D",
             plotting_position="weibull",
         )
 
@@ -72,8 +72,8 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
             extremes=extremes_bm_high,
             extremes_method="BM",
             extremes_type="high",
-            block_size="1Y",
-            return_period_size="1Y",
+            block_size="365.2425D",
+            return_period_size="365.2425D",
             plotting_position="BAD PLOTTING_POSITION VALUE",
         )
 
@@ -84,7 +84,7 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
         extremes_method="BM",
         extremes_type="high",
         block_size=None,
-        return_period_size="1Y",
+        return_period_size="365.2425D",
         plotting_position="weibull",
     )
     return_periods = get_return_periods(
@@ -92,8 +92,8 @@ def test_get_return_periods_errors(battery_wl_preprocessed, extremes_bm_high):
         extremes=extremes_bm_high,
         extremes_method="BM",
         extremes_type="high",
-        block_size="1Y",
-        return_period_size="1Y",
+        block_size="365.2425D",
+        return_period_size="365.2425D",
         plotting_position="weibull",
     )
     assert (
@@ -130,8 +130,8 @@ def test_extremes_method_bm(
             extremes=extremes,
             extremes_method="BM",
             extremes_type=extremes_type,
-            block_size="1Y",
-            return_period_size="1Y",
+            block_size="365.2425D",
+            return_period_size="365.2425D",
             plotting_position=plotting_position,
         )
         if extremes_type == "high":
@@ -170,7 +170,7 @@ def test_extremes_method_pot(
             extremes_method="POT",
             extremes_type=extremes_type,
             block_size=None,
-            return_period_size="1Y",
+            return_period_size="365.2425D",
             plotting_position=plotting_position,
         )
         if extremes_type == "high":

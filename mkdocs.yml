@@ -30,9 +30,11 @@ markdown_extensions:
       linenums_style: pymdownx.inline
   - pymdownx.superfences
   - pymdownx.inlinehilite
-  - abbr
   - pymdownx.details
+  - pymdownx.snippets
+  - abbr
   - admonition
+  - attr_list
 
 plugins:
   - search

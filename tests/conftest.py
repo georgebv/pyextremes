@@ -40,7 +40,7 @@ def battery_wl_preprocessed(shared_data_folder) -> pd.Series:
     ts = ts.loc[ts.index.year >= 1925]
     slr = (
         (ts.index.array - pd.to_datetime("1992-01-01"))
-        / pd.to_timedelta("1Y")
+        / pd.to_timedelta("365.2425D")
         * 2.87e-3
     )
     ts -= slr

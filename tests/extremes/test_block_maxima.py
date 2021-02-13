@@ -12,7 +12,7 @@ def test_invalid_arguments(battery_wl):
             ts=battery_wl,
             method="BM",
             extremes_type="BAD EXTREMES_TYPE VALUE",
-            block_size="1Y",
+            block_size="365.2425D",
             errors="coerce",
         )
 
@@ -32,7 +32,7 @@ def test_invalid_arguments(battery_wl):
             ts=battery_wl,
             method="BM",
             extremes_type="high",
-            block_size="1Y",
+            block_size="365.2425D",
             errors="BAD ERRORS VALUE",
         )
 
@@ -45,7 +45,7 @@ def test_extreme_value_extraction(battery_wl, extremes_type):
             ts=battery_wl,
             method="BM",
             extremes_type=extremes_type,
-            block_size="1Y",
+            block_size="365.2425D",
             errors="raise",
         )
 
@@ -55,7 +55,7 @@ def test_extreme_value_extraction(battery_wl, extremes_type):
             ts=battery_wl,
             method="BM",
             extremes_type=extremes_type,
-            block_size="1Y",
+            block_size="365.2425D",
             errors="ignore",
         )
         assert len(extremes_ignored) == 96
@@ -66,7 +66,7 @@ def test_extreme_value_extraction(battery_wl, extremes_type):
             ts=battery_wl,
             method="BM",
             extremes_type=extremes_type,
-            block_size="1Y",
+            block_size="365.2425D",
             errors="coerce",
         )
         assert len(extremes_coerced) == 100

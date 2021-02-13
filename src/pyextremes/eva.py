@@ -431,7 +431,7 @@ class EVA:
         kwargs
             if method is BM:
                 block_size : str or pandas.Timedelta, optional
-                    Block size (default='1Y').
+                    Block size (default='365.2425D').
                 errors : str, optional
                     raise (default) - raise an exception
                         when encountering a block with no data
@@ -460,7 +460,7 @@ class EVA:
         self.__extremes_kwargs = {}
         if method == "BM":
             self.__extremes_kwargs["block_size"] = pd.to_timedelta(
-                kwargs.get("block_size", "1Y")
+                kwargs.get("block_size", "365.2425D")
             )
             self.__extremes_kwargs["errors"] = kwargs.get("errors", "raise")
         elif method == "POT":
@@ -798,7 +798,7 @@ class EVA:
     def get_return_value(
         self,
         return_period,
-        return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+        return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
         **kwargs,
     ) -> tuple:
@@ -811,7 +811,7 @@ class EVA:
             Return period or 1D array of return periods.
             Given as a multiple of `return_period_size`.
         return_period_size : str or pandas.Timedelta, optional
-            Size of return periods (default='1Y').
+            Size of return periods (default='365.2425D').
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
@@ -884,7 +884,7 @@ class EVA:
     def get_summary(
         self,
         return_period,
-        return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+        return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
         **kwargs,
     ) -> pd.DataFrame:
@@ -897,7 +897,7 @@ class EVA:
             Return period or 1D array of return periods.
             Given as a multiple of `return_period_size`.
         return_period_size : str or pandas.Timedelta, optional
-            Size of return periods (default='1Y').
+            Size of return periods (default='365.2425D').
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
@@ -955,7 +955,7 @@ class EVA:
     def plot_return_values(
         self,
         return_period=None,
-        return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+        return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
         plotting_position: str = "weibull",
         ax: typing.Optional[plt.Axes] = None,
@@ -973,7 +973,7 @@ class EVA:
             If None (default), calculates as 100 values uniformly spaced
             within the range of return periods of the extracted extreme values.
         return_period_size : str or pandas.Timedelta, optional
-            Size of return periods (default='1Y').
+            Size of return periods (default='365.2425D').
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional
@@ -1062,7 +1062,7 @@ class EVA:
     def plot_probability(
         self,
         plot_type: str,
-        return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+        return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         plotting_position: str = "weibull",
         ax: typing.Optional[plt.Axes] = None,
         figsize: tuple = (8, 8),
@@ -1078,7 +1078,7 @@ class EVA:
                 PP - probability plot
                 QQ - quantile plot
         return_period_size : str or pandas.Timedelta, optional
-            Size of return periods (default='1Y').
+            Size of return periods (default='365.2425D').
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         plotting_position : str, optional
@@ -1146,7 +1146,7 @@ class EVA:
     def plot_diagnostic(
         self,
         return_period=None,
-        return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+        return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
         plotting_position: str = "weibull",
         figsize: tuple = (8, 8),
@@ -1169,7 +1169,7 @@ class EVA:
             If None (default), calculates as 100 values uniformly spaced
             within the range of return periods of the extracted extreme values.
         return_period_size : str or pandas.Timedelta, optional
-            Size of return periods (default='1Y').
+            Size of return periods (default='365.2425D').
             If set to '30D', then a return period of 12
             would be roughly equivalent to a 1 year return period (360 days).
         alpha : float, optional

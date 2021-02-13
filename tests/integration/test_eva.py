@@ -17,7 +17,7 @@ def eva_model_bm(battery_wl_preprocessed) -> EVA:
     eva_model.get_extremes(
         method="BM",
         extremes_type="high",
-        block_size="1Y",
+        block_size="365.2425D",
         errors="raise",
     )
     return eva_model
@@ -41,7 +41,7 @@ def eva_model_bm_mle(battery_wl_preprocessed) -> EVA:
     eva_model.get_extremes(
         method="BM",
         extremes_type="high",
-        block_size="1Y",
+        block_size="365.2425D",
         errors="raise",
     )
     eva_model.fit_model("MLE")
@@ -54,7 +54,7 @@ def eva_model_bm_emcee(battery_wl_preprocessed) -> EVA:
     eva_model.get_extremes(
         method="BM",
         extremes_type="high",
-        block_size="1Y",
+        block_size="365.2425D",
         errors="raise",
     )
     eva_model.fit_model("Emcee", n_walkers=10, n_samples=100)
@@ -148,7 +148,7 @@ class TestEVA:
             {
                 "method": "BM",
                 "extremes_type": "high",
-                "block_size": "1Y",
+                "block_size": "365.2425D",
                 "errors": "raise",
             },
             {
@@ -177,7 +177,9 @@ class TestEVA:
         assert eva_model.extremes_type == input_params["extremes_type"]
         if input_params["method"] == "BM":
             assert len(eva_model.extremes_kwargs) == 2
-            assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta("1Y")
+            assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta(
+                "365.2425D"
+            )
             assert eva_model.extremes_kwargs["errors"] == "raise"
         else:
             assert len(eva_model.extremes_kwargs) == 2
@@ -189,7 +191,7 @@ class TestEVA:
     @pytest.mark.parametrize(
         "extremes_params",
         [
-            {"method": "BM", "block_size": "1Y"},
+            {"method": "BM", "block_size": "365.2425D"},
             {"method": "POT", "threshold": 1.35},
         ],
     )
@@ -338,7 +340,7 @@ class TestEVA:
 
         # Test scalar outputs
         rv, cil, ciu = eva_model.get_return_value(
-            return_period=100, return_period_size="1Y", alpha=0.95
+            return_period=100, return_period_size="365.2425D", alpha=0.95
         )
         assert all(isinstance(value, float) for value in (rv, cil, ciu))
         assert cil < rv < ciu
@@ -346,7 +348,7 @@ class TestEVA:
 
         # Test array-like outputs
         rv, cil, ciu = eva_model.get_return_value(
-            return_period=[10, 100], return_period_size="1Y", alpha=0.95
+            return_period=[10, 100], return_period_size="365.2425D", alpha=0.95
         )
         for value in (rv, cil, ciu):
             assert isinstance(value, np.ndarray)
@@ -368,14 +370,14 @@ class TestEVA:
 
         # Test scalar outputs
         rv_summary = eva_model.get_summary(
-            return_period=100, return_period_size="1Y", alpha=0.95
+            return_period=100, return_period_size="365.2425D", alpha=0.95
         )
         assert isinstance(rv_summary, pd.DataFrame)
         assert len(rv_summary) == 1
 
         # Test array-like outputs
         rv_summary = eva_model.get_summary(
-            return_period=[10, 100], return_period_size="1Y", alpha=0.95
+            return_period=[10, 100], return_period_size="365.2425D", alpha=0.95
         )
         assert isinstance(rv_summary, pd.DataFrame)
         assert len(rv_summary) == 2

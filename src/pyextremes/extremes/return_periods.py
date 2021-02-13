@@ -23,7 +23,7 @@ def get_return_periods(
     extremes_method: str,
     extremes_type: str,
     block_size: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
-    return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+    return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     plotting_position: str = "weibull",
 ) -> pd.DataFrame:
     """
@@ -51,7 +51,7 @@ def get_return_periods(
         Block size in the 'BM' `extremes_method` (default=None).
         If None, then is calculated as median distance between extreme events.
     return_period_size : str or pandas.Timedelta, optional
-        Size of return periods (default='1Y').
+        Size of return periods (default='365.2425D').
         If set to '30D', then a return period of 12
         would be roughly equivalent to a 1 year return period (360 days).
     plotting_position : str, optional

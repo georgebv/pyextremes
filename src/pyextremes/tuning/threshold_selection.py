@@ -440,7 +440,7 @@ def plot_parameter_stability(
 def plot_return_value_stability(
     ts: pd.Series,
     return_period,
-    return_period_size: typing.Union[str, pd.Timedelta] = "1Y",
+    return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     thresholds=None,
     r: typing.Union[str, pd.Timedelta] = "24H",
     extremes_type: str = "high",
@@ -470,7 +470,7 @@ def plot_return_value_stability(
         Return period.
         Given as a multiple of `return_period_size`.
     return_period_size : str or pandas.Timedelta, optional
-        Size of return period (default='1Y').
+        Size of return period (default='365.2425D').
         If set to '30D', then a return period of 12
         would be roughly equivalent to a 1 year return period (360 days).
     thresholds : array-like, optional
