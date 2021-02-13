@@ -22,11 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --user pipenv
-          PATH=~/.local/bin:$PATH
-          pipenv install --system --ignore-pipfile --deploy
-          pip install pytest pytest-cov
-          pip install -e .
+          pip install -e .[test]
 
       - name: Run tests and generate coverage report
         run: |
@@ -54,10 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --user pipenv
-          PATH=~/.local/bin:$PATH
-          pipenv install --system --ignore-pipfile --deploy
-          pip install black==20.8b1
+          pip install black
 
       - name: Run black
         run: |
@@ -78,9 +71,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --user pipenv
-          PATH=~/.local/bin:$PATH
-          pipenv install --system --ignore-pipfile --deploy
           pip install pylint
 
       - name: Run pylint
@@ -102,9 +92,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --user pipenv
-          PATH=~/.local/bin:$PATH
-          pipenv install --system --ignore-pipfile --deploy
           pip install flake8
 
       - name: Run flake8

@@ -63,6 +63,28 @@ setuptools.setup(
         "pandas>=1.0",
         "scipy>=1.5",
     ],
+    extras_require={
+        "deploy": [
+            "twine",
+        ],
+        "lint": [
+            "black",
+            "pylint",
+            "flake8",
+            "bandit",
+            "pydocstyle",
+            "mypy",
+        ],
+        "docs": [
+            "mkdocs",
+            "mkdocs-material",
+            "mkdocs-material-extensions",
+        ],
+        "test": [
+            "pytest",
+            "pytest-cov",
+        ],
+    },
     python_requires=">=3.8",
     project_urls={
         "GitHub": "https://github.com/georgebv/pyextremes",

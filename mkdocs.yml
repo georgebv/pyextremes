@@ -1,0 +1,40 @@
+site_name: pyextremes
+repo_url: https://github.com/georgebv/pyextremes
+repo_name: georgebv/pyextremes
+edit_uri: ""
+site_description: Extreme Value Analysis (EVA) in Python
+site_author: Georgii Bocharov
+
+nav:
+  - pyextremes: index.md
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+
+docs_dir: docs
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/georgebv/pyextremes
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/gbocharov/
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      linenums_style: pymdownx.inline
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - abbr
+  - pymdownx.details
+  - admonition
+
+plugins:
+  - search
+
+prebuild_index: true
