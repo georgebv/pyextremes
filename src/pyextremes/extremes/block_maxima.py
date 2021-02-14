@@ -17,6 +17,7 @@ def get_extremes_block_maxima(
     extremes_type: str,
     block_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     errors: str = "raise",
+    min_last_block: typing.Optional[float] = None,
 ) -> pd.Series:
     """
     Get extreme events from time series using the Block Maxima method.
@@ -36,6 +37,11 @@ def get_extremes_block_maxima(
         coerce - get extreme values for blocks with no data
             as mean of all other extreme events in the series
             with index being the middle point of corresponding interval
+    min_last_block : float, optional
+        Minimum data availability ratio (0 to 1) in the last block
+        for it to be used to extract extreme value from.
+        This is used to discard last block when it is too short.
+        If None (default), last block is always used.
 
     Returns
     -------
@@ -108,6 +114,16 @@ def get_extremes_block_maxima(
                 raise ValueError(
                     f"invalid value in '{errors}' for the 'errors' argument"
                 )
+
+    # Check last block duration
+    if min_last_block is not None:
+        ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
+        if ratio < min_last_block:
+            logger.debug(
+                "discarded last block with data availability ratio of %s" % ratio
+            )
+            extreme_indices = extreme_indices[:-1]
+            extreme_values = extreme_values[:-1]
 
     if empty_intervals > 0:
         warnings.warn(

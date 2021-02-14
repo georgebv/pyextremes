@@ -36,6 +36,11 @@ def get_extremes(
                 coerce - get extreme values for blocks with no data
                     as mean of all other extreme events in the series
                     with index being the middle point of corresponding interval
+                min_last_block : float, optional
+                    Minimum data availability ratio (0 to 1) in the last block
+                    for it to be used to extract extreme value from.
+                    This is used to discard last block when it is too short.
+                    If None (default), last block is always used.
         if method is POT:
             threshold : float
                 Threshold used to find exceedances.

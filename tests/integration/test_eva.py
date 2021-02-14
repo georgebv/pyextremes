@@ -176,7 +176,7 @@ class TestEVA:
         assert eva_model.extremes_method == input_params["method"]
         assert eva_model.extremes_type == input_params["extremes_type"]
         if input_params["method"] == "BM":
-            assert len(eva_model.extremes_kwargs) == 2
+            assert len(eva_model.extremes_kwargs) == 3
             assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta(
                 "365.2425D"
             )

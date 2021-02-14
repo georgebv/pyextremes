@@ -114,7 +114,7 @@ def plot_extremes(
 
             # Plot block boundaries
             block_left_boundary = ts.index[0]
-            while block_left_boundary < ts.index.max() + block_size:
+            while block_left_boundary < extremes.index.max() + block_size:
                 ax.axvline(
                     block_left_boundary, ls="--", lw=0.5, color="#D1D3D4", zorder=5
                 )

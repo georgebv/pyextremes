@@ -439,6 +439,11 @@ class EVA:
                     coerce - get extreme values for blocks with no data
                         as mean of all other extreme events in the series
                         with index being the middle point of corresponding interval
+                    min_last_block : float, optional
+                        Minimum data availability ratio (0 to 1) in the last block
+                        for it to be used to extract extreme value from.
+                        This is used to discard last block when it is too short.
+                        If None (default), last block is always used.
             if method is POT:
                 threshold : float
                     Threshold used to find exceedances.
@@ -456,18 +461,25 @@ class EVA:
         self.__extremes_type = extremes_type
         logger.info("successfully extracted extreme values %s" % message)
 
-        logger.debug("collecting extreme value properties ")
+        logger.debug("collecting extreme value properties")
         self.__extremes_kwargs = {}
         if method == "BM":
             self.__extremes_kwargs["block_size"] = pd.to_timedelta(
-                kwargs.get("block_size", "365.2425D")
+                kwargs.pop("block_size", "365.2425D")
             )
-            self.__extremes_kwargs["errors"] = kwargs.get("errors", "raise")
+            self.__extremes_kwargs["errors"] = kwargs.pop("errors", "raise")
+            self.__extremes_kwargs["min_last_block"] = kwargs.pop(
+                "min_last_block", None
+            )
         elif method == "POT":
-            self.__extremes_kwargs["threshold"] = kwargs["threshold"]
-            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24H"))
+            self.__extremes_kwargs["threshold"] = kwargs.pop("threshold")
+            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.pop("r", "24H"))
         else:
             raise AssertionError
+        if len(kwargs) != 0:
+            raise TypeError(
+                f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
+            )
         logger.info("successfully collected extreme value properties")
 
         logger.debug("creating extremes transformer")
