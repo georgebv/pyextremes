@@ -207,9 +207,9 @@ class EVA:
         def align_text(label: str, value: str, position: str) -> str:
             if label == "":
                 if position == "left":
-                    return f"{value:>{lwidth:d}}"
+                    return f"{value:>{lwidth}}"
                 elif position == "right":
-                    return f"{value:>{rwidth:d}}"
+                    return f"{value:>{rwidth}}"
                 else:
                     raise AssertionError
 
@@ -234,13 +234,13 @@ class EVA:
             aligned_text = []
             for i, chunk in enumerate(value_chunks):
                 if i == 0:
-                    aligned_text.append(f"{label}: {chunk:>{free_width:d}}")
+                    aligned_text.append(f"{label}: {chunk:>{free_width}}")
                 else:
                     aligned_text.append(
                         "".join(
                             [
                                 " " * label_width,
-                                f"{chunk:>{free_width:d}}",
+                                f"{chunk:>{free_width}}",
                             ]
                         )
                     )
@@ -610,18 +610,19 @@ class EVA:
 
             # Fit MLE model for candidate distributions
             # and select distribution with smallest AIC
-            candidate_models = {
-                distribution_name: MLE(
+            distribution = None
+            aic = np.inf
+            for distribution_name in candidate_distributions:
+                new_aic = MLE(
                     extremes=self.extremes_transformer.transformed_extremes,
                     distribution=distribution_name,
                     distribution_kwargs=_distribution_kwargs,
                 ).AIC
-                for distribution_name in candidate_distributions
-            }
-            distribution = min(candidate_models, key=candidate_models.get)
+                if new_aic < aic:
+                    distribution = distribution_name
+                    aic = new_aic
             logger.info(
-                "selected '%s' distribution with AIC score %s"
-                % (distribution, candidate_models[distribution])
+                "selected '%s' distribution with AIC score %s" % (distribution, aic)
             )
 
         # Get distribution name

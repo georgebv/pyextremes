@@ -1,5 +1,5 @@
-<p align="center">
-  <a href="https://github.com/georgebv/pyextremes"><img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/diagnostic.png" alt="pyextremes" width="50%"></a>
+<p align="center" style="font-size:40px; margin:0px 10px 0px 10px">
+    <em>pyextremes</em>
 </p>
 <p align="center">
     <em>Extreme Value Analysis (EVA) in Python</em>
