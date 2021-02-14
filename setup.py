@@ -6,7 +6,7 @@ here = pathlib.Path(__file__).parent.resolve()
 
 
 def get_long_description():
-    with open(here / "README.rst", encoding="utf-8", mode="r") as file:
+    with open(here / "README.md", encoding="utf-8", mode="r") as file:
         return file.read()
 
 
@@ -23,7 +23,7 @@ setuptools.setup(
     version=get_version(),
     description="Extreme Value Analysis (EVA) in Python",
     long_description=get_long_description(),
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     author="Georgii Bocharov",
     author_email="bocharovgeorgii@gmail.com",
     url="https://github.com/georgebv/pyextremes",
