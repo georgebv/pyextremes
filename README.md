@@ -21,8 +21,6 @@
 
 # About
 
-**Version:** 2.0.1
-
 **Documentation:** https://georgebv.github.io/pyextremes/
 
 **License:** [MIT](https://opensource.org/licenses/MIT)
