@@ -1,4 +1,4 @@
-<p align="center" style="font-size:40px; margin:0px 10px 0px 10px">
+<p align="center" style="font-size:50px; margin:-20px 10px -20px 10px">
     <em>pyextremes</em>
 </p>
 <p align="center">
@@ -21,14 +21,14 @@
 
 ---
 
-**pyextremes** is a Python library aimed at performing univariate and multivariate
+pyextremes is a Python library aimed at performing univariate and multivariate
 [Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
 
 ---
 
 ## Features
 
-**pyextremes** provides tools necessary to perform a wide range of tasks required to
+pyextremes provides tools necessary to perform a wide range of tasks required to
 perform EVA, such as:
 
 - extraction of extreme events from time series using methods such as
@@ -41,7 +41,7 @@ continous distributions to the extracted extreme events
 - tools assisting with model selection and tuning, such as selection of
 block size in BM and threshold in POT
 
-Framework provided by the **pyextremes** library is easy to use and requires
+Framework provided by the pyextremes library is easy to use and requires
 minimum user input to get production-ready results.
 Its default parameters are configured in compliance with best industry standards
 and underlying models are heavily based in the Extreme Value theory.
@@ -65,8 +65,6 @@ package by Dan Foreman-Mackey
 
 ## Installation
 
-### pip
-
 Get latest version from PyPI:
 
 ```shell
@@ -79,7 +77,7 @@ Get latest experimental build from GitHub:
 pip install git+https://github.com/georgebv/pyextremes
 ```
 
-### Anaconda
+For Anaconda Python distributions:
 
 ```shell
 conda install -c conda-forge pyextremes
@@ -100,7 +98,7 @@ conda install -c conda-forge pyextremes
 
 ### Read data
 
-Every **pyextremes** model starts with a `pandas.Series`
+Every pyextremes model starts with a `pandas.Series`
 (see [pandas documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html)) object,
 which contains timeseries of data you want to analyze.
 This example is based on water level data for "The Battery" station located in New York.
@@ -134,38 +132,38 @@ by the user. This may include removal of data gaps, detrending, interpolation,
 removal of outliers, etc.
 Let's clean up the data:
 
-```python linenums="9"
-series = (
-    series
-    .sort_index(ascending=True)
-    .astype(float)
-    .dropna()
-)
-series = series.loc[pd.to_datetime("1925"):]
-series = series - (series.index.array - pd.to_datetime("1992")) / pd.to_timedelta("365.2425D") * 2.87e-3
-```
+
+=== "Code"
+
+    ```python linenums="9"
+    series = (
+        series
+        .sort_index(ascending=True)
+        .astype(float)
+        .dropna()
+    )
+    series = series.loc[pd.to_datetime("1925"):]
+    series = series - (series.index.array - pd.to_datetime("1992")) / pd.to_timedelta("365.2425D") * 2.87e-3
+    ```
+
+=== "When printed"
+
+    ```python
+    print(series.head())
+    ```
+
+    ```
+    Date-Time (GMT)
+    1926-11-20 05:00:00   -0.411120
+    1926-11-20 06:00:00   -0.777120
+    1926-11-20 07:00:00   -1.051120
+    1926-11-20 08:00:00   -1.051121
+    1926-11-20 09:00:00   -0.808121
+    Name: Water Elevation [m NAVD88], dtype: float64
+    ```
 
 ??? note 
     See [this tutorial](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb) for more information on why these specific operations were done.
-
-
-This is how `series` looks like in Python terminal:
-
-```python
-print(series.head())
-```
-
-Result:
-
-```
-Date-Time (GMT)
-1926-11-20 05:00:00   -0.411120
-1926-11-20 06:00:00   -0.777120
-1926-11-20 07:00:00   -1.051120
-1926-11-20 08:00:00   -1.051121
-1926-11-20 09:00:00   -0.808121
-Name: Water Elevation [m NAVD88], dtype: float64
-```
 
 ---
 
@@ -191,27 +189,31 @@ timeseries. This is done by using the `get_extremes` method of the `EVA` class.
 In this example extremes will be extracted using the BM `method` and 1-year
 `block_size`, which give us annual maxima series.
 
-```python linenums="20"
-model.get_extremes(method="BM", block_size="365.2425D")
-```
+=== "Code"
 
-View timeseries of the extracted extremes:
+    ```python linenums="20"
+    model.get_extremes(method="BM", block_size="365.2425D")
+    ```
 
-```python
-print(model.extremes.head())
-```
+=== "When printed"
 
-```
-Date-Time (GMT)
-1927-02-20 16:00:00    1.670154
-1927-12-05 10:00:00    1.432893
-1929-04-16 19:00:00    1.409977
-1930-08-23 01:00:00    1.202101
-1931-03-08 17:00:00    1.529547
-Name: Water Elevation [m NAVD88], dtype: float64
-```
+    ```python
+    print(model.extremes.head())
+    ```
 
-Visualize the extremes:
+    ```
+    Date-Time (GMT)
+    1927-02-20 16:00:00    1.670154
+    1927-12-05 10:00:00    1.432893
+    1929-04-16 19:00:00    1.409977
+    1930-08-23 01:00:00    1.202101
+    1931-03-08 17:00:00    1.529547
+    Name: Water Elevation [m NAVD88], dtype: float64
+    ```
+
+---
+
+### Visualize extreme events
 
 ```python
 model.plot_extremes()

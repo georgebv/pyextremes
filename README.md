@@ -29,8 +29,7 @@
 
 **pyextremes** is a Python library aimed at performing univariate and multivariate
 [Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
-
-**pyextremes** provides tools necessary to perform a wide range of tasks required to
+It provides tools necessary to perform a wide range of tasks required to
 perform EVA, such as:
 
 - extraction of extreme events from time series using methods such as

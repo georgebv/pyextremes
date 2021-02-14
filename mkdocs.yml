@@ -6,7 +6,7 @@ site_description: Extreme Value Analysis (EVA) in Python
 site_author: Georgii Bocharov
 
 nav:
-  - pyextremes: index.md
+  - Introduction: index.md
 
 theme:
   name: material
@@ -32,6 +32,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.details
   - pymdownx.snippets
+  - pymdownx.tabbed
   - abbr
   - admonition
   - attr_list
