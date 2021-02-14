@@ -66,7 +66,9 @@ class Distribution:
                 f"invalid type in {type(distribution)} for the 'distribution' argument"
             )
         self.distribution.badvalue = -np.inf
-        logger.debug(f"instantiated continuous distribution '{self.distribution.name}'")
+        logger.debug(
+            "instantiated continuous distribution '%s'" % self.distribution.name
+        )
 
         # Get a list of distribution parameter names
         self.distribution_parameters = []
@@ -77,8 +79,8 @@ class Distribution:
         self.distribution_parameters.extend(["loc", "scale"])
         valid_kwargs = [f"f{parameter}" for parameter in self.distribution_parameters]
         logger.debug(
-            f"collected distribution parameters: "
-            f"{', '.join(self.distribution_parameters)}"
+            "collected distribution parameters: %s"
+            % ", ".join(self.distribution_parameters)
         )
 
         # Collect fixed parameters
@@ -112,7 +114,7 @@ class Distribution:
             [f"{key}={value}" for key, value in self.mle_parameters.items()]
         )
         logger.debug(
-            f"calculated free distribution parameters in: {free_parameters_mle}"
+            "calculated free distribution parameters in: %s" % free_parameters_mle
         )
 
     def fit(self, data: np.ndarray) -> dict:
@@ -238,7 +240,7 @@ class Distribution:
             Array with initial positions of the ensemble sampler walkers.
 
         """
-        logger.debug(f"getting initial positions for {n_walkers} walkers")
+        logger.debug("getting initial positions for %s walkers" % n_walkers)
         mle_parameters = [self.mle_parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(
             loc=mle_parameters, scale=0.01, size=(n_walkers, self.number_of_parameters)

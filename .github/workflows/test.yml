@@ -75,7 +75,7 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint ./src/pyextremes --fail-under=8 --max-line-length=88 --disable=C0103,C0114,C0015,C0302,E0401
+          pylint ./src/pyextremes --fail-under=8 --max-line-length=88 --disable=C0103,C0114,C0115,C0116,C0302,E0401
 
   lint-flake8:
     name: Lint Python code using flake8

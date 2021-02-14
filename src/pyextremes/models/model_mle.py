@@ -61,8 +61,8 @@ class MLE(AbstractModelBaseClass):
             )
         self._fit_parameters = self.distribution.mle_parameters
         logger.debug(
-            f"fit {self.distribution.name} distribution "
-            f"with parameters {self.distribution.mle_parameters}"
+            "fit %s distribution with parameters %s"
+            % (self.distribution.name, self.distribution.mle_parameters)
         )
 
     def get_return_value(
@@ -141,7 +141,8 @@ class MLE(AbstractModelBaseClass):
                 # Try to fetch pre-calculated values from cache
                 rv, cil, ciu = self.return_value_cache[key]
                 logger.debug(
-                    f"fetched return value for {key} from cache as {(rv, cil, ciu)}"
+                    "fetched return value for %s from cache as (%s, %s, %s)"
+                    % (key, rv, cil, ciu)
                 )
             except KeyError:
                 # Value not in cache - calculate new return value
@@ -166,7 +167,10 @@ class MLE(AbstractModelBaseClass):
 
                 # Add calculated return value and intervals to cache
                 self.return_value_cache[key] = (rv, cil, ciu)
-                logger.debug(f"calculated return value for {key} as {(rv, cil, ciu)}")
+                logger.debug(
+                    "calculated return value for %s as (%s, %s, %s)"
+                    % (key, rv, cil, ciu)
+                )
 
             return_value[i] = rv
             ci_lower[i] = cil
@@ -195,7 +199,9 @@ class MLE(AbstractModelBaseClass):
                     seed = _seed
                     self.seed_cache.add(_seed)
 
-            logger.debug(f"calculating {n} additional fit parameters using single core")
+            logger.debug(
+                "calculating %d additional fit parameters using single core" % n
+            )
             new_fit_parameters = get_fit_parameters(
                 params=(
                     n,
@@ -231,8 +237,8 @@ class MLE(AbstractModelBaseClass):
 
             # Calculate new fit parameters using processor pool
             logger.debug(
-                f"calculating {n} additional fit parameters using {n_cores} cores "
-                f"having {core_samples} samples accordingly"
+                "calculating %d additional fit parameters using %d cores "
+                "having %s samples accordingly" % (n, n_cores, core_samples)
             )
             with multiprocessing.Pool(processes=n_cores) as pool:
                 new_fit_parameters = list(
@@ -251,7 +257,7 @@ class MLE(AbstractModelBaseClass):
                 )
 
         # Extend fit parameter cache
-        logger.debug(f"extending fit parameter cache with {n} new entries")
+        logger.debug("extending fit parameter cache with %d new entries" % n)
         self.fit_parameter_cache.extend(new_fit_parameters)
         return None
 

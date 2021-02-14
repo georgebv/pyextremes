@@ -44,8 +44,8 @@ def get_extremes_block_maxima(
 
     """
     logger.debug(
-        f"collecting block maxima extreme events using extremes_type={extremes_type}, "
-        f"block_size={block_size}, errors={errors}"
+        "collecting block maxima extreme events using extremes_type=%s, "
+        "block_size=%s, errors=%s" % (extremes_type, block_size, errors)
     )
 
     # Get extreme value extraction function
@@ -88,13 +88,15 @@ def get_extremes_block_maxima(
             empty_intervals += 1
             if errors == "coerce":
                 logger.debug(
-                    f"coerced no-data block in [{interval.left} ; {interval.right})"
+                    "coerced no-data block in [%s ; %s)"
+                    % (interval.left, interval.right)
                 )
                 extreme_indices.append(interval.mid)
                 extreme_values.append(np.nan)
             elif errors == "ignore":
                 logger.debug(
-                    f"ignored no-data block in [{interval.left} ; {interval.right})"
+                    "ignored no-data block in [%s ; %s)"
+                    % (interval.left, interval.right)
                 )
             elif errors == "raise":
                 raise ValueError(
@@ -114,8 +116,8 @@ def get_extremes_block_maxima(
         )
 
     logger.info(
-        f"successfully collected {len(extreme_values)} extreme events, "
-        f"found {empty_intervals} no-data blocks"
+        "successfully collected %d extreme events, found %s no-data blocks"
+        % (len(extreme_values), empty_intervals)
     )
 
     return pd.Series(

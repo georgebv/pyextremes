@@ -120,8 +120,8 @@ class EVA:
         self.__model: typing.Optional[typing.Union[MLE, Emcee]] = None
 
         logger.info(
-            f"successfully initialized EVA object "
-            f"with data of length {len(self.data):,d}"
+            "successfully initialized EVA object with data of length %d"
+            % len(self.data)
         )
 
     @property
@@ -448,13 +448,13 @@ class EVA:
 
         """
         message = f"for method='{method}' and extremes_type='{extremes_type}'"
-        logger.debug(f"extracting extreme values {message}")
+        logger.debug("extracting extreme values %s" % message)
         self.__extremes = get_extremes(
             method=method, ts=self.data, extremes_type=extremes_type, **kwargs
         )
         self.__extremes_method = method
         self.__extremes_type = extremes_type
-        logger.info(f"successfully extracted extreme values {message}")
+        logger.info("successfully extracted extreme values %s" % message)
 
         logger.debug("collecting extreme value properties ")
         self.__extremes_kwargs = {}
@@ -577,8 +577,8 @@ class EVA:
         # Select default distribution
         if distribution is None:
             logger.debug(
-                f"selecting default distribution for extremes extracted using the "
-                f"'{self.extremes_method}' method"
+                "selecting default distribution for extremes extracted using the "
+                "'%s' method" % self.extremes_method
             )
 
             # Prepare list of candidate distributions
@@ -608,8 +608,8 @@ class EVA:
             }
             distribution = min(candidate_models, key=candidate_models.get)
             logger.info(
-                f"selected '{distribution}' distribution "
-                f"with AIC score {candidate_models[distribution]}"
+                "selected '%s' distribution with AIC score %s"
+                % (distribution, candidate_models[distribution])
             )
 
         # Get distribution name
@@ -671,8 +671,8 @@ class EVA:
                 )
             }
             logger.debug(
-                f"freezing location parameter (floc) at {distribution_kwargs['floc']} "
-                f"for '{distribution_name}' distribution"
+                "freezing location parameter (floc) at %s for '%s' distribution"
+                % (distribution_kwargs["floc"], distribution_name)
             )
 
         # Fit model to transformed extremes

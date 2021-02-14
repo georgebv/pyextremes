@@ -124,7 +124,7 @@ class TestEVA:
         # Ensure that 'data' attribute is properly processed
         assert isinstance(eva_model.data, pd.Series)
         assert np.issubdtype(eva_model.data.dtype, np.number)
-        assert eva_model.data.index.is_all_dates
+        assert isinstance(eva_model.data.index, pd.DatetimeIndex)
         assert eva_model.data.index.is_monotonic_increasing
         assert eva_model.data.isna().sum() == 0
 

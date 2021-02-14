@@ -63,8 +63,8 @@ class Emcee(AbstractModelBaseClass):
 
         # Run the ensemble sampler
         logger.debug(
-            f"running ensemble sampler with {n_walkers} walkers "
-            f"and {n_samples} samples"
+            "running ensemble sampler with %d walkers and %d samples"
+            % (n_walkers, n_samples)
         )
         with warnings.catch_warnings():
             warnings.simplefilter(action="ignore", category=RuntimeWarning)
@@ -74,8 +74,8 @@ class Emcee(AbstractModelBaseClass):
                 progress=progress,
             )
         logger.info(
-            f"finished run for ensemble sampler with {n_walkers} walkers "
-            f"and {n_samples} samples"
+            "finished run for ensemble sampler with %d walkers and %d samples"
+            % (n_walkers, n_samples)
         )
 
         # Extract ensemble sampler chain
@@ -179,7 +179,8 @@ class Emcee(AbstractModelBaseClass):
                 # Try to fetch pre-calculated values from cache
                 rv, cil, ciu = self.return_value_cache[key]
                 logger.debug(
-                    f"fetched return value for {key} from cache as {(rv, cil, ciu)}"
+                    "fetched return value for %s from cache as (%s, %s, %s)"
+                    % (key, rv, cil, ciu)
                 )
             except KeyError:
                 # Value not in cache - calculate new return value
@@ -206,7 +207,10 @@ class Emcee(AbstractModelBaseClass):
 
                 # Add calculated return value and intervals to cache
                 self.return_value_cache[key] = (rv, cil, ciu)
-                logger.debug(f"calculated return value for {key} as {(rv, cil, ciu)}")
+                logger.debug(
+                    "calculated return value for %s as (%s, %s, %s)"
+                    % (key, rv, cil, ciu)
+                )
 
             return_value[i] = rv
             ci_lower[i] = cil

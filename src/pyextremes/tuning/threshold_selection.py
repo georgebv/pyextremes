@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats
+
 from pyextremes import EVA
 from pyextremes.extremes import ExtremesTransformer, get_extremes
 from pyextremes.plotting import pyextremes_rc
