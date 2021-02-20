@@ -37,7 +37,7 @@ markdown_extensions:
   - admonition
   - attr_list
 
-google-analytics:
+google_analytics:
   - UA-190210487-1
   - auto
 
