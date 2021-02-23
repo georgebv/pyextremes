@@ -439,11 +439,11 @@ class EVA:
                     coerce - get extreme values for blocks with no data
                         as mean of all other extreme events in the series
                         with index being the middle point of corresponding interval
-                    min_last_block : float, optional
-                        Minimum data availability ratio (0 to 1) in the last block
-                        for it to be used to extract extreme value from.
-                        This is used to discard last block when it is too short.
-                        If None (default), last block is always used.
+                min_last_block : float, optional
+                    Minimum data availability ratio (0 to 1) in the last block
+                    for it to be used to extract extreme value from.
+                    This is used to discard last block when it is too short.
+                    If None (default), last block is always used.
             if method is POT:
                 threshold : float
                     Threshold used to find exceedances.
@@ -491,6 +491,98 @@ class EVA:
 
         logger.info("removing any previously declared models")
         self.__model = None
+
+    def set_extremes(self, extremes: pd.Series, **kwargs) -> None:
+        """
+        Set extreme values.
+
+        This method is used to set extreme values onto the model instead
+        of derivign them from data directly using the 'get_extremes' method.
+        A typical use case of this is when full time series is not available
+        and only the extracted extremes (i.e. annual maxima) are known.
+        Alternatively, this method can be used to set extremes
+        customly made by the user using a methodology not presented herein.
+
+        Parameters
+        ----------
+        extremes : pd.Series
+            Time series of extreme values to be set onto the model.
+            Must be numeric, have date-time index, and have the same name
+            as self.data.
+
+        """
+        # Validate `extremes`
+        logger.debug("validating `extremes`")
+        if not isinstance(extremes, pd.Series):
+            raise TypeError("invalid `extremes` type")
+        if not isinstance(extremes.index, pd.DatetimeIndex):
+            raise TypeError("invalid index type for `extremes`")
+        if not np.issubdtype(extremes.dtype, np.number):
+            raise TypeError("`extremes` must have numeric values")
+        if extremes.name != self.data.name:
+            raise ValueError("`extremes` name doesn't match that of `data`")
+
+        # Get `method`
+        method: str = kwargs.pop("method", "BM")
+        if method not in ["BM", "POT"]:
+            raise ValueError(f"`method` must be either 'BM' or 'POT', not '{method}'")
+
+        # Get `extremes_type`
+        extremes_type: str = kwargs.pop("extremes_type", "high")
+        if extremes_type not in ["high", "low"]:
+            raise ValueError(
+                f"`extremes_type` must be either 'BM' or 'POT', not '{extremes_type}'"
+            )
+
+        # Get `extremes_kwargs`
+        extremes_kwargs = {}
+        if method == "BM":
+            # Get `block_size`
+            extremes_kwargs["block_size"] = pd.to_timedelta(
+                kwargs.pop(
+                    "block_size",
+                    (extremes.index.max() - extremes.index.min()) / len(extremes),
+                )
+            )
+
+            # Get `errors`
+            extremes_kwargs["errors"] = kwargs.pop("errors", "ignore")
+            if extremes_kwargs["errors"] not in ["raise", "ignore", "coerce"]:
+                raise ValueError(
+                    f"invalid value in '{extremes_kwargs['errors']}' "
+                    f"for the 'errors' argument"
+                )
+
+            # Get `min_last_block`
+            extremes_kwargs["min_last_block"] = kwargs.pop("min_last_block", None)
+
+        elif method == "POT":
+            # Get `threshold`
+            extremes_kwargs["threshold"] = kwargs.pop("threshold", extremes.min())
+
+            # Get `r`
+            extremes_kwargs["r"] = pd.to_timedelta(kwargs.pop("r"), "24H")
+
+        else:
+            raise RuntimeError
+
+        # Check for unrecognized kwargs
+        if len(kwargs) != 0:
+            raise TypeError(
+                f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
+            )
+
+        # Set attributes
+        self.__extremes = extremes
+        self.__extremes_method = method
+        self.__extremes_type = extremes_type
+        self.__extremes_kwargs = extremes_kwargs
+        self.__extremes_transformer = ExtremesTransformer(
+            extremes=self.__extremes,
+            extremes_type=self.__extremes_type,
+        )
+        self.__model = None
+        logger.info("successfully set extremes")
 
     def plot_extremes(
         self,
