@@ -509,6 +509,38 @@ class EVA:
             Time series of extreme values to be set onto the model.
             Must be numeric, have date-time index, and have the same name
             as self.data.
+        kwargs:
+            method : str, optional
+                Extreme value extraction method.
+                Supported values:
+                    BM (default) - Block Maxima
+                    POT - Peaks Over Threshold
+            extremes_type : str, optional
+                high (default) - extreme high values
+                low - extreme low values
+            if method is BM:
+                block_size : str or pandas.Timedelta, optional
+                    Block size.
+                    By default is calculated as average distance between `extremes`.
+                errors : str, optional
+                    raise - raise an exception
+                        when encountering a block with no data
+                    ignore (default) - ignore blocks with no data
+                    coerce - get extreme values for blocks with no data
+                        as mean of all other extreme events in the series
+                        with index being the middle point of corresponding interval
+                min_last_block : float, optional
+                    Minimum data availability ratio (0 to 1) in the last block
+                    for it to be used to extract extreme value from.
+                    This is used to discard last block when it is too short.
+                    If None (default), last block is always used.
+            if method is POT:
+                threshold : float, optional
+                    Threshold used to find exceedances.
+                    By default is taken as smallest value.
+                r : str or pandas.Timedelta, optional
+                    Duration of window used to decluster the exceedances.
+                    By default r='24H' (24 hours).
 
         """
         # Validate `extremes`
