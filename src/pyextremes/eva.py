@@ -120,8 +120,8 @@ class EVA:
         self.__model: typing.Optional[typing.Union[MLE, Emcee]] = None
 
         logger.info(
-            "successfully initialized EVA object with data of length %d"
-            % len(self.data)
+            "successfully initialized EVA object with data of length %d",
+            len(self.data),
         )
 
     @property
@@ -179,7 +179,7 @@ class EVA:
     def AIC(self) -> float:
         return self.model.AIC
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         # Width of repr block
         width = 88
 
@@ -497,11 +497,8 @@ class EVA:
         Set extreme values.
 
         This method is used to set extreme values onto the model instead
-        of derivign them from data directly using the 'get_extremes' method.
-        A typical use case of this is when full time series is not available
-        and only the extracted extremes (i.e. annual maxima) are known.
-        Alternatively, this method can be used to set extremes
-        customly made by the user using a methodology not presented herein.
+        of deriving them from data directly using the 'get_extremes' method.
+        This way a user can set extremes calculated using a custom methodology.
 
         Parameters
         ----------
@@ -615,6 +612,31 @@ class EVA:
         )
         self.__model = None
         logger.info("successfully set extremes")
+
+    @classmethod
+    def from_extremes(cls, extremes: pd.Series, **kwargs):
+        """
+        Create an EVA model using pre-defined `extremes`.
+
+        A typical reason to use this method is when full timeseries is not available
+        and only the extracted extremes (i.e. annual maxima) are known.
+
+        Parameters
+        ----------
+        extremes : pd.Series
+            Time series of extreme values.
+        kwargs:
+            See '.set_extremes' method documentation.
+
+        Returns
+        -------
+        EVA
+            EVA model initialized with `extremes`.
+
+        """
+        model = cls(data=extremes)
+        model.set_extremes(extremes=extremes, **kwargs)
+        return model
 
     def plot_extremes(
         self,

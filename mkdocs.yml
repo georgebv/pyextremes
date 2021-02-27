@@ -43,5 +43,3 @@ google_analytics:
 
 plugins:
   - search
-
-prebuild_index: true

@@ -10,6 +10,7 @@ exclude_lines =
     raise AssertionError
     raise NotImplementedError
     if __name__ == .__main__.:
+    def __repr__
 fail_under = 90.0
 precision = 1
 skip_empty = True
