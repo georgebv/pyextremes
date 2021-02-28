@@ -55,10 +55,8 @@ def plot_return_values(
 
     # Validate the 'modeled_return_values' argument
     if len(modeled_return_values.columns) < 3 or any(
-        [
-            col not in modeled_return_values.columns
-            for col in ["return value", "lower ci", "upper ci"]
-        ]
+        col not in modeled_return_values.columns
+        for col in ["return value", "lower ci", "upper ci"]
     ):
         raise ValueError(
             f"'modeled_return_values' argument "

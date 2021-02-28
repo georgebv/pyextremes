@@ -445,10 +445,9 @@ def plot_return_value_stability(
     thresholds=None,
     r: typing.Union[str, pd.Timedelta] = "24H",
     extremes_type: str = "high",
-    distributions: typing.List[typing.Union[str, scipy.stats.rv_continuous]] = [
-        "genpareto",
-        "expon",
-    ],
+    distributions: typing.Optional[
+        typing.List[typing.Union[str, scipy.stats.rv_continuous]]
+    ] = None,
     alpha: typing.Optional[float] = None,
     n_samples: int = 100,
     figsize: tuple = (8, 5),
@@ -510,13 +509,20 @@ def plot_return_value_stability(
         Axes object.
 
     """
-    # Get default thresholds
+    # Get default `thresholds`
     if thresholds is None:
         thresholds = get_default_thresholds(
             ts=ts,
             extremes_type=extremes_type,
             num=100,
         )
+
+    # Get default `distributions`
+    if distributions is None:
+        distributions = [
+            "genpareto",
+            "expon",
+        ]
 
     # Instantiate model
     model = EVA(data=ts)

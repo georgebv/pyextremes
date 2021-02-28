@@ -778,7 +778,8 @@ class EVA:
         if distribution is None:
             logger.debug(
                 "selecting default distribution for extremes extracted using the "
-                "'%s' method" % self.extremes_method
+                "'%s' method",
+                self.extremes_method,
             )
 
             # Prepare list of candidate distributions
@@ -810,7 +811,9 @@ class EVA:
                     distribution = distribution_name
                     aic = new_aic
             logger.info(
-                "selected '%s' distribution with AIC score %s" % (distribution, aic)
+                "selected '%s' distribution with AIC score %s",
+                distribution,
+                aic,
             )
 
         # Get distribution name
@@ -872,8 +875,9 @@ class EVA:
                 )
             }
             logger.debug(
-                "freezing location parameter (floc) at %s for '%s' distribution"
-                % (distribution_kwargs["floc"], distribution_name)
+                "freezing location parameter (floc) at %s for '%s' distribution",
+                distribution_kwargs["floc"],
+                distribution_name,
             )
 
         # Fit model to transformed extremes
