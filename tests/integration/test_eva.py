@@ -77,11 +77,11 @@ def eva_model_pot_mle(battery_wl_preprocessed) -> EVA:
 class TestEVA:
     def test_init_errors(self):
         with pytest.raises(
-            TypeError, match=r"invalid type.*'data' argument.*pandas.Series"
+            TypeError, match=r"invalid type.*`data` argument.*pandas.Series"
         ):
             EVA(data=1)
 
-        with pytest.warns(RuntimeWarning, match=r"'data'.*not numeric.*converted"):
+        with pytest.warns(RuntimeWarning, match=r"`data`.*not numeric.*converting"):
             eva_model = EVA(
                 data=pd.Series(
                     data=["1", "2", "3"],
@@ -90,7 +90,7 @@ class TestEVA:
             )
             assert np.allclose(eva_model.data.values, [1, 2, 3])
 
-        with pytest.raises(TypeError, match=r"invalid dtype.*'data' argument.*numeric"):
+        with pytest.raises(TypeError, match=r"invalid dtype.*`data` argument.*numeric"):
             EVA(
                 data=pd.Series(
                     data=["a", "b", "c"],
@@ -98,7 +98,7 @@ class TestEVA:
                 )
             )
 
-        with pytest.raises(TypeError, match=r"index of 'data'.*date-time.*not"):
+        with pytest.raises(TypeError, match=r"index of `data`.*date-time.*not"):
             EVA(data=pd.Series(data=[1, 2, 3], index=["2020", "2021", "2022"]))
 
         with pytest.warns(RuntimeWarning, match=r"index is not sorted.*sorting"):
@@ -187,6 +187,158 @@ class TestEVA:
             assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
         with pytest.raises(AttributeError, match=r"model must first"):
             eva_model.model
+
+    def test_set_extremes_errors(self):
+        eva_model = EVA(
+            data=pd.Series(
+                data=np.arange(100),
+                index=pd.date_range(start="2000", end="2050", periods=100),
+                name="water level [m]",
+            )
+        )
+
+        # Test invalid `extremes`
+        with pytest.raises(TypeError, match=r"invalid type.*must be pandas.Series"):
+            eva_model.set_extremes([1, 2, 3])
+        with pytest.raises(TypeError, match=r"invalid index.*must be date-time"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=[1, 2, 3],
+                )
+            )
+        with pytest.raises(TypeError, match=r"`extremes` must have numeric values"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=["a", "b", "c"],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                )
+            )
+        with pytest.raises(ValueError, match="name doesn't match"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name="different name",
+                )
+            )
+        with pytest.raises(ValueError, match=".+time range must fit within.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["1990", "2021", "2022"]),
+                )
+            )
+
+        # Test invalid general kwargs
+        with pytest.raises(ValueError, match=r"`method` must be either.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="wrong method",
+            )
+        with pytest.raises(ValueError, match=r"`extremes_type` must be either.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="BM",
+                extremes_type="wrong type",
+            )
+
+        # Test invalid BM kwargs
+        with pytest.raises(ValueError, match=r"`block_size` must be a positive.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="BM",
+                extremes_type="high",
+                block_size="-1D",
+            )
+        with pytest.raises(ValueError, match=r"invalid value.+`errors` argument"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="BM",
+                extremes_type="high",
+                errors="wrong errors",
+            )
+        with pytest.raises(ValueError, match=r"`min_last_block` must be a number.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="BM",
+                extremes_type="high",
+                min_last_block=2.0,
+            )
+
+        # Test invalid POT kwargs
+        with pytest.raises(ValueError, match=r"invalid `threshold` value"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="POT",
+                extremes_type="high",
+                threshold=2,
+            )
+        with pytest.raises(ValueError, match=r"`r` must be a positive.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="POT",
+                extremes_type="high",
+                r="-1D",
+            )
+
+        # Test unrecognized arguments
+        with pytest.raises(TypeError, match=r"unrecognized arguments.+"):
+            eva_model.set_extremes(
+                pd.Series(
+                    data=[1, 2, 3],
+                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    name=eva_model.data.name,
+                ),
+                method="BM",
+                extremes_type="high",
+                unrecognized_argument=1,
+            )
+
+    def test_from_extremes(self):
+        eva_model = EVA.from_extremes(
+            extremes=pd.Series(
+                data=np.arange(100),
+                index=pd.date_range(start="2000", end="2050", periods=100),
+                name="water level [m]",
+            ),
+            method="BM",
+            extremes_type="high",
+            block_size="365D",
+        )
+        assert eva_model.extremes_method == "BM"
+        assert eva_model.extremes_type == "high"
+        assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta("365D")
+        assert eva_model.extremes_kwargs["errors"] == "ignore"
+        assert eva_model.extremes_kwargs["min_last_block"] is None
 
     @pytest.mark.parametrize(
         "extremes_params",

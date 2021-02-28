@@ -37,7 +37,10 @@ def get_extremes_peaks_over_threshold(
     """
     logger.debug(
         "collecting peaks-over-threshold extreme events using "
-        "extremes_type=%s, threshold=%s, r=%s" % (extremes_type, threshold, r)
+        "extremes_type=%s, threshold=%s, r=%s",
+        extremes_type,
+        threshold,
+        r,
     )
 
     # Get extreme value extraction function
@@ -73,7 +76,10 @@ def get_extremes_peaks_over_threshold(
                 extreme_indices[-1] = index
                 extreme_values[-1] = value
 
-    logger.info("successfully collected %s extreme events" % len(extreme_values))
+    logger.debug(
+        "successfully collected %s extreme events",
+        len(extreme_values),
+    )
     return pd.Series(
         data=extreme_values,
         index=pd.Index(data=extreme_indices, name=ts.index.name or "date-time"),

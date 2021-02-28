@@ -51,7 +51,10 @@ def get_extremes_block_maxima(
     """
     logger.debug(
         "collecting block maxima extreme events using extremes_type=%s, "
-        "block_size=%s, errors=%s" % (extremes_type, block_size, errors)
+        "block_size=%s, errors=%s",
+        extremes_type,
+        block_size,
+        errors,
     )
 
     # Get extreme value extraction function
@@ -70,7 +73,8 @@ def get_extremes_block_maxima(
             block_size = pd.to_timedelta(block_size)
         else:
             raise TypeError(
-                f"invalid type in {type(block_size)} for the 'block_size' argument"
+                f"invalid type in {type(block_size).__name__} "
+                f"for the 'block_size' argument"
             )
 
     # Prepare date-time intervals
@@ -94,15 +98,17 @@ def get_extremes_block_maxima(
             empty_intervals += 1
             if errors == "coerce":
                 logger.debug(
-                    "coerced no-data block in [%s ; %s)"
-                    % (interval.left, interval.right)
+                    "coerced no-data block in [%s ; %s)",
+                    interval.left,
+                    interval.right,
                 )
                 extreme_indices.append(interval.mid)
                 extreme_values.append(np.nan)
             elif errors == "ignore":
                 logger.debug(
-                    "ignored no-data block in [%s ; %s)"
-                    % (interval.left, interval.right)
+                    "ignored no-data block in [%s ; %s)",
+                    interval.left,
+                    interval.right,
                 )
             elif errors == "raise":
                 raise ValueError(
@@ -120,7 +126,8 @@ def get_extremes_block_maxima(
         ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
         if ratio < min_last_block:
             logger.debug(
-                "discarded last block with data availability ratio of %s" % ratio
+                "discarded last block with data availability ratio of %s",
+                ratio,
             )
             extreme_indices = extreme_indices[:-1]
             extreme_values = extreme_values[:-1]
@@ -131,9 +138,10 @@ def get_extremes_block_maxima(
             category=NoDataBlockWarning,
         )
 
-    logger.info(
-        "successfully collected %d extreme events, found %s no-data blocks"
-        % (len(extreme_values), empty_intervals)
+    logger.debug(
+        "successfully collected %d extreme events, found %s no-data blocks",
+        len(extreme_values),
+        empty_intervals,
     )
 
     return pd.Series(

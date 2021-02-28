@@ -47,7 +47,7 @@ class MLE(AbstractModelBaseClass):
         )
 
         # Initialize 'fit_parameter_cache' and 'seed_cache'
-        self.fit_parameter_cache: typing.List[tuple] = []
+        self.fit_parameter_cache: typing.List[typing.Tuple[float, ...]] = []
         self.seed_cache: typing.Set[int] = set()
 
     @property
@@ -61,8 +61,9 @@ class MLE(AbstractModelBaseClass):
             )
         self._fit_parameters = self.distribution.mle_parameters
         logger.debug(
-            "fit %s distribution with parameters %s"
-            % (self.distribution.name, self.distribution.mle_parameters)
+            "fit %s distribution with %s parameters",
+            self.distribution.name,
+            len(self._fit_parameters),
         )
 
     def get_return_value(
@@ -141,8 +142,11 @@ class MLE(AbstractModelBaseClass):
                 # Try to fetch pre-calculated values from cache
                 rv, cil, ciu = self.return_value_cache[key]
                 logger.debug(
-                    "fetched return value for %s from cache as (%s, %s, %s)"
-                    % (key, rv, cil, ciu)
+                    "fetched return value for %s from cache as (%s, %s, %s)",
+                    key,
+                    rv,
+                    cil,
+                    ciu,
                 )
             except KeyError:
                 # Value not in cache - calculate new return value
@@ -168,8 +172,11 @@ class MLE(AbstractModelBaseClass):
                 # Add calculated return value and intervals to cache
                 self.return_value_cache[key] = (rv, cil, ciu)
                 logger.debug(
-                    "calculated return value for %s as (%s, %s, %s)"
-                    % (key, rv, cil, ciu)
+                    "calculated return value for %s as (%s, %s, %s)",
+                    key,
+                    rv,
+                    cil,
+                    ciu,
                 )
 
             return_value[i] = rv
@@ -200,7 +207,8 @@ class MLE(AbstractModelBaseClass):
                     self.seed_cache.add(_seed)
 
             logger.debug(
-                "calculating %d additional fit parameters using single core" % n
+                "calculating %d additional fit parameters using single core",
+                n,
             )
             new_fit_parameters = get_fit_parameters(
                 params=(
@@ -238,7 +246,10 @@ class MLE(AbstractModelBaseClass):
             # Calculate new fit parameters using processor pool
             logger.debug(
                 "calculating %d additional fit parameters using %d cores "
-                "having %s samples accordingly" % (n, n_cores, core_samples)
+                "having %s samples accordingly",
+                n,
+                n_cores,
+                core_samples,
             )
             with multiprocessing.Pool(processes=n_cores) as pool:
                 new_fit_parameters = list(
@@ -257,7 +268,7 @@ class MLE(AbstractModelBaseClass):
                 )
 
         # Extend fit parameter cache
-        logger.debug("extending fit parameter cache with %d new entries" % n)
+        logger.debug("extending fit parameter cache with %d new entries", n)
         self.fit_parameter_cache.extend(new_fit_parameters)
         return None
 
