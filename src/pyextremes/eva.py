@@ -590,7 +590,7 @@ class EVA:
             extremes_kwargs["block_size"] = pd.to_timedelta(
                 kwargs.pop(
                     "block_size",
-                    (extremes.index.max() - extremes.index.min()) / len(extremes),
+                    (extremes.index.max() - extremes.index.min()) / (len(extremes) - 1),
                 )
             )
             if extremes_kwargs["block_size"] <= pd.to_timedelta("0D"):
