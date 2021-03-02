@@ -324,21 +324,51 @@ class TestEVA:
             )
 
     def test_from_extremes(self):
+        index = pd.date_range(start="2000", end="2050", periods=100)
+        eva_model = EVA.from_extremes(
+            extremes=pd.Series(
+                data=np.arange(100),
+                index=index,
+                name="water level [m]",
+            ),
+            method="BM",
+            extremes_type="high",
+        )
+        assert eva_model.extremes_method == "BM"
+        assert eva_model.extremes_type == "high"
+        assert eva_model.extremes_kwargs["errors"] == "ignore"
+        assert eva_model.extremes_kwargs["min_last_block"] is None
+        expected_block_size = (
+            ((index.max() - index.min()) / (len(index) - 1)).to_numpy().astype(float)
+        )
+        actual_block_size = (
+            eva_model.extremes_kwargs["block_size"].to_numpy().astype(float)
+        )
+        assert np.isclose(expected_block_size, actual_block_size, rtol=0, atol=1e-6)
+
+        # Test default POT arguments
         eva_model = EVA.from_extremes(
             extremes=pd.Series(
                 data=np.arange(100),
                 index=pd.date_range(start="2000", end="2050", periods=100),
                 name="water level [m]",
             ),
-            method="BM",
+            method="POT",
             extremes_type="high",
-            block_size="365D",
         )
-        assert eva_model.extremes_method == "BM"
-        assert eva_model.extremes_type == "high"
-        assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta("365D")
-        assert eva_model.extremes_kwargs["errors"] == "ignore"
-        assert eva_model.extremes_kwargs["min_last_block"] is None
+        assert np.isclose(eva_model.extremes_kwargs["threshold"], 0, rtol=0, atol=1e-6)
+        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
+        eva_model = EVA.from_extremes(
+            extremes=pd.Series(
+                data=np.arange(100),
+                index=pd.date_range(start="2000", end="2050", periods=100),
+                name="water level [m]",
+            ),
+            method="POT",
+            extremes_type="low",
+        )
+        assert np.isclose(eva_model.extremes_kwargs["threshold"], 99, rtol=0, atol=1e-6)
+        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
 
     @pytest.mark.parametrize(
         "extremes_params",

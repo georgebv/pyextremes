@@ -617,7 +617,13 @@ class EVA:
 
         elif method == "POT":
             # Get `threshold`
-            extremes_kwargs["threshold"] = kwargs.pop("threshold", extremes.min())
+            extremes_kwargs["threshold"] = kwargs.pop(
+                "threshold",
+                {
+                    "high": extremes.min(),
+                    "low": extremes.max(),
+                }[extremes_type],
+            )
             if (
                 extremes_type == "high"
                 and extremes_kwargs["threshold"] > extremes.values.min()
