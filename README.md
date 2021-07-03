@@ -5,8 +5,8 @@
     <em>Extreme Value Analysis (EVA) in Python</em>
 </p>
 <p align="center">
-<a href="https://github.com/georgebv/pyextremes/actions?query=workflow%3Abuild" target="_blank">
-    <img src="https://github.com/georgebv/pyextremes/workflows/build/badge.svg" alt="Test">
+<a href="https://github.com/georgebv/pyextremes/actions/workflows/test.yml" target="_blank">
+    <img src="https://github.com/georgebv/pyextremes/actions/workflows/test.yml/badge.svg" alt="Test">
 </a>
 <a href="https://codecov.io/gh/georgebv/pyextremes" target="_blank">
     <img src="https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg" alt="Coverage">
@@ -27,7 +27,7 @@
 
 **E-Mail:** bocharovgeorgii@gmail.com
 
-**pyextremes** is a Python library aimed at performing univariate and multivariate
+**pyextremes** is a Python library aimed at performing univariate
 [Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
 It provides tools necessary to perform a wide range of tasks required to
 perform EVA, such as:
