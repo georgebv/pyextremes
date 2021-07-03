@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def get_fit_parameters(params) -> typing.List[tuple]:
-    n, fit_function, extremes, fixed_parameters, seed = params
+    n, distribution, extremes, fixed_parameters, seed = params
     size = len(extremes)
     rng_generator = np.random.default_rng(seed=seed)
     sampler = rng_generator.choice
     return [
-        fit_function(
+        distribution.fit(
             data=sampler(a=extremes, size=size, replace=True),
             **fixed_parameters,
         )
@@ -192,7 +192,7 @@ class MLE(AbstractModelBaseClass):
     def _extend_fit_parameter_cache(self, n: int) -> None:
         # Prepare local variables used by fit parameter calculator
         extremes = self.extremes.values
-        fit_function = self.distribution.distribution.fit
+        distribution = self.distribution.distribution
         fixed_parameters = self.distribution.fixed_parameters
 
         min_samples_per_core = 50
@@ -213,7 +213,7 @@ class MLE(AbstractModelBaseClass):
             new_fit_parameters = get_fit_parameters(
                 params=(
                     n,
-                    fit_function,
+                    distribution,
                     extremes,
                     fixed_parameters,
                     seed,
@@ -258,7 +258,7 @@ class MLE(AbstractModelBaseClass):
                             get_fit_parameters,
                             zip(
                                 core_samples,
-                                [fit_function for _ in range(n_cores)],
+                                [distribution for _ in range(n_cores)],
                                 [extremes for _ in range(n_cores)],
                                 [fixed_parameters for _ in range(n_cores)],
                                 seeds,
