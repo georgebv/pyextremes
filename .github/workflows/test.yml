@@ -96,4 +96,4 @@ jobs:
 
       - name: Run flake8
         run: |
-          flake8 ./src/pyextremes --max-line-length=88 --ignore=E203,W503
+          flake8
