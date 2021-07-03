@@ -21,8 +21,8 @@
 
 ---
 
-pyextremes is a Python library aimed at performing univariate and multivariate
-[Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
+pyextremes is a Python library aimed at performing univariate
+[Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory)
 
 ---
 
@@ -219,7 +219,9 @@ In this example extremes will be extracted using the BM `method` and 1-year
 model.plot_extremes()
 ```
 
-![BM extremes](https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20extremes.png){: align=center }
+<figure>
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20extremes.png" alt="Block Maxima extremes"/>
+</figure>
 
 ---
 
@@ -298,7 +300,9 @@ One way to do that is by visually inspecting the model:
 model.plot_diagnostic(alpha=0.95)
 ```
 
-![Diagnostic plot](https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20diagnostic.png){: align=center }
+<figure>
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20diagnostic.png" alt="Diagnostic plot"/>
+</figure>
 
 ---
 

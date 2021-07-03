@@ -4,17 +4,36 @@ repo_name: georgebv/pyextremes
 edit_uri: ""
 site_description: Extreme Value Analysis (EVA) in Python
 site_author: Georgii Bocharov
+copyright: Copyright &copy; 2021 Georgii Bocharov
 
 nav:
   - Introduction: index.md
+  - Read First: read-first.md
 
 theme:
   name: material
   icon:
     repo: fontawesome/brands/github
   language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.top
 
 docs_dir: docs
+
+extra_css:
+  - css/extra.css
 
 extra:
   social:

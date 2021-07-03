@@ -3,4 +3,5 @@
 *[POT]: Peaks over Threshold
 *[GEVD]: Generalized Extreme Value Distribution
 *[GPD]: Generalized Pareto Distribution
-*[multivariate]: Currently work-in-progress
+*[MLE]: Maximum Likelihood Estimate
+*[MCMC]: Markov Chain Monte Carlo
