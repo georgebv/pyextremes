@@ -32,8 +32,9 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+          files: ./coverage.xml
           fail_ci_if_error: true
+          verbose: true
 
   lint-black:
     name: Lint Python code using black
@@ -75,7 +76,7 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint ./src/pyextremes --fail-under=8 --max-line-length=88 --disable=C0103,C0114,C0115,C0116,C0302,E0401
+          pylint ./src/pyextremes
 
   lint-flake8:
     name: Lint Python code using flake8
