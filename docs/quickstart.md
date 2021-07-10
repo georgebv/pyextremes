@@ -1,37 +1,4 @@
-## Installation
-
-Get latest version from PyPI:
-
-```shell
-pip install pyextremes
-```
-
-Get latest experimental build from GitHub:
-
-```shell
-pip install git+https://github.com/georgebv/pyextremes
-```
-
-For Anaconda Python distributions:
-
-```shell
-conda install -c conda-forge pyextremes
-```
-
-## Dependencies
-
-|                  Package                   | Description                                                  |
-| :----------------------------------------: | :----------------------------------------------------------- |
-| [**emcee**](https://emcee.readthedocs.io/) | fit models using the Markov Chain Monte Carlo method         |
-| [**matplotlib**](https://matplotlib.org/)  | produce figures                                              |
-|      [**numpy**](https://numpy.org/)       | perform efficient operations with arrays                     |
-|  [**pandas**](https://pandas.pydata.org/)  | `Series` and `DataFrame` objects for model intput and output |
-|    [**scipy**](https://www.scipy.org/)     | statistical models and mathematic functions                  |
-
-
-## Example
-
-### Read data
+## Read data
 
 Every pyextremes model starts with a `pandas.Series`
 (see [pandas documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html)) object,
@@ -60,7 +27,7 @@ series = pd.read_csv(
 
 ---
 
-### Clean up data
+## Clean up data
 
 In order for the analysis results to be meaningful, data needs to be pre-processed
 by the user. This may include removal of data gaps, detrending, interpolation,
@@ -102,7 +69,7 @@ Let's clean up the data:
 
 ---
 
-### Create model
+## Create model
 
 The primary interface to the pyextremes library is provided via the `EVA` class.
 This class is responsible for all major tasks outlined above and is created using
@@ -116,7 +83,7 @@ model = EVA(series)
 
 ---
 
-### Extract extreme values
+## Extract extreme values
 
 The first step of extreme value analysis is extraction of extreme values from the
 timeseries. This is done by using the `get_extremes` method of the `EVA` class.
@@ -148,7 +115,7 @@ In this example extremes will be extracted using the BM `method` and 1-year
 
 ---
 
-### Visualize extreme events
+## Visualize extreme events
 
 ```python
 model.plot_extremes()
@@ -160,7 +127,7 @@ model.plot_extremes()
 
 ---
 
-### Fit a model
+## Fit a model
 
 The next step is selecting a model and fitting to the extracted extreme events.
 What this means practically is that we need to find model parameters
@@ -178,7 +145,7 @@ model.fit_model()
 
 ---
 
-### Calculate return values
+## Calculate return values
 
 The final goal of most EVA's is estimation of return values.
 The simplest way to do this is by using the `get_summary` method:
@@ -224,7 +191,7 @@ return period
 
 ---
 
-### Investigate model
+## Investigate model
 
 After model results are obtained, logical questions naturally arise -
 how good is the model, are the obtained results meaningful, and
@@ -241,7 +208,7 @@ model.plot_diagnostic(alpha=0.95)
 
 ---
 
-### Recap
+## Recap
 
 Following this example you should be able to do the following:
 
@@ -250,13 +217,8 @@ Following this example you should be able to do the following:
 - fit a model
 - get results
 
-For more in-depth tutorials on features of pyextremes see the rest of documentation.
+For more in-depth tutorials on features of pyextremes see the User Guide.
 
 ---
-
-## License
-
-This project is licensed under the terms of the
-[MIT](https://opensource.org/licenses/MIT) license.
 
 --8<-- "docs/includes/abbreviations.md"

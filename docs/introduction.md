@@ -63,4 +63,39 @@ Multiple ways of fitting the continuous distributions to the data are supported:
 - `Emcee` - Markov Chain Monte Calro, see [Emcee](https://emcee.readthedocs.io/en/stable/)
 package by Dan Foreman-Mackey
 
+## Installation
+
+Get latest version from PyPI:
+
+```shell
+pip install pyextremes
+```
+
+Get latest experimental build from GitHub:
+
+```shell
+pip install git+https://github.com/georgebv/pyextremes
+```
+
+For Anaconda Python distributions:
+
+```shell
+conda install -c conda-forge pyextremes
+```
+
+## Dependencies
+
+|                  Package                   | Description                                                  |
+| :----------------------------------------: | :----------------------------------------------------------- |
+| [**emcee**](https://emcee.readthedocs.io/) | fit models using the Markov Chain Monte Carlo method         |
+| [**matplotlib**](https://matplotlib.org/)  | produce figures                                              |
+|      [**numpy**](https://numpy.org/)       | perform efficient operations with arrays                     |
+|  [**pandas**](https://pandas.pydata.org/)  | `Series` and `DataFrame` objects for model intput and output |
+|    [**scipy**](https://www.scipy.org/)     | statistical models and mathematic functions                  |
+
+## License
+
+This project is licensed under the terms of the
+[MIT](https://opensource.org/licenses/MIT) license.
+
 --8<-- "docs/includes/abbreviations.md"
