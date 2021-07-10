@@ -7,7 +7,7 @@ site_author: Georgii Bocharov
 copyright: Copyright &copy; 2021 Georgii Bocharov
 
 nav:
-  - pyextremes: introduction.md
+  - pyextremes: index.md
   - Quick Start: quickstart.md
   - User Guide:
       - Read First: user-guide/read-first.md
