@@ -12,7 +12,7 @@ nav:
   - User Guide:
       - Read First: user-guide/read-first.md
       - Extracting Extreme Events:
-          - Basics: user-guide/extremes-extraction/introduction.md
+          - Extreme Value Types: user-guide/extremes-extraction/introduction.md
 
 theme:
   name: material
