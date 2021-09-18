@@ -90,13 +90,16 @@ class TestEVA:
             )
             assert np.allclose(eva_model.data.values, [1, 2, 3])
 
-        with pytest.raises(TypeError, match=r"invalid dtype.*`data` argument.*numeric"):
-            EVA(
-                data=pd.Series(
-                    data=["a", "b", "c"],
-                    index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+        with pytest.warns(RuntimeWarning, match=r"`data`.*not numeric.*converting"):
+            with pytest.raises(
+                TypeError, match=r"invalid dtype.*`data` argument.*numeric"
+            ):
+                EVA(
+                    data=pd.Series(
+                        data=["a", "b", "c"],
+                        index=pd.DatetimeIndex(["2020", "2021", "2022"]),
+                    )
                 )
-            )
 
         with pytest.raises(TypeError, match=r"index of `data`.*date-time.*not"):
             EVA(data=pd.Series(data=[1, 2, 3], index=["2020", "2021", "2022"]))
