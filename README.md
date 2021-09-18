@@ -53,7 +53,7 @@ pip install pyextremes
 Get latest experimental build from GitHub:
 
 ```shell
-pip install git+https://github.com/georgebv/pyextremes
+pip install "git+https://github.com/georgebv/pyextremes.git#egg=pyextremes"
 ```
 
 Get pyextremes for the Anaconda Python distribution:
