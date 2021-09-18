@@ -54,6 +54,7 @@ setuptools.setup(
     ],
     platforms=["linux", "windows", "mac"],
     package_dir={"": "src"},
+    package_data={"pyextremes": ["py.typed"]},
     include_package_data=True,
     zip_safe=True,
     install_requires=[
