@@ -11,7 +11,7 @@ probability of exceedance (return period).
 Both of these extreme value types represent a valid path of performing EVA and
 neither of these is generally better than another.
 
-???+ info
+!!! info
     GEVD and GPD models used for BM and POT extreme value types accordingly
     have a common theoretical basis and should be treated as complementary models,
     not as either/or. More information about why only the GEVD and GPD models should be
@@ -27,7 +27,7 @@ to model extreme value behavior using the GEVD model family.
 See figure below illustrating this concept:
 
 <figure>
-  <img src="../../../img/user-guide/introduction/bm.png" alt="Block Maxima extremes"/>
+  <img src="../../../img/bm.png" alt="Block Maxima extremes"/>
 </figure>
 
 ## Peaks Over Threshold
@@ -42,7 +42,7 @@ these are described further in this tutorial.
 See figure below illustrating POT extremes:
 
 <figure>
-  <img src="../../../img/user-guide/introduction/pot.png" alt="Peaks Over Threshold extremes"/>
+  <img src="../../../img/pot.png" alt="Peaks Over Threshold extremes"/>
 </figure>
 
 ## Which Method to Use
@@ -65,7 +65,7 @@ input from the user.
 of target exceedance probabilities (return periods)
 and to gain more confidence in your results.
 
-???+ warning "Attention"
+!!! warning "Attention"
     User is **strongly discouraged** from "playing" with the model parameters until
     a desired answer is achieved. EVA is not about getting a perfect estimate
     and a lack of a definitive answer is an answer in itself - it signifies that

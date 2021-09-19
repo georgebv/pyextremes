@@ -1,5 +1,5 @@
 *[EVA]: Extreme Value Analysis
-*[BM]: Block Maxima
+*[BM]: Block Maxima/Minima
 *[POT]: Peaks Over Threshold
 *[GEVD]: Generalized Extreme Value Distribution
 *[GPD]: Generalized Pareto Distribution

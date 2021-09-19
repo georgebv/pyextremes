@@ -13,6 +13,8 @@ nav:
       - Read First: user-guide/read-first.md
       - Extracting Extreme Events:
           - Extreme Value Types: user-guide/extremes-extraction/introduction.md
+          - Block Maxima: user-guide/extremes-extraction/block-maxima.md
+          - Peaks Over Threshold: user-guide/extremes-extraction/peaks-over-threshold.md
 
 theme:
   name: material
