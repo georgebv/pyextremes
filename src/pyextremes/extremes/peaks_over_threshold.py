@@ -79,12 +79,6 @@ def get_extremes_peaks_over_threshold(
             f"invalid value in '{extremes_type}' for the 'extremes_type' argument"
         )
 
-    if not isinstance(r, pd.Timedelta):
-        try:
-            r = pd.to_timedelta(r)
-        except Exception as error:
-            raise ValueError(f"invalid value in {r} for the 'r' argument") from error
-
     # Get exceedances
     if extremes_type == "high":
         exceedances = ts.loc[ts.values > threshold]
