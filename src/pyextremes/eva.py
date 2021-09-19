@@ -692,6 +692,7 @@ class EVA:
         self,
         figsize: tuple = (8, 5),
         ax: typing.Optional[plt.Axes] = None,
+        show_clusters: bool = False,
     ) -> typing.Tuple[plt.Figure, plt.Axes]:  # pragma: no cover
         """
         Plot extreme events.
@@ -704,6 +705,13 @@ class EVA:
         ax : matplotlib.axes._axes.Axes, optional
             Axes onto which extremes plot is drawn.
             If None (default), a new figure and axes objects are created.
+        show_clusters : bool, optional
+            If True, show cluster boundaries for POT extremes.
+            Has no effect if extremes were extracted using BM method.
+            May produce wrong cluster boundaries if extremes were set using the
+            `set_extremes` or `from_extremes` methods and threshold and inter-cluster
+            distance (r) arguments were not provided.
+            By default is False.
 
         Returns
         -------
@@ -720,6 +728,7 @@ class EVA:
             extremes_type=self.extremes_type,
             block_size=self.extremes_kwargs.get("block_size", None),
             threshold=self.extremes_kwargs.get("threshold", None),
+            r=self.extremes_kwargs.get("r", None) if show_clusters else None,
             figsize=figsize,
             ax=ax,
         )
