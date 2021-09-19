@@ -4,7 +4,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from pyextremes.extremes.peaks_over_threshold import _generate_clusters
 from pyextremes.plotting.style import pyextremes_rc
+
+
+def _plot_cluster(ax: plt.Axes, cluster: pd.Series) -> None:
+    if len(cluster) >= 2:
+        ax.axvspan(
+            xmin=cluster.index[0],
+            xmax=cluster.index[-1],
+            alpha=0.25,
+            edgecolor="None",
+            facecolor="#D1D3D4",
+            zorder=2.5,
+        )
+        for cluster_boundary in [cluster.index[0], cluster.index[-1]]:
+            ax.axvline(
+                cluster_boundary,
+                ls="--",
+                lw=0.5,
+                color="#D1D3D4",
+                zorder=5,
+            )
 
 
 def plot_extremes(
@@ -14,6 +35,7 @@ def plot_extremes(
     extremes_type: typing.Optional[str] = None,
     block_size: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
     threshold: typing.Optional[float] = None,
+    r: typing.Optional[typing.Union[pd.Timedelta, typing.Any]] = None,
     figsize: tuple = (8, 5),
     ax: typing.Optional[plt.Axes] = None,
 ) -> typing.Tuple[plt.Figure, plt.Axes]:
@@ -43,6 +65,11 @@ def plot_extremes(
         Threshold, used only if `extremes_method` is 'POT'.
         If None (default), then is inferred from `extremes` as
         minimum if `extremes_type` is 'high' or maximum if `extremes_type` is 'low'.
+    r : pandas.Timedelta or value convertible to timedelta, optional
+        Duration of window used to decluster the exceedances.
+        See pandas.to_timedelta for more information.
+        Used to show clusters. If None (default) then clusters are not shown.
+        Clusters are shown only if both `threshold` and `r` were provided.
     figsize : tuple, optional
         Figure size in inches in format (width, height).
         By default it is (8, 5).
@@ -58,13 +85,23 @@ def plot_extremes(
         Axes object.
 
     """
+    if extremes_method not in ["BM", "POT"]:
+        raise ValueError(
+            f"invalid value in '{extremes_method}' for the 'extremes_method' argument"
+        )
+
+    if extremes_type not in ["high", "low"]:
+        raise ValueError(
+            f"invalid value in '{extremes_type}' for the 'extremes_type' argument"
+        )
+
     with plt.rc_context(rc=pyextremes_rc):
         # Create figure
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, dpi=96)
         else:
             try:
-                fig = ax.figure
+                fig = ax.get_figure()
             except AttributeError as _error:
                 raise TypeError(
                     f"invalid type in {type(ax)} for the 'ax' argument, "
@@ -120,8 +157,7 @@ def plot_extremes(
                 )
                 block_left_boundary += block_size
 
-        elif extremes_method == "POT":
-            # Parse 'threshold'
+        else:
             if threshold is None:
                 if extremes_type is None:
                     raise TypeError(
@@ -129,23 +165,23 @@ def plot_extremes(
                         "for 'extremes_method' being 'POT' "
                         "when 'threshold' is not provided"
                     )
-                elif extremes_type == "high":
+                if extremes_type == "high":
                     threshold = extremes.min()
-                elif extremes_type == "low":
-                    threshold = extremes.max()
                 else:
-                    raise ValueError(
-                        f"invalid value in '{extremes_type}' "
-                        f"for the 'extremes_type' argument"
-                    )
+                    threshold = extremes.max()
+            else:
+                if r is not None:
+                    # Plot clusters (only if both threshold and r are provided)
+                    if extremes_type == "high":
+                        exceedances = ts.loc[ts.values > threshold]
+                    else:
+                        exceedances = ts.loc[ts.values < threshold]
+                    for cluster in _generate_clusters(exceedances=exceedances, r=r):
+                        _plot_cluster(ax=ax, cluster=cluster)
 
             # Plot threshold line
             ax.axhline(threshold, ls="--", lw=1, color="#FF756B", zorder=15)
 
-        else:
-            raise ValueError(
-                f"invalid value in '{extremes_method}' "
-                f"for the 'extremes_method argument"
-            )
+        fig.autofmt_xdate()
 
         return fig, ax
