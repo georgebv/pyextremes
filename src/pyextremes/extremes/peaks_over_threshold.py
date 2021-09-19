@@ -7,6 +7,36 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def _generate_clusters(
+    exceedances: pd.Series,
+    r: typing.Union[pd.Timedelta, typing.Any],
+) -> typing.Generator[pd.Series, None, None]:
+    if not isinstance(r, pd.Timedelta):
+        try:
+            r = pd.to_timedelta(r)
+        except Exception as error:
+            raise ValueError(f"invalid value in {r} for the 'r' argument") from error
+
+    # Locate clusters separated by gaps not smaller than `r`
+    gap_indices = np.argwhere(
+        (exceedances.index[1:] - exceedances.index[:-1]) > r
+    ).flatten()
+    if len(gap_indices) == 0:
+        # All exceedances fall within the same cluster
+        yield exceedances
+    else:
+        for i, gap_index in enumerate(gap_indices):
+            if i == 0:
+                # First cluster contains all values left from the gap
+                yield exceedances.iloc[: gap_index + 1]
+            else:
+                # Other clusters contain values between previous and current gaps
+                yield exceedances.iloc[gap_indices[i - 1] + 1 : gap_index + 1]
+
+        # Last cluster contains all values right from the last gap
+        yield exceedances.iloc[gap_indices[-1] + 1 :]
+
+
 def get_extremes_peaks_over_threshold(
     ts: pd.Series,
     extremes_type: str,
@@ -64,31 +94,8 @@ def get_extremes_peaks_over_threshold(
 
     # Locate clusters separated by gaps not smaller than `r`
     # and select min or max (depending on `extremes_type`) within each cluster
-    gap_indices = np.argwhere(
-        (exceedances.index[1:] - exceedances.index[:-1]) > r
-    ).flatten()
-    if len(gap_indices) == 0:
-        # All exceedances fall within the same cluster
-        extreme_indices = [
-            exceedances.idxmax() if extremes_type == "high" else exceedances.idxmin()
-        ]
-        extreme_values = [exceedances.loc[extreme_indices[-1]]]
-    else:
-        extreme_indices, extreme_values = [], []
-        for i, gap_index in enumerate(gap_indices):
-            if i == 0:
-                # First cluster contains all values left from the gap
-                cluster = exceedances.iloc[: gap_index + 1]
-            else:
-                # Other clusters contain values between previous and current gaps
-                cluster = exceedances.iloc[gap_indices[i - 1] + 1 : gap_index + 1]
-            extreme_indices.append(
-                cluster.idxmax() if extremes_type == "high" else cluster.idxmin()
-            )
-            extreme_values.append(cluster.loc[extreme_indices[-1]])
-
-        # Last cluster contains all values right from the last gap
-        cluster = exceedances.iloc[gap_indices[-1] + 1 :]
+    extreme_indices, extreme_values = [], []
+    for cluster in _generate_clusters(exceedances=exceedances, r=r):
         extreme_indices.append(
             cluster.idxmax() if extremes_type == "high" else cluster.idxmin()
         )
