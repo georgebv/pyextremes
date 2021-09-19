@@ -1,7 +1,11 @@
-if __name__ == "__main__":
-    import pandas as pd
-    from pyextremes import get_extremes
+from typing import Any, Dict
 
+import pandas as pd
+
+from pyextremes import get_extremes
+
+
+def main() -> None:
     data = (
         pd.read_csv("battery_wl.csv", index_col=0, parse_dates=True, squeeze=True)
         .sort_index(ascending=True)
@@ -14,6 +18,7 @@ if __name__ == "__main__":
         / pd.to_timedelta("365.2425D")
         * 2.87e-3
     )
+    kwargs: Dict[str, Any]
     for method in ["BM", "POT"]:
         for extremes_type in ["high", "low"]:
             if method == "BM":
@@ -26,4 +31,8 @@ if __name__ == "__main__":
             extremes = get_extremes(
                 ts=data, method=method, extremes_type=extremes_type, **kwargs
             )
-            extremes.to_csv(f"extremes_{method.lower()}_{extremes_type}.csv")
+            extremes.round(2).to_csv(f"extremes_{method.lower()}_{extremes_type}.csv")
+
+
+if __name__ == "__main__":
+    main()

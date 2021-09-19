@@ -453,9 +453,10 @@ class EVA:
             if method is POT:
                 threshold : float
                     Threshold used to find exceedances.
-                r : str or pandas.Timedelta, optional
+                r : pandas.Timedelta or value convertible to timedelta, optional
                     Duration of window used to decluster the exceedances.
                     By default r='24H' (24 hours).
+                    See pandas.to_timedelta for more information.
 
         """
         message = f"for method='{method}' and extremes_type='{extremes_type}'"
@@ -544,9 +545,10 @@ class EVA:
                 threshold : float, optional
                     Threshold used to find exceedances.
                     By default is taken as smallest value.
-                r : str or pandas.Timedelta, optional
+                r : pandas.Timedelta or value convertible to timedelta, optional
                     Duration of window used to decluster the exceedances.
                     By default r='24H' (24 hours).
+                    See pandas.to_timedelta for more information.
 
         """
         # Validate `extremes`

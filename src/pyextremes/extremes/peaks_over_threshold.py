@@ -11,7 +11,7 @@ def get_extremes_peaks_over_threshold(
     ts: pd.Series,
     extremes_type: str,
     threshold: float,
-    r: typing.Union[str, pd.Timedelta] = "24H",
+    r: typing.Union[pd.Timedelta, typing.Any] = "24H",
 ) -> pd.Series:
     """
     Get extreme events from time series using the Peaks Over Threshold method.
@@ -25,9 +25,10 @@ def get_extremes_peaks_over_threshold(
         low - get extreme low values
     threshold : float
         Threshold used to find exceedances.
-    r : str or pandas.Timedelta, optional
+    r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
         By default r='24H' (24 hours).
+        See pandas.to_timedelta for more information.
 
     Returns
     -------
@@ -43,41 +44,58 @@ def get_extremes_peaks_over_threshold(
         r,
     )
 
-    # Get extreme value extraction function
-    if extremes_type == "high":
-        comparison_function = np.greater
-    elif extremes_type == "low":
-        comparison_function = np.less
-    else:
+    if extremes_type not in ["high", "low"]:
         raise ValueError(
             f"invalid value in '{extremes_type}' for the 'extremes_type' argument"
         )
 
-    # Parse the 'r' argument
     if not isinstance(r, pd.Timedelta):
-        if isinstance(r, str):
+        try:
             r = pd.to_timedelta(r)
-        else:
-            raise TypeError(f"invalid type in {type(r)} for the 'r' argument")
+        except Exception as error:
+            raise ValueError(f"invalid value in {r} for the 'r' argument") from error
 
     # Get exceedances
-    exceedances = ts.loc[comparison_function(ts.values, threshold)]
+    if extremes_type == "high":
+        exceedances = ts.loc[ts.values > threshold]
+    else:
+        exceedances = ts.loc[ts.values < threshold]
+    logger.debug("found %d exceedances", len(exceedances))
 
-    # Decluster exceedances
-    extreme_indices, extreme_values = [exceedances.index[0]], [exceedances.values[0]]
-    for index, value in exceedances.iteritems():
-        if (index - extreme_indices[-1]) > r:
-            # Starting new cluster
-            extreme_indices.append(index)
-            extreme_values.append(value)
-        else:
-            if comparison_function(value, extreme_values[-1]):
-                # Found new cluster peak
-                extreme_indices[-1] = index
-                extreme_values[-1] = value
+    # Locate clusters separated by gaps not smaller than `r`
+    # and select min or max (depending on `extremes_type`) within each cluster
+    gap_indices = np.argwhere(
+        (exceedances.index[1:] - exceedances.index[:-1]) > r
+    ).flatten()
+    if len(gap_indices) == 0:
+        # All exceedances fall within the same cluster
+        extreme_indices = [
+            exceedances.idxmax() if extremes_type == "high" else exceedances.idxmin()
+        ]
+        extreme_values = [exceedances.loc[extreme_indices[-1]]]
+    else:
+        extreme_indices, extreme_values = [], []
+        for i, gap_index in enumerate(gap_indices):
+            if i == 0:
+                # First cluster contains all values left from the gap
+                cluster = exceedances.iloc[: gap_index + 1]
+            else:
+                # Other clusters contain values between previous and current gaps
+                cluster = exceedances.iloc[gap_indices[i - 1] + 1 : gap_index + 1]
+            extreme_indices.append(
+                cluster.idxmax() if extremes_type == "high" else cluster.idxmin()
+            )
+            extreme_values.append(cluster.loc[extreme_indices[-1]])
+
+        # Last cluster contains all values right from the last gap
+        cluster = exceedances.iloc[gap_indices[-1] + 1 :]
+        extreme_indices.append(
+            cluster.idxmax() if extremes_type == "high" else cluster.idxmin()
+        )
+        extreme_values.append(cluster.loc[extreme_indices[-1]])
 
     logger.debug(
-        "successfully collected %s extreme events",
+        "successfully collected %d extreme events",
         len(extreme_values),
     )
     return pd.Series(

@@ -210,9 +210,10 @@ def plot_parameter_stability(
         If None (default), plots mean residual life for 100 equally-spaced thresholds
         between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
-    r : str or pandas.Timedelta, optional
+    r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
         By default r='24H' (24 hours).
+        See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
         low - extreme low values
@@ -478,9 +479,10 @@ def plot_return_value_stability(
         If None (default), plots mean residual life for 100 equally-spaced thresholds
         between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
-    r : str or pandas.Timedelta, optional
+    r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
         By default r='24H' (24 hours).
+        See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
         low - extreme low values

@@ -44,9 +44,10 @@ def get_extremes(
         if method is POT:
             threshold : float
                 Threshold used to find exceedances.
-            r : str or pandas.Timedelta, optional
+            r : pandas.Timedelta or value convertible to timedelta, optional
                 Duration of window used to decluster the exceedances.
                 By default r='24H' (24 hours).
+                See pandas.to_timedelta for more information.
 
     Returns
     -------
