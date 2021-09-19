@@ -438,6 +438,7 @@ class EVA:
             if method is BM:
                 block_size : str or pandas.Timedelta, optional
                     Block size (default='365.2425D').
+                    See pandas.to_timedelta for more information.
                 errors : str, optional
                     raise (default) - raise an exception
                         when encountering a block with no data
@@ -528,7 +529,8 @@ class EVA:
             if method is BM:
                 block_size : str or pandas.Timedelta, optional
                     Block size.
-                    By default is calculated as average distance between `extremes`.
+                    If None (default), then is calculated as median distance
+                    between extreme events.
                 errors : str, optional
                     raise - raise an exception
                         when encountering a block with no data
@@ -592,7 +594,7 @@ class EVA:
             extremes_kwargs["block_size"] = pd.to_timedelta(
                 kwargs.pop(
                     "block_size",
-                    (extremes.index.max() - extremes.index.min()) / (len(extremes) - 1),
+                    pd.to_timedelta(np.quantile(np.diff(extremes.index), 0.5)),
                 )
             )
             if extremes_kwargs["block_size"] <= pd.to_timedelta("0D"):

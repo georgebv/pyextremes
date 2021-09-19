@@ -31,6 +31,7 @@ def get_extremes_block_maxima(
         low - get extreme low values
     block_size : str or pandas.Timedelta, optional
         Block size (default='365.2425D').
+        See pandas.to_timedelta for more information.
     errors : str, optional
         raise (default) - raise an exception when encountering a block with no data
         ignore - ignore blocks with no data
@@ -57,15 +58,19 @@ def get_extremes_block_maxima(
         errors,
     )
 
-    # Get extreme value extraction function
-    if extremes_type == "high":
-        extremes_func = pd.Series.idxmax
-    elif extremes_type == "low":
-        extremes_func = pd.Series.idxmin
-    else:
+    if extremes_type not in ["high", "low"]:
         raise ValueError(
             f"invalid value in '{extremes_type}' for the 'extremes_type' argument"
         )
+
+    if errors not in ["raise", "ignore", "coerce"]:
+        raise ValueError(f"invalid value in '{errors}' for the 'errors' argument")
+
+    # Get extreme value extraction function
+    if extremes_type == "high":
+        extremes_func = pd.Series.idxmax
+    else:
+        extremes_func = pd.Series.idxmin
 
     # Parse the 'block_size' argument
     if not isinstance(block_size, pd.Timedelta):
@@ -78,7 +83,7 @@ def get_extremes_block_maxima(
             )
 
     # Prepare date-time intervals
-    periods = int(np.ceil((ts.index.max() - ts.index.min()) / block_size))
+    periods = int((ts.index.max() - ts.index.min()) / block_size) + 1
     date_time_intervals = pd.interval_range(
         start=ts.index[0],
         freq=block_size,
@@ -110,15 +115,11 @@ def get_extremes_block_maxima(
                     interval.left,
                     interval.right,
                 )
-            elif errors == "raise":
+            else:
                 raise ValueError(
                     f"no data in block [{interval.left} ; {interval.right}), "
                     f"fill gaps in the data "
                     f"or set the argument 'errors' to 'coerce' or 'ignore'"
-                )
-            else:
-                raise ValueError(
-                    f"invalid value in '{errors}' for the 'errors' argument"
                 )
 
     # Check last block duration

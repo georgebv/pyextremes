@@ -342,7 +342,7 @@ class TestEVA:
         assert eva_model.extremes_kwargs["errors"] == "ignore"
         assert eva_model.extremes_kwargs["min_last_block"] is None
         expected_block_size = (
-            ((index.max() - index.min()) / (len(index) - 1)).to_numpy().astype(float)
+            pd.to_timedelta(np.quantile(np.diff(index), 0.5)).to_numpy().astype(float),
         )
         actual_block_size = (
             eva_model.extremes_kwargs["block_size"].to_numpy().astype(float)
