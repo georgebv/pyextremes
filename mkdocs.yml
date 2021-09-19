@@ -60,9 +60,5 @@ markdown_extensions:
   - admonition
   - attr_list
 
-google_analytics:
-  - UA-190210487-1
-  - auto
-
 plugins:
   - search
