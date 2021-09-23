@@ -19,6 +19,7 @@ from pyextremes.plotting import (
     plot_trace,
     pyextremes_rc,
 )
+from pyextremes.tests import KolmogorovSmirnov
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +185,14 @@ class EVA:
     @property
     def AIC(self) -> float:
         return self.__get_model_attribute("AIC")
+
+    def test_ks(self, significance_level: float = 0.05) -> KolmogorovSmirnov:
+        return KolmogorovSmirnov(
+            extremes=self.extremes,
+            distribution=self.distribution,
+            fit_parameters=self.model.fit_parameters,
+            significance_level=significance_level,
+        )
 
     def __repr__(self) -> str:
         # Width of repr block
