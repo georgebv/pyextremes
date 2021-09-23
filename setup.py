@@ -64,6 +64,9 @@ setuptools.setup(
         "scipy>=1.5",
     ],
     extras_require={
+        "full": [
+            "tqdm>=4.0,<5",
+        ],
         "deploy": [
             "twine",
         ],

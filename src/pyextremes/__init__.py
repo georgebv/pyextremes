@@ -7,6 +7,7 @@ __all__ = [
     "plot_mean_residual_life",
     "plot_parameter_stability",
     "plot_return_value_stability",
+    "plot_threshold_stability",
 ]
 
 from pyextremes.eva import EVA
@@ -16,4 +17,5 @@ from pyextremes.tuning import (
     plot_mean_residual_life,
     plot_parameter_stability,
     plot_return_value_stability,
+    plot_threshold_stability,
 )

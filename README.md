@@ -50,6 +50,12 @@ Get latest version from PyPI:
 pip install pyextremes
 ```
 
+Install with optional dependencies:
+
+```shell
+pip install pyextremes[full]
+```
+
 Get latest experimental build from GitHub:
 
 ```shell
