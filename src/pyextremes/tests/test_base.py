@@ -1,4 +1,5 @@
 import typing
+
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -50,25 +51,28 @@ class TestBase(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:  # pragma: no cover
+    def name(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def null_hypothesis(self) -> str:  # pragma: no cover
+    def null_hypothesis(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def alternative_hypothesis(self) -> str:  # pragma: no cover
+    def alternative_hypothesis(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def success(self) -> bool:  # pragma: no cover
+    def success(self) -> bool:
         pass
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __bool__(self) -> bool:
+        return self.success
+
+    def __repr__(self) -> str:
         summary = [
             f"{self.name} Test",
             "",
@@ -89,5 +93,5 @@ class TestBase(ABC):
 
     @property
     @abstractmethod
-    def _repr_body(self) -> typing.List[str]:  # pragma: no cover
+    def _repr_body(self) -> typing.List[str]:
         pass

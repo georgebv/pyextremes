@@ -3,6 +3,7 @@ branch = True
 omit =
     ./src/pyextremes/plotting/*
     ./src/pyextremes/tuning/*
+    ./src/pyextremes/tests/test_base.py
 
 [report]
 exclude_lines =

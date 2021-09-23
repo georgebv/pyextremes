@@ -4,6 +4,7 @@ import pytest
 import scipy.stats
 
 from pyextremes import EVA, get_model
+from pyextremes.tests import KolmogorovSmirnov
 
 
 @pytest.fixture(scope="function")
@@ -566,3 +567,15 @@ class TestEVA:
         )
         assert isinstance(rv_summary, pd.DataFrame)
         assert len(rv_summary) == 2
+
+    @pytest.mark.parametrize("extremes_method", ["BM", "POT"])
+    def test_test_ks(self, eva_model_bm_mle, eva_model_pot_mle, extremes_method):
+        eva_model = {
+            "BM": eva_model_bm_mle,
+            "POT": eva_model_pot_mle,
+        }[extremes_method]
+        assert isinstance(eva_model.test_ks(), KolmogorovSmirnov)
+        if extremes_method == "BM":
+            assert eva_model.test_ks().success
+        else:
+            assert not eva_model.test_ks().success
