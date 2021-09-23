@@ -1502,8 +1502,7 @@ class EVA:
                 np.full(shape=len(self.extremes), fill_value=0),
                 marker="|",
                 s=40,
-                facecolor="k",
-                edgecolor="None",
+                color="k",
                 lw=0.5,
                 zorder=15,
             )
