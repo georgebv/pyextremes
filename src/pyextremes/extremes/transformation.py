@@ -4,23 +4,28 @@ import pandas as pd
 
 
 class ExtremesTransformer:
+    """
+    Utility class used to transform extreme values between high and low extremes type.
+
+    Provides methods to transform extreme value series to and from format
+    compatible with pyextremes models. Extreme values are transformed in a way
+    to have more extreme events (lower probability of exceedance) oriented to the right
+    (in the increasing order).
+    For extremes_type being 'high' no transform is performed.
+    For extremes_type being 'low' values are flipped around the maximum value.
+
+    """
 
     __slots__ = [
         "extremes",
         "extremes_type",
-        "transformed_extremes",
+        "__pivot_point",
+        "__transformed_extremes",
     ]
 
     def __init__(self, extremes: pd.Series, extremes_type: str) -> None:
         """
-        Extreme value transformer class.
-
-        Provides methods to transform extreme value series to and from
-        format compatible with pyextremes models.
-        Values are transformed in a way to have extreme events at the right side
-        of a distribution support.
-        For extremes_type being 'high' no transform is performed.
-        For extremes_type being 'low' values are flipped around the maximum value.
+        Initialize the extreme value transformer.
 
         Parameters
         ----------
@@ -33,15 +38,25 @@ class ExtremesTransformer:
         """
         self.extremes: pd.Series = extremes
         self.extremes_type: str = extremes_type
-        self.transformed_extremes: pd.Series = self.transform(value=extremes)
+
+        self.__pivot_point: typing.Optional[float] = (
+            None if self.extremes_type == "high" else self.extremes.max()
+        )
+        self.__transformed_extremes: pd.Series = self.transform(value=extremes)
+
+    @property
+    def pivot_point(self) -> typing.Optional[float]:
+        return self.__pivot_point
+
+    @property
+    def transformed_extremes(self) -> pd.Series:
+        return self.__transformed_extremes
 
     def transform(
         self, value: typing.Union[None, float, pd.Series]
     ) -> typing.Union[None, float, pd.Series]:
         """
-        Transform extreme values.
-
-        Works both ways.
+        Transform extreme values in either direction.
 
         Parameters
         ----------
@@ -55,10 +70,6 @@ class ExtremesTransformer:
             If value is None, returns None (a.k.a. null-transform).
 
         """
-        if value is None:
+        if value is None or self.pivot_point is None:
             return value
-        else:
-            if self.extremes_type == "high":
-                return value
-            else:
-                return 2 * self.extremes.max() - value
+        return 2 * self.pivot_point - value

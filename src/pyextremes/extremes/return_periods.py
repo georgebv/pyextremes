@@ -135,6 +135,9 @@ def get_return_periods(
     # Calcule return periods
     return_periods = 1 / exceedance_probability / extremes_rate
 
+    # Copy `extremes` to make the returned DataFrame independent from the original
+    extremes = extremes.copy(deep=True)
+
     return pd.DataFrame(
         data={
             extremes.name: extremes.values,
