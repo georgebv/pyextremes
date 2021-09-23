@@ -15,6 +15,8 @@ nav:
           - Extreme Value Types: user-guide/extremes-extraction/introduction.md
           - Block Maxima: user-guide/extremes-extraction/block-maxima.md
           - Peaks Over Threshold: user-guide/extremes-extraction/peaks-over-threshold.md
+          - Threshold Selection: user-guide/extremes-extraction/threshold-selection.md
+          - Estimating Return Periods: user-guide/extremes-extraction/return-periods.md
 
 theme:
   name: material

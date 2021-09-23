@@ -1,6 +1,6 @@
 --8<-- "docs/includes/abbreviations.md"
 
-Modern EVA recognizes two types of extreme values:
+Traditionally EVA recognizes two types of extreme values:
 
 - Block maxima (BM)
 - Peaks over threshold (POT)
@@ -14,9 +14,8 @@ neither of these is generally better than another.
 !!! info
     GEVD and GPD models used for BM and POT extreme value types accordingly
     have a common theoretical basis and should be treated as complementary models,
-    not as either/or. More information about why only the GEVD and GPD models should be
-    used and the underlying theory are (briefly) covered in subsequent sections of
-    this tutorial.
+    not as either/or. More information about why only the GEVD and GPD models
+    are recommended to be used is provided in subsequent sections of this tutorial.
 
 ## Block Maxima
 The Block Maxima extreme values are extracted by selecting a block size
@@ -34,10 +33,11 @@ See figure below illustrating this concept:
 The Peaks Over Threshold extreme values are extracted by choosing a threshold
 and selecting values higher or lower (depends on which extreme process is analyzed)
 than the threshold value. The selected values are then declustered by specifying
-minimum distance between adjacent extreme events (e.g. 24 hours, which implies that
-events separated by this distance are independent). Selection of threshold and
-declustering distance is not a trivial task and has a strong effect on the EVA
-results. pyextremes provides a series of tools which help with threshold selection,
+minimum distance between adjacent clusters (e.g. 24 hours, which means that the model
+assumes that clusters of exceedances separater by this distiance or larger are
+independent). Selection of threshold and declustering distance is not a trivial task
+and has a strong effect on the EVA results.
+pyextremes provides a series of tools which help with threshold selection,
 these are described further in this tutorial.
 See figure below illustrating POT extremes:
 
@@ -46,12 +46,12 @@ See figure below illustrating POT extremes:
 </figure>
 
 ## Which Method to Use
-One of the most (if not the most) important concepts of EVA to keep in mind is that
-if the analysis is performed correctly, all models should be converging to the same
-answer (within reasonable confidence limits). Because of this, we cannot say that
-one method is better than another. Therefore, for a thorough analysis, user is advised
-to investigate both routes to make sure that the final answer of the analysis
-provides a robust estimate.
+One of the most important concepts of EVA is convergenece. What this means practically
+is that different models and approaches (as long as they are correctly applied)
+should  be converging to the same answer (within reasonable confidence limits).
+Because of this, we cannot say that one method is better than another.
+Therefore, for a thorough analysis, user is advised to investigate both routes
+to make sure that the final answer of the analysis provides a robust estimate.
 
 A general rule of thumb, which is based on years of author's (subjective) experience,
 when performing EVA is to do the following:

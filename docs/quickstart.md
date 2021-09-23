@@ -1,9 +1,11 @@
 ## Read data
 
-Every pyextremes model starts with a `pandas.Series`
+Every `pyextremes` model starts with a `pandas.Series`
 (see [pandas documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html)) object,
-which contains timeseries of data you want to analyze.
-This example is based on water level data for "The Battery" station located in New York.
+which contains timeseries of the data you want to analyze.
+This example is based on water level data for
+["The Battery" station](https://tidesandcurrents.noaa.gov/waterlevels.html?id=8518750)
+located in New York.
 
 Read data:
 
@@ -21,9 +23,8 @@ series = pd.read_csv(
 ???+ tip
     The `battery_wl.csv` file referenced above is used throughout many tutorials
     and examples for the `pyextremes` package.
-    If you want to reproduce all steps shown here and get the same results,
-    the file can be downloaded
-    [here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
+    If you want to reproduce all steps shown here and get the same results, the file
+    [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
 ---
 
@@ -31,9 +32,7 @@ series = pd.read_csv(
 
 In order for the analysis results to be meaningful, data needs to be pre-processed
 by the user. This may include removal of data gaps, detrending, interpolation,
-removal of outliers, etc.
-Let's clean up the data:
-
+removal of outliers, etc. Let's clean up the data:
 
 === "Code"
 
@@ -43,8 +42,8 @@ Let's clean up the data:
         .sort_index(ascending=True)
         .astype(float)
         .dropna()
+        .loc[pd.to_datetime("1925"):]
     )
-    series = series.loc[pd.to_datetime("1925"):]
     series = series - (series.index.array - pd.to_datetime("1992")) / pd.to_timedelta("365.2425D") * 2.87e-3
     ```
 

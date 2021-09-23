@@ -71,10 +71,16 @@ Get latest version from PyPI:
 pip install pyextremes
 ```
 
+Install with optional dependencies:
+
+```shell
+pip install pyextremes[full]
+```
+
 Get latest experimental build from GitHub:
 
 ```shell
-pip install git+https://github.com/georgebv/pyextremes
+pip install "git+https://github.com/georgebv/pyextremes.git#egg=pyextremes"
 ```
 
 For Anaconda Python distributions:
@@ -92,6 +98,15 @@ conda install -c conda-forge pyextremes
 |      [**numpy**](https://numpy.org/)       | perform efficient operations with arrays                     |
 |  [**pandas**](https://pandas.pydata.org/)  | `Series` and `DataFrame` objects for model intput and output |
 |    [**scipy**](https://www.scipy.org/)     | statistical models and mathematic functions                  |
+
+
+### Optional Dependencies
+
+Optional dependencies can be installed using the `full` tag as shown above or manually:
+
+|                 Package                  | Description                     |
+| :--------------------------------------: | :------------------------------ |
+| [**tqdm**](https://github.com/tqdm/tqdm) | progress bar for slow processes |
 
 ## License
 

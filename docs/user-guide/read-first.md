@@ -5,37 +5,25 @@ good results in most cases, one should not rely on the model as a source
 of ground truth. It is always the responsibility of the user to understand
 the subject of analysis and to properly interpret the model outputs.
 
-???+ example
-    A 1000-year wave height of 50 meters is not physical and
+!!! example
+    A 1000-year wave height of 100 meters is not physical and
     is an artifact of the underlying statistical model.
     One should always be mindful of the actual process being modeled and
     remember that the model gives a proabilistic estimate of extreme values
     under the assumption that the selected model (e.g. GEVD or GPD)
-    correctly describes the real process.
+    correctly describes the underlying process (in this example, water waves).
 
 ## Tutorial Structure
-**pyextremes** consists of individual components (e.g. extreme value
-extraction, model fitting, visualization, etc.) which can be used to perform
-a variety of tasks related to EVA. In order to make life easier, these components
-were grouped together in a helper class `EVA` (located in `pyextremes.eva.EVA`)
-to implement the most common workflow of EVA. Because of this, almost every problem
-can generally be solved using either `EVA` or one or more individual components.
-This allows for the library to be flexible and makes it easy to integrate into
-custom workflows.
-
 Each tutorial section covers a particular area of EVA, such as extreme value
-extraction. Solutions are presented both using the `EVA` class and individual component
-used by the `EVA` class behind the scenes. Users should be aware that the `EVA` class
-shown earlier is not the only way to use pyextremes and that learning the library
-would allow for more flexibility when doing analysis.
+extraction, fitting a model, or summarizing and visualizing analysis results.
+**pyextremes** was built in a modular fashion where each of these components
+is implemented independently and can be used on its own. In order to make life easier
+a helper class `EVA` was created (located in `pyextremes.eva.EVA`) which chains these
+components together to streamline the most common types of EVA workflows and to reduce
+the amount of code a user needs to write when performing analysis.
 
-???+ example
-    You can use `pyextremes.get_extremes`,
-    `pyextremes.extremes.block_maxima.get_extremes_block_maxima`, or
-    `pyextremes.extremes.peaks_over_threshold.get_extremes_peaks_over_threshold`
-    functions instead of the `EVA.get_extremes` method to extract extreme values.
-    Those are fully equivalent and, in fact, the `EVA` class uses the
-    `pyextremes.get_extremes` function (which, in turn, usese the other two)
-    behind the scenes.
+When posstible, sections of this tutorial present two alternative ways to perform the
+same action: via `EVA` and via low-level functions which are using by `EVA` behind the
+scenes.
 
 --8<-- "docs/includes/abbreviations.md"

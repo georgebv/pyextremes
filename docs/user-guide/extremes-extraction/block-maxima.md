@@ -1,8 +1,16 @@
---8<-- "docs/includes/abbreviations.md"
-
 Block Maxima or Minima (BM) extreme values are extracted from time series
 by partitioning it into blocks (segments) of equal duration (e.g. 1 year)
 and locating maximum or minimum values within each block.
+Block maxima extreme values asymptotically follow the
+[Generalized Extreme Value Distribution](https://en.wikipedia.org/wiki/Generalized_extreme_value_distribution)
+family, according to the
+[Fisher–Tippett–Gnedenko theorem](https://en.wikipedia.org/wiki/Fisher%E2%80%93Tippett%E2%80%93Gnedenko_theorem).
+This theorem demonstrates that the GEVD family is the only possible
+limit for the block maxima extreme values.
+
+<figure>
+  <img src="../../../img/bm.png" alt="Block Maxima extremes"/>
+</figure>
 
 ## Extracting Extremes
 As outlined in the [Read First](../read-first.md) section of this documentation,
@@ -11,29 +19,81 @@ The BM extraction function can be accessed via:
 
 - `pyextremes.extremes.block_maxima.get_extremes_block_maxima` - the lowest level
 - `pyextremes.get_extremes` - general-purpose extreme value extraction function
-- `pyextremes.EVA` - helper-class (extreme values are not returned by this function,
-  but instead are set on the `EVA` instance in the `.extremes` attribute)
+- `pyextremes.EVA.get_extremes` - helper-class
+  (extreme values are not returned by this function, but instead are set
+  on the `EVA` instance in the `.extremes` attribute)
 
 The simplest way to extract extreme values using BM method is to use the default
 parameters of the `get_extremes` function:
 
-```python
-from pyextremes import get_extremes
+=== "Standalone"
 
-get_extremes(data, "BM")
-```
+    ```python
+    from pyextremes import get_extremes
+    from pyextremes.plotting import plot_extremes
+
+    extremes = get_extremes(data, "BM")
+    plot_extremes(
+        ts=data,
+        extremes=extremes,
+        extremes_method="BM",
+        extremes_type="high",
+        block_size="365.2425D",
+    )
+    ```
+
+=== "Using EVA"
+
+    ```python
+    from pyextremes import EVA
+
+    model = EVA(data=data)
+    model.get_extremes("BM")
+    model.plot_extremes()
+    ```
 
 <figure>
   <img src="../../../img/extremes/bm-high-1y.png" alt="Block Maxima extremes"/>
 </figure>
 
-This function uses the following parameters:
+??? note
+    You can get the `data` variable referenced above by running the following code:
+
+    ```python
+    data = pd.read_csv(
+        "battery_wl.csv",
+        index_col=0,
+        parse_dates=True,
+        squeeze=True,
+    )
+    data = (
+        data
+        .sort_index(ascending=True)
+        .astype(float)
+        .dropna()
+        .loc[pd.to_datetime("1980"):pd.to_datetime("1995")]
+    )
+    data = (
+      data - (data.index.array - pd.to_datetime("1992"))
+    ) / pd.to_timedelta("365.2425D") * 2.87e-3
+    ```
+
+    `#!python "battery_wl.csv"`
+    [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
+
+    All figures shown in this tutorial section were generated using
+    [this jupyter notebook](https://github.com/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb)
+
+The `get_extremes` function uses the following parameters:
 
 - **ts** - time series (`pandas.Series`) from which the extreme values are extracted
 - **method** - extreme value extraction method: `#!python "BM"` for Block Maxima
   and `#!python "POT"` for Peaks Over Threshold.
 - **extremes_type** - extreme value type:
   `#!python "high"` for maxima (default) and `#!python "low"` for minima
+
+The following paramters are used only when `#!python method="BM"`:
+
 - **block_size** - block size, by default `#!python "365.2425D"`.
   Internally is converted using the `#!python pandas.to_timedelta` function.
 - **errors** - specifies what to do when a block is empty (has no values).
@@ -77,13 +137,30 @@ blocks no longer being equivalent
 We can specify different block size using the `block_size` argument. Using the same
 data as above but with a block size of 2 years we get:
 
-```python
-get_extremes(
-    ts=data,
-    method="BM",
-    block_size=pd.to_timedelta("365.2425D") * 2,
-)
-```
+=== "Standalone"
+
+    ```python
+    extremes = get_extremes(
+        ts=data,
+        method="BM",
+        block_size=pd.to_timedelta("365.2425D") * 2,
+    )
+    plot_extremes(
+        ts=data,
+        extremes=extremes,
+        extremes_method="BM",
+        extremes_type="high",
+        block_size=pd.to_timedelta("365.2425D") * 2,
+    )
+    ```
+
+=== "Using EVA"
+
+    ```python
+    model = EVA(data=data)
+    model.get_extremes("BM", block_size=pd.to_timedelta("365.2425D") * 2)
+    model.plot_extremes()
+    ```
 
 <figure>
   <img src="../../../img/extremes/bm-high-2y.png" alt="Block Maxima extremes 2 years"/>
@@ -94,13 +171,30 @@ Block minima is fully equivalent to block maxima in the way it is extracted.
 Block minima can be extracted by setting the `extremes_type` argument
 to `#!python "low"`:
 
-```python
-get_extremes(
-    ts=data,
-    method="BM",
-    extremes_type="low",
-)
-```
+=== "Standalone"
+
+    ```python
+    extremes = get_extremes(
+        ts=data,
+        method="BM",
+        extremes_type="low",
+    )
+    plot_extremes(
+        ts=data,
+        extremes=extremes,
+        extremes_method="BM",
+        extremes_type="high",
+        block_size="365.2425D",
+    )
+    ```
+
+=== "Using EVA"
+
+    ```python
+    model = EVA(data=data)
+    model.get_extremes("BM", extremes_type="low")
+    model.plot_extremes()
+    ```
 
 <figure>
   <img src="../../../img/extremes/bm-low-1y.png" alt="Block Minima extremes"/>

@@ -83,7 +83,7 @@ def plot_mean_residual_life(
     thresholds : array-like, optional
         An array of thresholds for which the mean residual life plot is plotted.
         If None (default), plots mean residual life for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='low') percentile
+        between 90th (10th if extremes_type='high') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -277,7 +277,7 @@ def plot_parameter_stability(
     thresholds : array-like, optional
         An array of thresholds for which the mean residual life plot is plotted.
         If None (default), plots mean residual life for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='low') percentile
+        between 90th (10th if extremes_type='high') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
@@ -551,7 +551,7 @@ def plot_return_value_stability(
     thresholds : array-like, optional
         An array of thresholds for which the return value plot is plotted.
         If None (default), plots return values for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='low') percentile
+        between 90th (10th if extremes_type='high') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
@@ -563,7 +563,7 @@ def plot_return_value_stability(
     distributions : list, optional
         List of distributions for which the return value curves are plotted.
         By default these are "genpareto" and "expon".
-        A distribution must be either a name of distribution from with scipy.stats
+        A distribution must be either a name of distribution from scipy.stats
         or a subclass of scipy.stats.rv_continuous.
         See https://docs.scipy.org/doc/scipy/reference/stats.html
     alpha : float, optional
@@ -746,7 +746,7 @@ def plot_aic_scores(
     thresholds : array-like, optional
         An array of thresholds for which the AIC plot is plotted.
         If None (default), plots AIC for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='low') percentile
+        between 90th (10th if extremes_type='high') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
@@ -758,7 +758,7 @@ def plot_aic_scores(
     distributions : list, optional
         List of distributions for which the AIC curves are plotted.
         By default these are "genpareto" and "expon".
-        A distribution must be either a name of distribution from with scipy.stats
+        A distribution must be either a name of distribution from scipy.stats
         or a subclass of scipy.stats.rv_continuous.
         See https://docs.scipy.org/doc/scipy/reference/stats.html
     ax : matplotlib.axes._axes.Axes, optional
@@ -878,7 +878,7 @@ def plot_threshold_stability(
     thresholds : array-like, optional
         An array of thresholds for which the metrics are plotted.
         If None (default), plots matrics for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='low') percentile
+        between 90th (10th if extremes_type='high') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
@@ -890,7 +890,7 @@ def plot_threshold_stability(
     distributions : list, optional
         List of distributions for which the metrics are plotted.
         By default these are "genpareto" and "expon".
-        A distribution must be either a name of distribution from with scipy.stats
+        A distribution must be either a name of distribution from scipy.stats
         or a subclass of scipy.stats.rv_continuous.
         See https://docs.scipy.org/doc/scipy/reference/stats.html
     alpha : float, optional
