@@ -75,7 +75,7 @@ class TestBase(ABC):
             f"Null hypothesis: {self.null_hypothesis}",
             f"Alternative hypothesis: {self.alternative_hypothesis}",
             "",
-            *self._repr_body(),
+            *self._repr_body,
         ]
 
         longest_row = max(map(len, summary))
@@ -87,6 +87,7 @@ class TestBase(ABC):
 
         return "\n".join(summary)
 
+    @property
     @abstractmethod
     def _repr_body(self) -> typing.List[str]:  # pragma: no cover
         pass

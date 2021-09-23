@@ -2,10 +2,18 @@ import functools
 import typing
 
 import scipy.stats
+
 from pyextremes.tests.test_base import TestBase
 
 
 class KolmogorovSmirnov(TestBase):
+    """
+    One-sample Kolmogorov-Smirnov test.
+
+    Tests whether extracted extreme values follow a given distribution
+    with given fit parameters.
+    """
+
     def __init__(
         self,
         extremes,
@@ -13,9 +21,8 @@ class KolmogorovSmirnov(TestBase):
         fit_parameters: typing.Dict[str, float],
         significance_level: float = 0.05,
     ) -> None:
-        """One-sample Kolmogorov-Smirnov test.
-
-        Tests whether `extremes` follow `distribution` with `fit_parameters`.
+        """
+        Run the KS Test.
 
         Parameters
         ----------
@@ -71,11 +78,9 @@ class KolmogorovSmirnov(TestBase):
 
     @property
     def success(self) -> bool:
-        if self.test_statistic > self.critical_value:
-            return False
-        else:
-            return True
+        return self.test_statistic <= self.critical_value
 
+    @property
     def _repr_body(self) -> typing.List[str]:  # pragma: no cover
         if self.success:
             test_result = self.null_hypothesis
