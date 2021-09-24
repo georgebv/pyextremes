@@ -42,6 +42,10 @@ continous distributions to the extracted extreme events
 - tools assisting with model selection and tuning, such as selection of
 block size in BM and threshold in POT
 
+Check out [this repository](https://github.com/georgebv/pyextremes-notebooks)
+with Jupyter notebooks used to produce figures for this readme
+and for the official documentation.
+
 # Installation
 
 Get latest version from PyPI:
@@ -67,14 +71,6 @@ Get pyextremes for the Anaconda Python distribution:
 ```shell
 conda install -c conda-forge pyextremes
 ```
-
-# Tutorials
-
-This section will be removed in the future in favor of the official documentation
-which can be found at https://georgebv.github.io/pyextremes/.
-
-- [Basic usage](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb)
-- [Threshold selection](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/tutorials/threshold%20selection.ipynb)
 
 # Illustrations
 

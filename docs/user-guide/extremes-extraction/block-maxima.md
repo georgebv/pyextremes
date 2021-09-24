@@ -82,7 +82,7 @@ parameters of the `get_extremes` function:
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
     All figures shown in this tutorial section were generated using
-    [this jupyter notebook](https://github.com/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb)
+    [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb).
 
 The `get_extremes` function uses the following parameters:
 

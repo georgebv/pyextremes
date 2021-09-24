@@ -60,7 +60,7 @@ plot_mean_residual_life(data)
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
     All figures shown in this tutorial section were generated using
-    [this jupyter notebook](https://github.com/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/4%20threshold%20selection.ipynb)
+    [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/4%20threshold%20selection.ipynb).
 
 As seen in the figure above, exceedance values are approximately linear between
 threshold values of 1.2 and 1.8. This provides a range of threshold values which can
