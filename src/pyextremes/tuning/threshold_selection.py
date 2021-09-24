@@ -839,7 +839,7 @@ def plot_aic_scores(
 
         # Label axes
         ax.set_xlabel("Threshold")
-        ax.set_ylabel("Return value")
+        ax.set_ylabel("AIC Score")
 
         return ax
 
