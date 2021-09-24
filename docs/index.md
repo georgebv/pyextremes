@@ -29,7 +29,7 @@ pyextremes is a Python library aimed at performing univariate
 ## Features
 
 pyextremes provides tools necessary to perform a wide range of tasks required to
-perform EVA, such as:
+perform univariate EVA, such as:
 
 - extraction of extreme events from time series using methods such as
 Block Maxima (BM) or Peaks Over Threshold (POT)

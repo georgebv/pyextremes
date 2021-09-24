@@ -12,11 +12,11 @@ famliy, according to the
 [Pickands–Balkema–De Haan theorem](https://en.wikipedia.org/wiki/Pickands%E2%80%93Balkema%E2%80%93De_Haan_theorem).
 
 <figure>
-  <img src="../../../img/pot.png" alt="Peaks Over Threshold extremes"/>
+  <img src="../../img/pot.png" alt="Peaks Over Threshold extremes"/>
 </figure>
 
 ## Extracting Extremes
-As outlined in the [Read First](../read-first.md) section of this documentation,
+As outlined in the [Read First](1-read-first.md) section of this documentation,
 there are multiple ways the same thing can be achieved in `pyextremes`.
 The POT extraction function can be accessed via:
 
@@ -57,7 +57,7 @@ parameters of the `get_extremes` function:
     ```
 
 <figure>
-  <img src="../../../img/extremes/pot-high-12H.png" alt="Peasks Over Threshold extremes 12 hours"/>
+  <img src="../../img/extremes/pot-high-12H.png" alt="Peasks Over Threshold extremes 12 hours"/>
 </figure>
 
 ??? note
@@ -149,7 +149,7 @@ extracted from the same data and using the same threshold as above, but with a l
     ```
 
 <figure>
-  <img src="../../../img/extremes/pot-high-24H.png" alt="Peasks Over Threshold extremes 24 hours"/>
+  <img src="../../img/extremes/pot-high-24H.png" alt="Peasks Over Threshold extremes 24 hours"/>
 </figure>
 
 !!! tip
@@ -199,7 +199,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
     ```
 
 <figure>
-  <img src="../../../img/extremes/pot-low.png" alt="Peasks Below Threshold extremes"/>
+  <img src="../../img/extremes/pot-low.png" alt="Peasks Below Threshold extremes"/>
 </figure>
 
 !!! tip

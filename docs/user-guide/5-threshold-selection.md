@@ -31,7 +31,7 @@ plot_mean_residual_life(data)
 ```
 
 <figure>
-  <img src="../../../img/extremes/mean-residual-life-high.png" alt="Mean Residual Life plot"/>
+  <img src="../../img/extremes/mean-residual-life-high.png" alt="Mean Residual Life plot"/>
 </figure>
 
 ??? note
@@ -100,7 +100,7 @@ plot_parameter_stability(data)
 ```
 
 <figure>
-  <img src="../../../img/extremes/parameter-stability.png" alt="Parameter Stability plot"/>
+  <img src="../../img/extremes/parameter-stability.png" alt="Parameter Stability plot"/>
 </figure>
 
 As seen in the figure above, these parameters appear to stabilize around threshold
@@ -151,7 +151,7 @@ plot_return_value_stability(
 ```
 
 <figure>
-  <img src="../../../img/extremes/return-value-stability.png" alt="Return Value Stability plot"/>
+  <img src="../../img/extremes/return-value-stability.png" alt="Return Value Stability plot"/>
 </figure>
 
 As seen in the figure above, the model is very stable for threshold values above 1.4.
@@ -216,7 +216,7 @@ plot_threshold_stability(
 ```
 
 <figure>
-  <img src="../../../img/extremes/threshold-stability.png" alt="Threshold Stability plot"/>
+  <img src="../../img/extremes/threshold-stability.png" alt="Threshold Stability plot"/>
 </figure>
 
 Based on the figures shown earlier, one may conclude that the valid threshold may lie
@@ -259,5 +259,5 @@ The `plot_threshold_stability` function uses the following parameters:
 Results of selecting the threshold value 1.5 are shown below:
 
 <figure>
-  <img src="../../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
+  <img src="../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
 </figure>

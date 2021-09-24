@@ -20,7 +20,7 @@ series = pd.read_csv(
 )
 ```
 
-???+ tip
+!!! tip
     The `battery_wl.csv` file referenced above is used throughout many tutorials
     and examples for the `pyextremes` package.
     If you want to reproduce all steps shown here and get the same results, the file
@@ -157,7 +157,7 @@ summary = model.get_summary(
 )
 ```
 
-???+ note
+!!! note
     By default return period size is set to one year,
     which is defined as the mean year from the Gregorian calendar
     ([365.2425 days](https://en.wikipedia.org/wiki/Year)).

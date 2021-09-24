@@ -9,11 +9,11 @@ This theorem demonstrates that the GEVD family is the only possible
 limit for the block maxima extreme values.
 
 <figure>
-  <img src="../../../img/bm.png" alt="Block Maxima extremes"/>
+  <img src="../../img/bm.png" alt="Block Maxima extremes"/>
 </figure>
 
 ## Extracting Extremes
-As outlined in the [Read First](../read-first.md) section of this documentation,
+As outlined in the [Read First](1-read-first.md) section of this documentation,
 there are multiple ways the same thing can be achieved in `pyextremes`.
 The BM extraction function can be accessed via:
 
@@ -53,7 +53,7 @@ parameters of the `get_extremes` function:
     ```
 
 <figure>
-  <img src="../../../img/extremes/bm-high-1y.png" alt="Block Maxima extremes"/>
+  <img src="../../img/extremes/bm-high-1y.png" alt="Block Maxima extremes"/>
 </figure>
 
 ??? note
@@ -163,7 +163,7 @@ data as above but with a block size of 2 years we get:
     ```
 
 <figure>
-  <img src="../../../img/extremes/bm-high-2y.png" alt="Block Maxima extremes 2 years"/>
+  <img src="../../img/extremes/bm-high-2y.png" alt="Block Maxima extremes 2 years"/>
 </figure>
 
 ## Block Minima
@@ -197,7 +197,7 @@ to `#!python "low"`:
     ```
 
 <figure>
-  <img src="../../../img/extremes/bm-low-1y.png" alt="Block Minima extremes"/>
+  <img src="../../img/extremes/bm-low-1y.png" alt="Block Minima extremes"/>
 </figure>
 
 !!! tip

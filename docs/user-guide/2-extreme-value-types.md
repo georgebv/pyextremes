@@ -26,7 +26,7 @@ to model extreme value behavior using the GEVD model family.
 See figure below illustrating this concept:
 
 <figure>
-  <img src="../../../img/bm.png" alt="Block Maxima extremes"/>
+  <img src="../../img/bm.png" alt="Block Maxima extremes"/>
 </figure>
 
 ## Peaks Over Threshold
@@ -42,7 +42,7 @@ these are described further in this tutorial.
 See figure below illustrating POT extremes:
 
 <figure>
-  <img src="../../../img/pot.png" alt="Peaks Over Threshold extremes"/>
+  <img src="../../img/pot.png" alt="Peaks Over Threshold extremes"/>
 </figure>
 
 ## Which Method to Use

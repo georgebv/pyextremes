@@ -9,7 +9,7 @@ periods as `1/p` where `p` is return period.
 
 !!! quote "Coles (2001, p.49)"
     In common terminology, $z_{p}$ is the **return level** associated with the
-    **return period** $l/p$, since to a reasonable degree of accuracy,
+    **return period** $1/p$, since to a reasonable degree of accuracy,
     the level $z_{p}$ is expected to be exceeded on average once every $1/p$ years.
     More precisely, $z_{p}$ is exceeded by the annual maximum in any particular
     year with probability $p$.
@@ -69,7 +69,7 @@ observed extreme values (black dots) are superimposed against the theoretical
 estimates (by fitting a distribution) as seen in the return value, Q-Q, and P-P plots.
 
 <figure>
-  <img src="../../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
+  <img src="../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
 </figure>
 
 ### Estimating Return Periods
