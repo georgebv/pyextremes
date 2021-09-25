@@ -28,8 +28,14 @@ Where $n$ is number of return period blocks within a time period
 
 ## Empirical Return Periods
 Empirical return periods are assigned to observed extreme values using an empricial rule
-where extreme values are ordered, ranked from most extreme (1) to least extreme (n), and
-assigned probabilities using the following formula:
+where extreme values are ordered and ranked from the most extreme (1) to the
+least extreme (n), then exceedance probabilities are calculated
+(see the following sub-section), and return periods are calculated as multiples of
+a given `return_period_size` (typically 1 year).
+
+### Probability of Exceedance
+Extreme events extracted using BM or POT methods are assigned exceedance probabilities
+using the following formula:
 
 $$P = \frac{r - \alpha}{n + 1 - \alpha - \beta}$$
 
@@ -43,7 +49,14 @@ where:
 - **n** - number of extreme values.
 - $\alpha$ and $\beta$ - empricial plotting position parameters (see further below).
 
-### Plotting Positions
+In this context $P$ corresponds to a probability of exceedance of a value with rank
+**r** in a any given time period with duration $t/n$ where $t$ is total duration of
+series from which the extreme values were drawn and $n$ is number of extreme events.
+If we measure time in years and we use Block Maxima with block size of 1 year, then
+the formula $t/n$ becomes 1 by definition and the return period in years can be
+calculated as $1/P$. For general rule read this tutorial section further.
+
+#### Plotting Positions
 Plotting positions are sets of empirical coefficients defining how extreme values are
 assigned probabilities, which are subsequently used to plot extreme values on the
 probability plots.
@@ -72,10 +85,45 @@ estimates (by fitting a distribution) as seen in the return value, Q-Q, and P-P 
   <img src="../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
 </figure>
 
-### Estimating Return Periods
+### Return Period
+Return periods are calculated from the exceedance probabilities using the following
+formula:
+
+$$R = 1 / P / \lambda$$
+
+where:
+
+- **R** - return period as multiple of `return_period_size` (by default 1 year).
+- **P** - exceedance probability calculated earlier.
+- $\lambda$ - rate of extreme events (average number of extreme events per
+  `return_period_size`). Calculated as:
+    - $\lambda$ = `return_period_size` / `block_size` for Block Maxima
+    - $\lambda = \frac{n}{t / return\_period\_size}$ for Peaks Ove Threshold,
+      where $n$ is number of extreme events and $t$ is total duration of series
+      from which the extreme values were drawn
+
+The resulting return period **R** is, therefore, a real number representing a multiple
+of `return_period_size`.
+
+!!! example
+    We have 2 years of data and, using `block_size` of 30 days (~1 month), we extract
+    24 extreme events using the Block Maxima method. We then rank the values from 1
+    to 24 as outlined above and, using the Weibull plotting position
+    ($\alpha=0$ and $\beta=0$), for the most extreme value (rank 1)
+    we get exceedance probability $P$ of 1/25 or 0.04.
+
+    Let's say we would like to get return period of the most extreme value (rank 1)
+    in years (`return_period_size` of 1 year). First, we calculate extreme value rate
+    $\lambda$ as `return_period_size` / `block_size`, which gives us 12 (approximately
+    since we used 30 days for `block_size`). Now we can use the return period formula
+    above directly as $R = 1 / 0.04 / 12 = 2.08$ years.
+
+## Estimating Return Periods
 `pyextremes` estimates empirical return periods for many plotting functions and
 goodness-of-fit tests behind the scenes using the Weibull plotting position.
-Return periods can be calculated using the `get_return_periods` function:
+Return periods can be calculated using the `get_return_periods` function (shown only
+for Block Maxima; Peaks Over Threshold works identically with the only difference
+being the `block_size` argument):
 
 === "weibull (default)"
 
