@@ -205,52 +205,32 @@ class EVA:
         lwidth = (width - len(sep)) // 2
         rwidth = width - (lwidth + len(sep))
 
-        # Function used to center text within a row
-        def center_text(text: str) -> str:
-            left_gap = (width - len(text)) // 2
-            right_gap = width - left_gap - len(text)
-            return "".join(
-                [
-                    " " * left_gap,
-                    text,
-                    " " * right_gap,
-                ]
-            )
-
         # Function used to convert label-value pair
         # into a sequence of lines within a column
-        def align_text(label: str, value: str, position: str) -> str:
+        def align_text(label: str, value: str, position: str) -> typing.List[str]:
+            assert position in ["left", "right"]
             if label == "":
                 if position == "left":
-                    return f"{value:>{lwidth}}"
-                elif position == "right":
-                    return f"{value:>{rwidth}}"
-                else:
-                    raise AssertionError
+                    return [f"{value:>{lwidth}}"]
+                return [f"{value:>{rwidth}}"]
 
             # Find width available for the value
-            # +2 stands for colon and space (label: value)
+            # (+2 stands for colon and space (label: value))
             label_width = len(label) + 2
             if position == "left":
                 free_width = lwidth - label_width
-            elif position == "right":
-                free_width = rwidth - label_width
             else:
-                raise AssertionError
+                free_width = rwidth - label_width
 
             # Split value into chunks using 'free_width'
             value_chunks = [
                 value[i : i + free_width] for i in range(0, len(value), free_width)
             ]
-            if "".join(value_chunks) != value:
-                raise AssertionError
 
             # Collect text row-by-row using 'value_chunks'
-            aligned_text = []
-            for i, chunk in enumerate(value_chunks):
-                if i == 0:
-                    aligned_text.append(f"{label}: {chunk:>{free_width}}")
-                else:
+            aligned_text = [f"{label}: {value_chunks[0]:>{free_width}}"]
+            try:
+                for chunk in value_chunks[1:]:
                     aligned_text.append(
                         "".join(
                             [
@@ -259,37 +239,26 @@ class EVA:
                             ]
                         )
                     )
-            return "\n".join(aligned_text)
+            except IndexError:
+                pass
+            return aligned_text
 
         # Function used to convert two label-value pairs
         # into a sequence of rows representing two columns
-        def align_pair(label: tuple, value: tuple) -> str:
-            # Create list of rows for each label-value pair
-            left_part = align_text(
-                label=label[0],
-                value=value[0],
-                position="left",
-            ).split("\n")
-            right_part = align_text(
-                label=label[1],
-                value=value[1],
-                position="right",
-            ).split("\n")
-
-            # Extend the shorter label-value pair column
-            delta_lines = len(left_part) - len(right_part)
-            if delta_lines < 0:
-                for _ in range(-delta_lines):
-                    left_part.append(" " * len(left_part[0]))
-            else:
-                for _ in range(delta_lines):
-                    right_part.append(" " * len(right_part[0]))
-
-            # Merge the two columns into a sequence of rows
-            return "\n".join(
-                "".join([left, sep, right])
-                for left, right in zip(left_part, right_part)
-            )
+        def align_pair(
+            label: typing.Tuple[str, str],
+            value: typing.Tuple[str, str],
+        ) -> str:
+            parts = [
+                align_text(lbl, val, pos)
+                for lbl, val, pos in zip(label, value, ("left", "right"))
+            ]
+            while len(parts[0]) != len(parts[1]):
+                shorter_part_index = 0 if len(parts[0]) < len(parts[1]) else 1
+                parts[shorter_part_index].append(
+                    " " * len(parts[shorter_part_index][0])
+                )
+            return "\n".join([sep.join([left, right]) for left, right in zip(*parts)])
 
         # Create summary header
         start_date = (
@@ -301,9 +270,9 @@ class EVA:
             f"{self.data.index[-1].year}"
         )
         summary = [
-            center_text("Univariate Extreme Value Analysis"),
+            "Univariate Extreme Value Analysis".center(width),
             "=" * width,
-            center_text("Source Data"),
+            "Source Data".center(width),
             "-" * width,
             align_pair(
                 ("Data label", "Size"),
@@ -319,7 +288,7 @@ class EVA:
         # Fill the extremes section
         summary.extend(
             [
-                center_text("Extreme Values"),
+                "Extreme Values".center(width),
                 "-" * width,
             ]
         )
@@ -355,7 +324,7 @@ class EVA:
         # Fill the model section
         summary.extend(
             [
-                center_text("Model"),
+                "Model".center(width),
                 "-" * width,
             ]
         )
