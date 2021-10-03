@@ -600,7 +600,7 @@ class EVA:
                         "`min_last_block` must be a number in the [0, 1] range"
                     )
 
-        elif method == "POT":
+        else:
             # Get `threshold`
             extremes_kwargs["threshold"] = kwargs.pop(
                 "threshold",
@@ -624,9 +624,6 @@ class EVA:
                 raise ValueError(
                     "`r` must be a positive timedelta, not %s" % extremes_kwargs["r"]
                 )
-
-        else:
-            raise RuntimeError
 
         # Check for unrecognized kwargs
         if len(kwargs) != 0:
