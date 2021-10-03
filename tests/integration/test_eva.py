@@ -393,16 +393,23 @@ class TestEVA:
             "POT": {"floc": 1.35},
         }[extremes_params["method"]]
         assert eva_model.distribution.name in distributions
-        aic = [
+        models = [
             get_model(
                 model="MLE",
                 extremes=eva_model.extremes,
                 distribution=distribution,
                 distribution_kwargs=distribution_kwargs,
-            ).AIC
+            )
             for distribution in distributions
         ]
-        assert np.isclose(eva_model.AIC, min(aic))
+        assert np.isclose(
+            eva_model.loglikelihood,
+            min(models, key=lambda x: x.AIC).loglikelihood,
+        )
+        assert np.isclose(
+            eva_model.AIC,
+            min(models, key=lambda x: x.AIC).AIC,
+        )
 
     def test_fit_model_errors(self, eva_model_bm, eva_model_pot):
         # Bad distribution type
