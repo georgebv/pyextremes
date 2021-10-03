@@ -51,8 +51,8 @@ def get_extremes_peaks_over_threshold(
     ts : pandas.Series
         Time series of the signal.
     extremes_type : str
-        high - get extreme high values
-        low - get extreme low values
+        high - get extreme high values (above threshold)
+        low - get extreme low values (below threshold)
     threshold : float
         Threshold used to find exceedances.
     r : pandas.Timedelta or value convertible to timedelta, optional

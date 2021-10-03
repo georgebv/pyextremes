@@ -130,61 +130,70 @@ class EVA:
     def data(self) -> pd.Series:
         return self.__data
 
-    def __get_extremes_attribute(self, attribute_name: str):
-        value = getattr(self, f"_EVA__{attribute_name}")
-        if value is None:
+    @property
+    def extremes(self) -> pd.Series:
+        if self.__extremes is None:
             raise AttributeError(
                 "extreme values must first be extracted "
                 "using the '.get_extremes' method"
             )
-        else:
-            return value
-
-    @property
-    def extremes(self) -> pd.Series:
-        return self.__get_extremes_attribute("extremes")
+        return self.__extremes
 
     @property
     def extremes_method(self) -> str:
-        return self.__get_extremes_attribute("extremes_method")
+        if self.__extremes_method is None:
+            raise AttributeError(
+                "extreme values must first be extracted "
+                "using the '.get_extremes' method"
+            )
+        return self.__extremes_method
 
     @property
     def extremes_type(self) -> str:
-        return self.__get_extremes_attribute("extremes_type")
+        if self.__extremes_type is None:
+            raise AttributeError(
+                "extreme values must first be extracted "
+                "using the '.get_extremes' method"
+            )
+        return self.__extremes_type
 
     @property
     def extremes_kwargs(self) -> dict:
-        return self.__get_extremes_attribute("extremes_kwargs")
+        if self.__extremes_kwargs is None:
+            raise AttributeError(
+                "extreme values must first be extracted "
+                "using the '.get_extremes' method"
+            )
+        return self.__extremes_kwargs
 
     @property
     def extremes_transformer(self) -> ExtremesTransformer:
-        return self.__get_extremes_attribute("extremes_transformer")
+        if self.__extremes_transformer is None:
+            raise AttributeError(
+                "extreme values must first be extracted "
+                "using the '.get_extremes' method"
+            )
+        return self.__extremes_transformer
 
-    def __get_model_attribute(self, attribute_name: typing.Optional[str] = None):
+    @property
+    def model(self) -> typing.Union[MLE, Emcee]:
         if self.__model is None:
             raise AttributeError(
                 "model must first be assigned using the '.fit_model' method"
             )
-        if attribute_name is None:
-            return self.__model
-        else:
-            return getattr(self.__model, attribute_name)
-
-    @property
-    def model(self) -> typing.Union[MLE, Emcee]:
-        return self.__get_model_attribute()
+        return self.__model
 
     @property
     def distribution(self) -> Distribution:
-        return self.__get_model_attribute("distribution")
+        return self.model.distribution
 
     @property
     def loglikelihood(self) -> float:
-        return self.__get_model_attribute("loglikelihood")
+        return self.model.loglikelihood
 
     @property
     def AIC(self) -> float:
-        return self.__get_model_attribute("AIC")
+        return self.model.AIC
 
     def test_ks(self, significance_level: float = 0.05) -> KolmogorovSmirnov:
         return KolmogorovSmirnov(
@@ -454,21 +463,15 @@ class EVA:
         self.__extremes_kwargs = {}
         if method == "BM":
             self.__extremes_kwargs["block_size"] = pd.to_timedelta(
-                kwargs.pop("block_size", "365.2425D")
+                kwargs.get("block_size", "365.2425D")
             )
-            self.__extremes_kwargs["errors"] = kwargs.pop("errors", "raise")
-            self.__extremes_kwargs["min_last_block"] = kwargs.pop(
+            self.__extremes_kwargs["errors"] = kwargs.get("errors", "raise")
+            self.__extremes_kwargs["min_last_block"] = kwargs.get(
                 "min_last_block", None
             )
-        elif method == "POT":
-            self.__extremes_kwargs["threshold"] = kwargs.pop("threshold")
-            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.pop("r", "24H"))
         else:
-            raise AssertionError
-        if len(kwargs) != 0:
-            raise TypeError(
-                f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
-            )
+            self.__extremes_kwargs["threshold"] = kwargs.get("threshold")
+            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24H"))
         logger.info("successfully collected extreme value properties")
 
         logger.debug("creating extremes transformer")
@@ -547,9 +550,9 @@ class EVA:
         else:
             if extremes.name != self.data.name:
                 raise ValueError("`extremes` name doesn't match that of `data`")
-        if not (
-            (extremes.index.min() >= self.data.index.min())
-            and (extremes.index.max() <= self.data.index.max())
+        if (
+            extremes.index.min() < self.data.index.min()
+            or extremes.index.max() > self.data.index.max()
         ):
             raise ValueError("`extremes` time range must fit within that of data")
 
@@ -665,7 +668,7 @@ class EVA:
 
         """
         model = cls(data=extremes)
-        model.set_extremes(extremes=extremes, **kwargs)
+        model.set_extremes(extremes=model.data, **kwargs)
         return model
 
     def plot_extremes(

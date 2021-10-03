@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class Distribution:

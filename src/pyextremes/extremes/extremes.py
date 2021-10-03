@@ -61,14 +61,13 @@ def get_extremes(
             extremes_type=extremes_type,
             **kwargs,
         )
-    elif method == "POT":
+    if method == "POT":
         return get_extremes_peaks_over_threshold(
             ts=ts,
             extremes_type=extremes_type,
             **kwargs,
         )
-    else:
-        raise ValueError(
-            f"invalid value in '{method}' for the 'method' argument, "
-            f"available methods: 'BM', 'POT'"
-        )
+    raise ValueError(
+        f"invalid value in '{method}' for the 'method' argument, "
+        f"available methods: 'BM', 'POT'"
+    )

@@ -18,6 +18,7 @@ fail-under=8.0
 disable=
       invalid-name,
       missing-class-docstring,
+      missing-function-docstring,
       missing-module-docstring,
       protected-access,
       too-few-public-methods,

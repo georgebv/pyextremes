@@ -27,8 +27,8 @@ def get_extremes_block_maxima(
     ts : pandas.Series
         Time series of the signal.
     extremes_type : str
-        high - get extreme high values
-        low - get extreme low values
+        high - get extreme high values (block maxima)
+        low - get extreme low values (block minima)
     block_size : str or pandas.Timedelta, optional
         Block size (default='365.2425D').
         See pandas.to_timedelta for more information.

@@ -1,5 +1,4 @@
 [run]
-branch = True
 omit =
     ./src/pyextremes/plotting/*
     ./src/pyextremes/tuning/*

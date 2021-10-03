@@ -74,10 +74,9 @@ def get_model(
 
     if model == "MLE":
         return MLE(**distribution_model_kwargs)
-    elif model == "Emcee":
+    if model == "Emcee":
         return Emcee(**distribution_model_kwargs)
-    else:
-        raise ValueError(
-            f"invalid value in '{model}' for the 'model' argument, "
-            f"available model: 'MLE', 'Emcee'"
-        )
+    raise ValueError(
+        f"invalid value in '{model}' for the 'model' argument, "
+        f"available model: 'MLE', 'Emcee'"
+    )
