@@ -74,6 +74,8 @@ class Distribution:
         # Get a list of distribution parameter names
         self.distribution_parameters = []
         if self.distribution.shapes is not None:
+            # Shape parameters must go first due to argument order in scipy.stats
+            # (self.distribution_parameters is unpacked using *)
             self.distribution_parameters.extend(
                 [shape.strip() for shape in self.distribution.shapes.split(",")]
             )

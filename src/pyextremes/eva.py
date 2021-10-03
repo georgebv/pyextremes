@@ -889,7 +889,7 @@ class EVA:
             **kwargs,
         )
 
-    def _get_mcmc_plot_inputs(self, labels=None) -> tuple:
+    def _get_mcmc_plot_inputs(self, labels=None) -> tuple:  # pragma: no cover
         try:
             trace = self.model.trace
             trace_map = tuple(

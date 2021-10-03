@@ -499,19 +499,6 @@ class TestEVA:
                     == input_parameters["distribution_kwargs"]["floc"]
                 )
 
-    def test_get_mcmc_plot_inputs(self, eva_model_bm_mle, eva_model_bm_emcee):
-        # Test trying to plot MCMC-only plots for MLE model
-        with pytest.raises(TypeError, match=r"this method.*MCMC-like"):
-            eva_model_bm_mle.plot_trace()
-        with pytest.raises(TypeError, match=r"this method.*MCMC-like"):
-            eva_model_bm_mle.plot_corner()
-
-        # Test default behaviour
-        trace, trace_map, labels = eva_model_bm_emcee._get_mcmc_plot_inputs()
-        assert np.allclose(trace, eva_model_bm_emcee.model.trace)
-        assert len(trace_map) == len(eva_model_bm_emcee.distribution.free_parameters)
-        assert labels == [r"Shape, $\xi$", r"Location, $\mu$", r"Scale, $\sigma$"]
-
     @pytest.mark.parametrize("extremes_method", ["BM", "POT"])
     def test_get_return_value(
         self, eva_model_bm_mle, eva_model_pot_mle, extremes_method

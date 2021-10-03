@@ -80,22 +80,24 @@ def test_extreme_value_extraction(battery_wl, extremes_type):
 
 @pytest.mark.parametrize("extremes_type", ["high", "low"])
 def test_min_last_block(battery_wl, extremes_type):
-    extremes_full = get_extremes(
-        ts=battery_wl,
-        method="BM",
-        extremes_type=extremes_type,
-        block_size="365.2425D",
-        errors="coerce",
-        min_last_block=None,
-    )
-    extremes_trimmed = get_extremes(
-        ts=battery_wl,
-        method="BM",
-        extremes_type=extremes_type,
-        block_size="365.2425D",
-        errors="coerce",
-        min_last_block=0.9,
-    )
+    with pytest.warns(NoDataBlockWarning, match=r"blocks contained no data"):
+        extremes_full = get_extremes(
+            ts=battery_wl,
+            method="BM",
+            extremes_type=extremes_type,
+            block_size="365.2425D",
+            errors="coerce",
+            min_last_block=None,
+        )
+    with pytest.warns(NoDataBlockWarning, match=r"blocks contained no data"):
+        extremes_trimmed = get_extremes(
+            ts=battery_wl,
+            method="BM",
+            extremes_type=extremes_type,
+            block_size="365.2425D",
+            errors="coerce",
+            min_last_block=0.9,
+        )
     assert len(extremes_full) - len(extremes_trimmed) == 1
     assert np.allclose(
         extremes_full.values[:-1], extremes_trimmed.values, atol=0.01, rtol=0
