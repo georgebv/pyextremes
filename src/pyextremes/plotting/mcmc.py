@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 import scipy.stats
+
 from matplotlib.collections import LineCollection
 
 from pyextremes.plotting.style import pyextremes_rc
@@ -160,8 +161,9 @@ def plot_corner(
     figure : matplotlib.figure.Figure
         Figure object.
     axes : list
-        2D list with Axes objects
-        of size N by N, where N is `trace.shape[2]`.
+        2D list with Axes objects of size N by N, where N is `trace.shape[2]`.
+        Empty slots are represented by None. Axes are ordered from left to right
+        top to bottom.
 
     """
     # Parse the 'burn_in' argument
@@ -197,7 +199,7 @@ def plot_corner(
         )
 
         # Create and configure axes
-        axes = [[None] * n_parameters] * n_parameters
+        axes = [[None] * n_parameters for _ in range(n_parameters)]
         for i in range(n_parameters):
             for j in range(n_parameters):
                 # Create axes only for axes at or left of the main diagonal

@@ -983,8 +983,9 @@ class EVA:
         figure : matplotlib.figure.Figure
             Figure object.
         axes : list
-            2D list with Axes objects
-            of size N by N, where N is n_parameters.
+            2D list with Axes objects of size N by N, where N is `trace.shape[2]`.
+            Empty slots are represented by None. Axes are ordered from left to right
+            top to bottom.
 
         """
         trace, trace_map, labels = self._get_mcmc_plot_inputs(labels=labels)
