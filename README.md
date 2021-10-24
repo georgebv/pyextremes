@@ -101,3 +101,6 @@ conda install -c conda-forge pyextremes
 <p align="center" style="font-size:20px; margin:10px 10px 40px 10px">
   <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/corner.png" alt="Diagnostic plot" width="600px">
 </p>
+
+# Acknowledgements
+I wanted to give kudos to [Jean Toilliez](https://github.com/jtoilliez) who has inspired me to develop this open-source project and who taught me a lot about the extreme value theory. Also big thanks to Max Larson who has introduced me to software development and statistics.
