@@ -25,7 +25,9 @@
 
 **License:** [MIT](https://opensource.org/licenses/MIT)
 
-**E-Mail:** bocharovgeorgii@gmail.com
+**Support:** [ask a question](https://github.com/georgebv/pyextremes/discussions)
+or [create an issue](https://github.com/georgebv/pyextremes/issues/new/choose),
+any input is appreciated and would help develop the project
 
 **pyextremes** is a Python library aimed at performing univariate
 [Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
