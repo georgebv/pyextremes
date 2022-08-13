@@ -76,7 +76,7 @@ class TestMLE:
         k = 2
         n = len(extremes)
         aic = 2 * k - 2 * mle_model.loglikelihood
-        correction = (2 * k ** 2 + 2 * k) / (n - k - 1)
+        correction = (2 * k**2 + 2 * k) / (n - k - 1)
         assert np.isclose(mle_model.AIC, aic + correction, rtol=0, atol=0.01)
 
     @pytest.mark.parametrize("prop", ["pdf", "logpdf", "cdf", "ppf", "isf"])
@@ -273,7 +273,7 @@ class TestMLE:
             )
         )
         aic = 2 * k - 2 * loglikelihood
-        correction = (2 * k ** 2 + 2 * k) / (n - k - 1)
+        correction = (2 * k**2 + 2 * k) / (n - k - 1)
         assert np.isclose(model.AIC, aic + correction)
 
         # Test properties

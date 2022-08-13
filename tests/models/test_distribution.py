@@ -38,7 +38,15 @@ class TestDistribution:
             ("gumbel_r", (10, 2), {}, (10, 2)),
             ("genpareto", (0.5, 0, 2), {}, (0.5, 0, 2)),
             ("genpareto", (0.5, 2), {"floc": 0}, (0.5, 0, 2)),
-            ("expon", (0, 2,), {}, (0, 2)),
+            (
+                "expon",
+                (
+                    0,
+                    2,
+                ),
+                {},
+                (0, 2),
+            ),
             ("expon", (2,), {"floc": 0}, (0, 2)),
         ],
     )
@@ -125,7 +133,10 @@ class TestDistribution:
         assert ffp.shape == (len(scipy_parameters),)
 
         ffp = distribution.free2full_parameters(free_parameters=[theta] * 5)
-        assert ffp.shape == (5, len(scipy_parameters),)
+        assert ffp.shape == (
+            5,
+            len(scipy_parameters),
+        )
         assert np.all([np.allclose(row, scipy_parameters) for row in ffp])
 
         if len(theta) == 1:
@@ -148,7 +159,8 @@ class TestDistribution:
             distribution.free2full_parameters(free_parameters=list(range(100)))
 
         with pytest.raises(
-            ValueError, match=r"invalid shape.*'free_parameters' argument.*must be \(n",
+            ValueError,
+            match=r"invalid shape.*'free_parameters' argument.*must be \(n",
         ):
             distribution.free2full_parameters(
                 free_parameters=[list(range(100)), list(range(100))]

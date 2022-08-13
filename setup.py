@@ -11,7 +11,9 @@ def get_long_description():
 
 
 def get_version():
-    with open(here / "src" / "pyextremes" / "__init__.py", mode="r") as file:
+    with open(
+        here / "src" / "pyextremes" / "__init__.py", encoding="utf-8", mode="r"
+    ) as file:
         version_line = [
             line.strip() for line in file.readlines() if "__version__" in line
         ][0]
@@ -86,6 +88,9 @@ setuptools.setup(
         "test": [
             "pytest",
             "pytest-cov",
+        ],
+        "develop": [
+            "pre-commit",
         ],
     },
     python_requires=">=3.8",
