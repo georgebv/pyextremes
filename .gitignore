@@ -16,3 +16,6 @@ coverage.xml
 
 # Linting
 .mypy_cache
+
+# Build artifacts
+sdist
