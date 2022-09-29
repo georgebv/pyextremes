@@ -91,6 +91,16 @@ class EVA:
                 f"not {data.index.inferred_type}"
             )
 
+        # Ensure `data` doesn't have duplicate indices
+        if (n_duplicates := len(data) - len(data.index.drop_duplicates())) > 0:
+            message = (
+                f"{n_duplicates:,d} duplicate indices found in `data` "
+                "- removing duplicate entries"
+            )
+            logger.debug(message)
+            warnings.warn(message=message, category=RuntimeWarning)
+            data = data.groupby(data.index).first()
+
         # Ensure that `data` is sorted
         if not data.index.is_monotonic_increasing:
             message = (
