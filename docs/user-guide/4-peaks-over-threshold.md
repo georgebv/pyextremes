@@ -16,6 +16,7 @@ famliy, according to the
 </figure>
 
 ## Extracting Extremes
+
 As outlined in the [Read First](1-read-first.md) section of this documentation,
 there are multiple ways the same thing can be achieved in `pyextremes`.
 The POT extraction function can be accessed via:
@@ -61,15 +62,14 @@ parameters of the `get_extremes` function:
 </figure>
 
 ??? note
-    You can get the `data` variable referenced above by running the following code:
+You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
     data = (
         data
         .sort_index(ascending=True)
@@ -87,7 +87,6 @@ parameters of the `get_extremes` function:
 
     All figures shown in this tutorial section were generated using
     [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/3%20peaks%20over%20threshold.ipynb).
-
 
 The `get_extremes` function uses the following parameters:
 
@@ -120,6 +119,7 @@ get_extremes(
 ```
 
 ## Declustering
+
 As described earlier, declustering is controlled using the `r` argument.
 The goal of declustering is to ensure that all extreme values are IID, which is
 a requirement for the GPD model to be valid. Shown below is an example of extremes
@@ -153,12 +153,12 @@ extracted from the same data and using the same threshold as above, but with a l
 </figure>
 
 !!! tip
-    Declustering value of `#!python r="24H"` was selected as a default value because
-    `pyextremes` was developed when working with meteorological phenomena - namely,
-    storms. Extreme storm surge and waves are generally caused by a storm event which
-    generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
-    inter-cluster distance results in a reasonably good separation of independent
-    storm events.
+Declustering value of `#!python r="24H"` was selected as a default value because
+`pyextremes` was developed when working with meteorological phenomena - namely,
+storms. Extreme storm surge and waves are generally caused by a storm event which
+generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
+inter-cluster distance results in a reasonably good separation of independent
+storm events.
 
     User is advised to select this parameter based on the properties of studied
     phenomena. For example, extreme precipitation events in some regions of the world
@@ -166,6 +166,7 @@ extracted from the same data and using the same threshold as above, but with a l
     24 hours would not be adequate for such analysis.
 
 ## Peaks Below Threshold
+
 A special case of Peaks Over Threshold is when instead of selecting values above
 the threshold we select values below it. Such values can be extracted
 by setting the `extremes_type` argument to `#!python "low"`:
@@ -203,14 +204,14 @@ by setting the `extremes_type` argument to `#!python "low"`:
 </figure>
 
 !!! tip
-    The `pyextremes.EVA` class works identically for both peaks over and below
-    threshold series and properly reflects (rotates) the data to fit
-    statistical distributions.
-    This is true as long as the `extremes_type` argument is correctly specified.
+The `pyextremes.EVA` class works identically for both peaks over and below
+threshold series and properly reflects (rotates) the data to fit
+statistical distributions.
+This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-    When analyzing POT with `#!python extremes_type="low"` be mindful of your data
-    being censored. An example of this would be water level time series - water levels
-    cannot go below the seabed and will, therefore, be censored by the seabed elevation.
-    Such series would no longer follow the GPD and any results of such analysis
-    would be unerliable.
+When analyzing POT with `#!python extremes_type="low"` be mindful of your data
+being censored. An example of this would be water level time series - water levels
+cannot go below the seabed and will, therefore, be censored by the seabed elevation.
+Such series would no longer follow the GPD and any results of such analysis
+would be unerliable.

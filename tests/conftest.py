@@ -18,8 +18,8 @@ def battery_wl(shared_data_folder) -> pd.Series:
             shared_data_folder / "battery_wl.csv",
             index_col=0,
             parse_dates=True,
-            squeeze=True,
         )
+        .squeeze()
         .dropna()
         .sort_index(ascending=True)
     )
@@ -32,8 +32,8 @@ def battery_wl_preprocessed(shared_data_folder) -> pd.Series:
             shared_data_folder / "battery_wl.csv",
             index_col=0,
             parse_dates=True,
-            squeeze=True,
         )
+        .squeeze()
         .dropna()
         .sort_index(ascending=True)
     )
@@ -53,8 +53,7 @@ def extremes_bm_high(shared_data_folder) -> pd.Series:
         shared_data_folder / "extremes_bm_high.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
 
 
 @pytest.fixture(scope="function")
@@ -63,8 +62,7 @@ def extremes_bm_low(shared_data_folder) -> pd.Series:
         shared_data_folder / "extremes_bm_high.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
 
 
 @pytest.fixture(scope="function")
@@ -73,8 +71,7 @@ def extremes_pot_high(shared_data_folder) -> pd.Series:
         shared_data_folder / "extremes_pot_high.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
 
 
 @pytest.fixture(scope="function")
@@ -83,5 +80,4 @@ def extremes_pot_low(shared_data_folder) -> pd.Series:
         shared_data_folder / "extremes_pot_low.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()

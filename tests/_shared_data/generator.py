@@ -7,7 +7,8 @@ from pyextremes import get_extremes
 
 def main() -> None:
     data = (
-        pd.read_csv("battery_wl.csv", index_col=0, parse_dates=True, squeeze=True)
+        pd.read_csv("battery_wl.csv", index_col=0, parse_dates=True)
+        .squeeze()
         .sort_index(ascending=True)
         .dropna()
     )

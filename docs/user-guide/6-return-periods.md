@@ -2,17 +2,18 @@ This section demonstrates how empirical probabilities (return periods) can be ob
 for extreme values extracted using methods described in earlier sections.
 
 ## What is Return Period
+
 Return period indicates duration of time (typically years) which corresponds to a
 probability that a given value (e.g. wind speed) would be exceeded at least once within
 a year. This probability is called probability of exceedance and is related to return
 periods as `1/p` where `p` is return period.
 
 !!! quote "Coles (2001, p.49)"
-    In common terminology, $z_{p}$ is the **return level** associated with the
-    **return period** $1/p$, since to a reasonable degree of accuracy,
-    the level $z_{p}$ is expected to be exceeded on average once every $1/p$ years.
-    More precisely, $z_{p}$ is exceeded by the annual maximum in any particular
-    year with probability $p$.
+In common terminology, $z_{p}$ is the **return level** associated with the
+**return period** $1/p$, since to a reasonable degree of accuracy,
+the level $z_{p}$ is expected to be exceeded on average once every $1/p$ years.
+More precisely, $z_{p}$ is exceeded by the annual maximum in any particular
+year with probability $p$.
 
 Return periods are often incorrectly interpreted in the professional communities
 as "100-year event is an event which happens only once in 100 years", which may lead to
@@ -27,6 +28,7 @@ Where $n$ is number of return period blocks within a time period
 (50 for 50 years with retun period block of size 1 year) and $p$ is 1% (100-year event).
 
 ## Empirical Return Periods
+
 Empirical return periods are assigned to observed extreme values using an empricial rule
 where extreme values are ordered and ranked from the most extreme (1) to the
 least extreme (n), then exceedance probabilities are calculated
@@ -34,6 +36,7 @@ least extreme (n), then exceedance probabilities are calculated
 a given `return_period_size` (typically 1 year).
 
 ### Probability of Exceedance
+
 Extreme events extracted using BM or POT methods are assigned exceedance probabilities
 using the following formula:
 
@@ -57,17 +60,18 @@ the formula $t/n$ becomes 1 by definition and the return period in years can be
 calculated as $1/P$. For general rule read this tutorial section further.
 
 #### Plotting Positions
+
 Plotting positions are sets of empirical coefficients defining how extreme values are
 assigned probabilities, which are subsequently used to plot extreme values on the
 probability plots.
 
 !!! warning
-    Plotting positions have nothing to do with modeling extreme event statistics in
-    modern EVA. Historically, in time before computers became widespread, EVA
-    was performed by plotting extreme events on probability paper (with axes scaled
-    logarithmically and according to a specific plotting position) with the idea that
-    a return value curve for a given model (e.g. GEVD) would be a straight line drawn
-    through these points using a pen and a ruler.
+Plotting positions have nothing to do with modeling extreme event statistics in
+modern EVA. Historically, in time before computers became widespread, EVA
+was performed by plotting extreme events on probability paper (with axes scaled
+logarithmically and according to a specific plotting position) with the idea that
+a return value curve for a given model (e.g. GEVD) would be a straight line drawn
+through these points using a pen and a ruler.
 
     Modern EVA fits models to data by maximimizng likelihood function via methods such
     as MLE or MCMC (read more in other sections). This is only feasible due to the use
@@ -86,6 +90,7 @@ estimates (by fitting a distribution) as seen in the return value, Q-Q, and P-P 
 </figure>
 
 ### Return Period
+
 Return periods are calculated from the exceedance probabilities using the following
 formula:
 
@@ -97,20 +102,20 @@ where:
 - **P** - exceedance probability calculated earlier.
 - $\lambda$ - rate of extreme events (average number of extreme events per
   `return_period_size`). Calculated as:
-    - $\lambda$ = `return_period_size` / `block_size` for Block Maxima
-    - $\lambda = \frac{n}{t / return\_period\_size}$ for Peaks Ove Threshold,
-      where $n$ is number of extreme events and $t$ is total duration of series
-      from which the extreme values were drawn
+  - $\lambda$ = `return_period_size` / `block_size` for Block Maxima
+  - $\lambda = \frac{n}{t / return\_period\_size}$ for Peaks Ove Threshold,
+    where $n$ is number of extreme events and $t$ is total duration of series
+    from which the extreme values were drawn
 
 The resulting return period **R** is, therefore, a real number representing a multiple
 of `return_period_size`.
 
 !!! example
-    We have 2 years of data and, using `block_size` of 30 days (~1 month), we extract
-    24 extreme events using the Block Maxima method. We then rank the values from 1
-    to 24 as outlined above and, using the Weibull plotting position
-    ($\alpha=0$ and $\beta=0$), for the most extreme value (rank 1)
-    we get exceedance probability $P$ of 1/25 or 0.04.
+We have 2 years of data and, using `block_size` of 30 days (~1 month), we extract
+24 extreme events using the Block Maxima method. We then rank the values from 1
+to 24 as outlined above and, using the Weibull plotting position
+($\alpha=0$ and $\beta=0$), for the most extreme value (rank 1)
+we get exceedance probability $P$ of 1/25 or 0.04.
 
     Let's say we would like to get return period of the most extreme value (rank 1)
     in years (`return_period_size` of 1 year). First, we calculate extreme value rate
@@ -119,6 +124,7 @@ of `return_period_size`.
     above directly as $R = 1 / 0.04 / 12 = 2.08$ years.
 
 ## Estimating Return Periods
+
 `pyextremes` estimates empirical return periods for many plotting functions and
 goodness-of-fit tests behind the scenes using the Weibull plotting position.
 Return periods can be calculated using the `get_return_periods` function (shown only
@@ -267,15 +273,14 @@ The following paramters are used only when `#!python extremes_method="BM"`:
   If not provided, then it is calculated as median distance between extreme values.
 
 ??? note
-    You can get the `data` variable referenced above by running the following code:
+You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
     data = (
         data
         .sort_index(ascending=True)
