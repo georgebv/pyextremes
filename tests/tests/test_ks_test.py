@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import scipy.stats
+
 from pyextremes.tests import KolmogorovSmirnov
 
 
