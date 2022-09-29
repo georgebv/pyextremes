@@ -9,17 +9,18 @@ for extreme low values (`#!python extremes_type="low"`).
 The key goal of threshold selection can, therefore, be formulated as follows:
 
 !!! quote "Goal of threshold selection"
-    Select the smallest threshold value among those which produce extreme values
-    following the limit exceedance model (Generalized Pareto Distribution family).
+Select the smallest threshold value among those which produce extreme values
+following the limit exceedance model (Generalized Pareto Distribution family).
 
 !!! warning
-    Threshold selection is probably the hardest part of Extreme Value Analysis when 
-    analyzing extreme values obtained using the Peaks Over Threshold method.
-    It involves a great deal of subjective judgement and should be performed
-    in conjunction with other methods, such as Block Maxima + GEVD, to gain more
-    confidence in the validty of obtained results.
+Threshold selection is probably the hardest part of Extreme Value Analysis when
+analyzing extreme values obtained using the Peaks Over Threshold method.
+It involves a great deal of subjective judgement and should be performed
+in conjunction with other methods, such as Block Maxima + GEVD, to gain more
+confidence in the validty of obtained results.
 
 ## Mean Residual Life
+
 Mean residual life plot plots average excess value over given threshold for a series
 of thresholds. The idea is that the mean residual life plot should be approximately
 linear above a threshold for which the Generalized Pareto Distribution model is valid.
@@ -35,15 +36,14 @@ plot_mean_residual_life(data)
 </figure>
 
 ??? note
-    You can get the `data` variable referenced above by running the following code:
+You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
     data = (
         data
         .sort_index(ascending=True)
@@ -84,10 +84,11 @@ The `plot_mean_residual_life` function uses the following parameters:
   By default it is (8, 5).
 
 !!! note
-    In author's (subjective) opinion this is the least useful technique among those
-    listed in this section because mean residual life plots are very hard to interpret.
+In author's (subjective) opinion this is the least useful technique among those
+listed in this section because mean residual life plots are very hard to interpret.
 
 ## Parameter Stability
+
 Parameter stability plot shows how shape and modified scale parameters of the
 Generalized Pareto Distribution change over a range of threshold values.
 The idea is that these parameters should be stable (vary by small amount) within
@@ -127,13 +128,14 @@ The `plot_parameter_stability` function uses the following parameters:
 - **n_samples** - number of bootstrap samples used to estimate confidence
   interval bounds (default=100). Ignored if `alpha` is None.
 - **axes** - tuple with matplotlib Axes (ax_shape, ax_scale) for shape and scale values.
-    If None (default), new figure and axes are created.
+  If None (default), new figure and axes are created.
 - **figsize** - figure size in inches in format (width, height).
   By default it is (8, 5).
 - **progress** - if True, shows tqdm progress bar. By default False.
   Requires `tqdm` package.
 
 ## Return Value Stability
+
 An extension of the previous technique is to investigate stability of a target return
 value with a pre-defined return period over a range of thresholds. This technique
 provides a more intuitive metric of model stability. Let's plot it for the range of
@@ -191,14 +193,15 @@ The `plot_return_value_stability` function uses the following parameters:
   Requires `tqdm` package.
 
 !!! warning
-    This is the most dangerous threshold selection teqchnique presented in this section.
-    It can be abused by selecting a threshold value which gives a desired result.
-    Results of such analysis would be biased and invalid. Analyst should honestly
-    present results of their analysis and high variance in answer should be considered
-    a valuable result as well - it indicates that available data cann be used to obtain
-    reliable results and that there is high uncertainty in the analyzed process.
+This is the most dangerous threshold selection teqchnique presented in this section.
+It can be abused by selecting a threshold value which gives a desired result.
+Results of such analysis would be biased and invalid. Analyst should honestly
+present results of their analysis and high variance in answer should be considered
+a valuable result as well - it indicates that available data cann be used to obtain
+reliable results and that there is high uncertainty in the analyzed process.
 
 ## Putting it all Together
+
 `pyextremes` provides a convenience function to put all of the above together.
 It also adds an additional plot - AIC curve indicating relative model performance.
 The AIC curve should not be used as a threshold selection tool because it will always

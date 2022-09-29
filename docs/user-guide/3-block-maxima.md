@@ -13,6 +13,7 @@ limit for the block maxima extreme values.
 </figure>
 
 ## Extracting Extremes
+
 As outlined in the [Read First](1-read-first.md) section of this documentation,
 there are multiple ways the same thing can be achieved in `pyextremes`.
 The BM extraction function can be accessed via:
@@ -57,15 +58,14 @@ parameters of the `get_extremes` function:
 </figure>
 
 ??? note
-    You can get the `data` variable referenced above by running the following code:
+You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
         parse_dates=True,
-        squeeze=True,
-    )
+    ).squeeze()
     data = (
         data
         .sort_index(ascending=True)
@@ -121,6 +121,7 @@ get_extremes(
 ```
 
 ## Selecting Block Size
+
 Like with most choices in statistics, selection of block size involves making a
 trade-off between bias and variance: blocks that are too small mean that
 approximation by the limit model (GEVD) is likely to be poor,
@@ -167,6 +168,7 @@ data as above but with a block size of 2 years we get:
 </figure>
 
 ## Block Minima
+
 Block minima is fully equivalent to block maxima in the way it is extracted.
 Block minima can be extracted by setting the `extremes_type` argument
 to `#!python "low"`:
@@ -201,13 +203,13 @@ to `#!python "low"`:
 </figure>
 
 !!! tip
-    The `pyextremes.EVA` class works identically for both maxima and minima series and
-    properly reflects (rotates) the data to fit statistical distributions.
-    This is true as long as the `extremes_type` argument is correctly specified.
+The `pyextremes.EVA` class works identically for both maxima and minima series and
+properly reflects (rotates) the data to fit statistical distributions.
+This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-    When analyzing block minima be mindful of your data being censored.
-    An example of this would be water level time series - water levels cannot go
-    below the seabed and will, therefore, be censored by the seabed elevation.
-    Such series would no longer follow the GEVD and any results of such analysis
-    would be unerliable.
+When analyzing block minima be mindful of your data being censored.
+An example of this would be water level time series - water levels cannot go
+below the seabed and will, therefore, be censored by the seabed elevation.
+Such series would no longer follow the GEVD and any results of such analysis
+would be unerliable.
