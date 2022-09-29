@@ -327,6 +327,29 @@ class TestEVA:
                 unrecognized_argument=1,
             )
 
+    def test_get_extremes_duplicate_indices(self):
+        # Generate data and add duplicates
+        index = list(pd.date_range(start="2000", end="2050", periods=100))
+        index[5] = index[0]
+        index[10] = index[1]
+        data = pd.Series(
+            data=np.arange(100),
+            index=index,
+            name="water level [m]",
+        )
+
+        with pytest.warns(
+            RuntimeWarning,
+            match=r"duplicate indices found.+removing duplicate entries",
+        ):
+            eva_model = EVA(data=data)
+
+        # Make sure bug caused by duplicates doesn't happen again
+        # ValueError: setting an array element with a sequence.
+        # The requested array has an inhomogeneous shape after 1 dimensions.
+        eva_model.get_extremes(method="BM")
+        eva_model.get_extremes(method="POT", threshold=50)
+
     def test_from_extremes(self):
         index = pd.date_range(start="2000", end="2050", periods=100)
         eva_model = EVA.from_extremes(
