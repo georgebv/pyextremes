@@ -1,3 +1,8 @@
 #!/bin/bash
 
-pylint src/ --rcfile=pyproject.toml
+if [[ $(poetry config virtualenvs.create) = true ]]
+then
+    poetry run pylint src/ --rcfile=pyproject.toml
+else
+    pylint src/ --rcfile=pyproject.toml
+fi
