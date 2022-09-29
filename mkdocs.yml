@@ -3,8 +3,8 @@ repo_url: https://github.com/georgebv/pyextremes
 repo_name: georgebv/pyextremes
 edit_uri: ""
 site_description: Extreme Value Analysis (EVA) in Python
-site_author: Georgii Bocharov
-copyright: Copyright &copy; 2021 Georgii Bocharov
+site_author: George Bocharov
+copyright: Copyright &copy; 2022 George Bocharov
 
 nav:
   - pyextremes: index.md

@@ -1,16 +1,18 @@
 # Development environment
 .devcontainer
 .vscode
+.venv
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
 build/
 
 # Testing
 .pytest_cache
 .coverage
+coverage.xml
 
 # Linting
 .mypy_cache

@@ -5,8 +5,8 @@ import warnings
 import emcee
 import numpy as np
 import pandas as pd
-import scipy.stats
 import scipy.optimize
+import scipy.stats
 
 from pyextremes.models.model_base import AbstractModelBaseClass
 
