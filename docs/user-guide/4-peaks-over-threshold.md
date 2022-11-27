@@ -62,7 +62,7 @@ parameters of the `get_extremes` function:
 </figure>
 
 ??? note
-You can get the `data` variable referenced above by running the following code:
+    You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
@@ -153,13 +153,13 @@ extracted from the same data and using the same threshold as above, but with a l
 </figure>
 
 !!! tip
-Declustering value of `#!python r="24H"` was selected as a default value because
-`pyextremes` was developed when working with meteorological phenomena - namely,
-storms. Extreme storm surge and waves are generally caused by a storm event which
-generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
-inter-cluster distance results in a reasonably good separation of independent
-storm events.
-
+    Declustering value of `#!python r="24H"` was selected as a default value because
+    `pyextremes` was developed when working with meteorological phenomena - namely,
+    storms. Extreme storm surge and waves are generally caused by a storm event which
+    generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
+    inter-cluster distance results in a reasonably good separation of independent
+    storm events.
+  
     User is advised to select this parameter based on the properties of studied
     phenomena. For example, extreme precipitation events in some regions of the world
     can last for more than several days and, because of this, the default value of
@@ -204,14 +204,14 @@ by setting the `extremes_type` argument to `#!python "low"`:
 </figure>
 
 !!! tip
-The `pyextremes.EVA` class works identically for both peaks over and below
-threshold series and properly reflects (rotates) the data to fit
-statistical distributions.
-This is true as long as the `extremes_type` argument is correctly specified.
+    The `pyextremes.EVA` class works identically for both peaks over and below
+    threshold series and properly reflects (rotates) the data to fit
+    statistical distributions.
+    This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-When analyzing POT with `#!python extremes_type="low"` be mindful of your data
-being censored. An example of this would be water level time series - water levels
-cannot go below the seabed and will, therefore, be censored by the seabed elevation.
-Such series would no longer follow the GPD and any results of such analysis
-would be unerliable.
+    When analyzing POT with `#!python extremes_type="low"` be mindful of your data
+    being censored. An example of this would be water level time series - water levels
+    cannot go below the seabed and will, therefore, be censored by the seabed elevation.
+    Such series would no longer follow the GPD and any results of such analysis
+    would be unerliable.

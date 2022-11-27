@@ -58,7 +58,7 @@ parameters of the `get_extremes` function:
 </figure>
 
 ??? note
-You can get the `data` variable referenced above by running the following code:
+    You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
@@ -78,9 +78,9 @@ You can get the `data` variable referenced above by running the following code:
     ) / pd.to_timedelta("365.2425D") * 2.87e-3
     ```
 
-    `#!python "battery_wl.csv"`
+    `#!python "battery_wl.csv"` 
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
-
+  
     All figures shown in this tutorial section were generated using
     [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb).
 
@@ -203,13 +203,13 @@ to `#!python "low"`:
 </figure>
 
 !!! tip
-The `pyextremes.EVA` class works identically for both maxima and minima series and
-properly reflects (rotates) the data to fit statistical distributions.
-This is true as long as the `extremes_type` argument is correctly specified.
+    The `pyextremes.EVA` class works identically for both maxima and minima series and
+    properly reflects (rotates) the data to fit statistical distributions.
+    This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-When analyzing block minima be mindful of your data being censored.
-An example of this would be water level time series - water levels cannot go
-below the seabed and will, therefore, be censored by the seabed elevation.
-Such series would no longer follow the GEVD and any results of such analysis
-would be unerliable.
+    When analyzing block minima be mindful of your data being censored.
+    An example of this would be water level time series - water levels cannot go
+    below the seabed and will, therefore, be censored by the seabed elevation.
+    Such series would no longer follow the GEVD and any results of such analysis
+    would be unerliable.
