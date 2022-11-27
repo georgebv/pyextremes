@@ -20,10 +20,10 @@ series = pd.read_csv(
 ```
 
 !!! tip
-The `battery_wl.csv` file referenced above is used throughout many tutorials
-and examples for the `pyextremes` package.
-If you want to reproduce all steps shown here and get the same results, the file
-[can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
+    The `battery_wl.csv` file referenced above is used throughout many tutorials
+    and examples for the `pyextremes` package.
+    If you want to reproduce all steps shown here and get the same results, the file
+    [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
 ---
 
@@ -63,7 +63,7 @@ removal of outliers, etc. Let's clean up the data:
     ```
 
 ??? note
-See [this tutorial](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb) for more information on why these specific operations were done.
+    See [this tutorial](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb) for more information on why these specific operations were done.
 
 ---
 
@@ -138,8 +138,8 @@ model.fit_model()
 ```
 
 !!! info "Info"
-By default, the `fit_model` method selects the best model applicable
-to extracted extremes using the Akaike Information Criterion (AIC).
+    By default, the `fit_model` method selects the best model applicable
+    to extracted extremes using the Akaike Information Criterion (AIC).
 
 ---
 
@@ -157,10 +157,10 @@ summary = model.get_summary(
 ```
 
 !!! note
-By default return period size is set to one year,
-which is defined as the mean year from the Gregorian calendar
-([365.2425 days](https://en.wikipedia.org/wiki/Year)).
-This means that a return period of 100 corresponds to a 100-year event.
+    By default return period size is set to one year,
+    which is defined as the mean year from the Gregorian calendar
+    ([365.2425 days](https://en.wikipedia.org/wiki/Year)).
+    This means that a return period of 100 corresponds to a 100-year event.
 
     A different return period size can be specified using the `return_period_size`
     argument. A value of `30D` (30 days) would mean that a return period of 12

@@ -22,7 +22,7 @@ a helper class `EVA` was created (located in `pyextremes.eva.EVA`) which chains 
 components together to streamline the most common types of EVA workflows and to reduce
 the amount of code a user needs to write when performing analysis.
 
-When posstible, sections of this tutorial present two alternative ways to perform the
+When possible, sections of this tutorial present two alternative ways to perform the
 same action: via `EVA` and via low-level functions which are using by `EVA` behind the
 scenes.
 

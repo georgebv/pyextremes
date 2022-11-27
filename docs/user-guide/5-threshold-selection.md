@@ -13,11 +13,11 @@ Select the smallest threshold value among those which produce extreme values
 following the limit exceedance model (Generalized Pareto Distribution family).
 
 !!! warning
-Threshold selection is probably the hardest part of Extreme Value Analysis when
-analyzing extreme values obtained using the Peaks Over Threshold method.
-It involves a great deal of subjective judgement and should be performed
-in conjunction with other methods, such as Block Maxima + GEVD, to gain more
-confidence in the validty of obtained results.
+    Threshold selection is probably the hardest part of Extreme Value Analysis when
+    analyzing extreme values obtained using the Peaks Over Threshold method.
+    It involves a great deal of subjective judgement and should be performed
+    in conjunction with other methods, such as Block Maxima + GEVD, to gain more
+    confidence in the validty of obtained results.
 
 ## Mean Residual Life
 
@@ -36,7 +36,7 @@ plot_mean_residual_life(data)
 </figure>
 
 ??? note
-You can get the `data` variable referenced above by running the following code:
+    You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
@@ -84,8 +84,8 @@ The `plot_mean_residual_life` function uses the following parameters:
   By default it is (8, 5).
 
 !!! note
-In author's (subjective) opinion this is the least useful technique among those
-listed in this section because mean residual life plots are very hard to interpret.
+    In author's (subjective) opinion this is the least useful technique among those
+    listed in this section because mean residual life plots are very hard to interpret.
 
 ## Parameter Stability
 
@@ -193,12 +193,12 @@ The `plot_return_value_stability` function uses the following parameters:
   Requires `tqdm` package.
 
 !!! warning
-This is the most dangerous threshold selection teqchnique presented in this section.
-It can be abused by selecting a threshold value which gives a desired result.
-Results of such analysis would be biased and invalid. Analyst should honestly
-present results of their analysis and high variance in answer should be considered
-a valuable result as well - it indicates that available data cann be used to obtain
-reliable results and that there is high uncertainty in the analyzed process.
+    This is the most dangerous threshold selection teqchnique presented in this section.
+    It can be abused by selecting a threshold value which gives a desired result.
+    Results of such analysis would be biased and invalid. Analyst should honestly
+    present results of their analysis and high variance in answer should be considered
+    a valuable result as well - it indicates that available data cann be used to obtain
+    reliable results and that there is high uncertainty in the analyzed process.
 
 ## Putting it all Together
 

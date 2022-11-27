@@ -66,12 +66,12 @@ assigned probabilities, which are subsequently used to plot extreme values on th
 probability plots.
 
 !!! warning
-Plotting positions have nothing to do with modeling extreme event statistics in
-modern EVA. Historically, in time before computers became widespread, EVA
-was performed by plotting extreme events on probability paper (with axes scaled
-logarithmically and according to a specific plotting position) with the idea that
-a return value curve for a given model (e.g. GEVD) would be a straight line drawn
-through these points using a pen and a ruler.
+    Plotting positions have nothing to do with modeling extreme event statistics in
+    modern EVA. Historically, in time before computers became widespread, EVA
+    was performed by plotting extreme events on probability paper (with axes scaled
+    logarithmically and according to a specific plotting position) with the idea that
+    a return value curve for a given model (e.g. GEVD) would be a straight line drawn
+    through these points using a pen and a ruler.
 
     Modern EVA fits models to data by maximimizng likelihood function via methods such
     as MLE or MCMC (read more in other sections). This is only feasible due to the use
@@ -111,11 +111,11 @@ The resulting return period **R** is, therefore, a real number representing a mu
 of `return_period_size`.
 
 !!! example
-We have 2 years of data and, using `block_size` of 30 days (~1 month), we extract
-24 extreme events using the Block Maxima method. We then rank the values from 1
-to 24 as outlined above and, using the Weibull plotting position
-($\alpha=0$ and $\beta=0$), for the most extreme value (rank 1)
-we get exceedance probability $P$ of 1/25 or 0.04.
+    We have 2 years of data and, using `block_size` of 30 days (~1 month), we extract
+    24 extreme events using the Block Maxima method. We then rank the values from 1
+    to 24 as outlined above and, using the Weibull plotting position
+    ($\alpha=0$ and $\beta=0$), for the most extreme value (rank 1)
+    we get exceedance probability $P$ of 1/25 or 0.04.
 
     Let's say we would like to get return period of the most extreme value (rank 1)
     in years (`return_period_size` of 1 year). First, we calculate extreme value rate
@@ -273,7 +273,7 @@ The following paramters are used only when `#!python extremes_method="BM"`:
   If not provided, then it is calculated as median distance between extreme values.
 
 ??? note
-You can get the `data` variable referenced above by running the following code:
+    You can get the `data` variable referenced above by running the following code:
 
     ```python
     data = pd.read_csv(
