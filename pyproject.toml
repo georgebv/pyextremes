@@ -69,6 +69,8 @@ pytest-cov = "^4.0.0"
 mkdocs = "^1.4.0"
 mkdocs-material = "^8.5.3"
 mkdocs-material-extensions = "^1.0.3"
+mkdocstrings = "^0.19.1"
+mkdocstrings-python = "^0.8.3"
 
 [build-system]
 requires = ["poetry-core"]
