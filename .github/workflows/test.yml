@@ -1,4 +1,4 @@
-name: build
+name: Test
 
 on:
   pull_request:
@@ -58,8 +58,13 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: Install poetry
         run: |
+          echo $env:PATH
+          echo $env:APPDATA
           (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
-          $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
+          $env:PATH = "$env:APPDATA\Python\Scripts\bin;$env:PATH"
+          ls $env:APPDATA\Python\Scripts
+          ls $env:APPDATA\Python\Scripts\bin
+          echo $env:PATH
       - name: Install project and its dependencies
         run: poetry install
       - name: Run tests and generate coverage report
