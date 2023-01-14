@@ -58,12 +58,8 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: Install poetry
         run: |
-          echo $env:PATH
-          echo $env:APPDATA
           (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
-          $env:PATH = "$env:APPDATA\Python\Scripts\bin;$env:PATH"
-          ls $env:APPDATA\Python\Scripts
-          ls $env:APPDATA\Python\Scripts\bin
+          $env:PATH = "$env:APPDATA\pypoetry\venv\Scripts;$env:PATH"
           echo $env:PATH
       - name: Install project and its dependencies
         run: poetry install

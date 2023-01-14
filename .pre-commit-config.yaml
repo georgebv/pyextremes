@@ -30,9 +30,3 @@ repos:
         entry: ./scripts/lint/run-flake8.sh
         language: system
         types: [python]
-      - id: pytest
-        name: pytest
-        entry: ./scripts/run-pytest.sh
-        language: system
-        pass_filenames: false
-        always_run: true
