@@ -60,7 +60,7 @@ jobs:
         run: |
           (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
           $env:PATH = "$env:APPDATA\pypoetry\venv\Scripts;$env:PATH"
-          echo $env:PATH
+          ls $env:APPDATA\pypoetry\venv\Scripts
       - name: Install project and its dependencies
         run: poetry install
       - name: Run tests and generate coverage report
