@@ -28,7 +28,7 @@ jobs:
             ~/.local/share/pypoetry
             ~/.cache/pypoetry
       - name: Install poetry
-        if: ${{ steps.cache-poetry.outputs.cache-hit != 'true' }
+        if: ${{ steps.cache-poetry.outputs.cache-hit != 'true' }}
         run: curl -sSL https://install.python-poetry.org | python3 -
       - name: Install project and its dependencies
         run: |
