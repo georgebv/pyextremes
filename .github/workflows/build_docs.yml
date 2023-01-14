@@ -1,6 +1,7 @@
 name: build docs
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -11,16 +12,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Install python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-
-      - name: Install dependencies
+      - name: Cache poetry installation
+        id: cache-poetry
+        uses: actions/cache@v3
+        with:
+          key: poetry-${{ hashFiles('poetry.lock') }}
+          path: |
+            ~/.local/bin/poetry
+            ~/.local/share/pypoetry
+            ~/.cache/pypoetry
+      - name: Install poetry
+        if: ${{ steps.cache-poetry.outputs.cache-hit != 'true' }
+        run: curl -sSL https://install.python-poetry.org | python3 -
+      - name: Install project and its dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material mkdocs-material-extensions mkdocstrings[python]
-
-      - name: Build docs
+          export PATH="~/.local/share/pypoetry/bin:$PATH"
+          poetry install
+      - name: Build and deploy docs
         run: mkdocs gh-deploy --force
