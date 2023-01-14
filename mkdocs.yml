@@ -16,7 +16,11 @@ nav:
       - Peaks Over Threshold: user-guide/4-peaks-over-threshold.md
       - Threshold Selection: user-guide/5-threshold-selection.md
       - Estimating Return Periods: user-guide/6-return-periods.md
-  - API: api/api.md
+  - API Reference:
+      - EVA: api/eva.md
+      - Extremes: api/extremes.md
+      - Models: api/models.md
+      - Plotting: api/plotting.md
 
 theme:
   name: material
@@ -77,6 +81,6 @@ plugins:
       handlers:
         python:
           options:
-            show_source: false # change this if you prefer to be able to show the source code inside the docs
-            heading_level: 2
-            docstring_style: "numpy" # default is google
+            show_source: true
+            docstring_style: "numpy"
+            show_root_heading: true
