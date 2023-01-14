@@ -47,6 +47,8 @@ pandas = "^1.0.0"
 emcee = "^3.0.3"
 matplotlib = "^3.3.0"
 tqdm = {version = "^4.0.0", optional = true}
+mkdocstrings = "^0.19.1"
+mkdocstrings-python = "^0.8.3"
 
 [tool.poetry.extras]
 full = ["tqdm"]

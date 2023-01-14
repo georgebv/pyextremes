@@ -16,6 +16,7 @@ nav:
       - Peaks Over Threshold: user-guide/4-peaks-over-threshold.md
       - Threshold Selection: user-guide/5-threshold-selection.md
       - Estimating Return Periods: user-guide/6-return-periods.md
+  - API: api/api.md
 
 theme:
   name: material
@@ -72,3 +73,10 @@ markdown_extensions:
 
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false # change this if you prefer to be able to show the source code inside the docs
+            heading_level: 2
+            docstring_style: "numpy" # default is google
