@@ -9,11 +9,11 @@ a year. This probability is called probability of exceedance and is related to r
 periods as `1/p` where `p` is return period.
 
 !!! quote "Coles (2001, p.49)"
-In common terminology, $z_{p}$ is the **return level** associated with the
-**return period** $1/p$, since to a reasonable degree of accuracy,
-the level $z_{p}$ is expected to be exceeded on average once every $1/p$ years.
-More precisely, $z_{p}$ is exceeded by the annual maximum in any particular
-year with probability $p$.
+    In common terminology, $z_{p}$ is the **return level** associated with the
+    **return period** $1/p$, since to a reasonable degree of accuracy,
+    the level $z_{p}$ is expected to be exceeded on average once every $1/p$ years.
+    More precisely, $z_{p}$ is exceeded by the annual maximum in any particular
+    year with probability $p$.
 
 Return periods are often incorrectly interpreted in the professional communities
 as "100-year event is an event which happens only once in 100 years", which may lead to
@@ -102,10 +102,10 @@ where:
 - **P** - exceedance probability calculated earlier.
 - $\lambda$ - rate of extreme events (average number of extreme events per
   `return_period_size`). Calculated as:
-  - $\lambda$ = `return_period_size` / `block_size` for Block Maxima
-  - $\lambda = \frac{n}{t / return\_period\_size}$ for Peaks Ove Threshold,
-    where $n$ is number of extreme events and $t$ is total duration of series
-    from which the extreme values were drawn
+    - $\lambda$ = `return_period_size` / `block_size` for **Block Maxima**
+    - $\lambda = \frac{n}{t / return\_period\_size}$ for **Peaks Over Threshold**,
+      where $n$ is number of extreme events and $t$ is total duration of series
+      from which the extreme values were drawn
 
 The resulting return period **R** is, therefore, a real number representing a multiple
 of `return_period_size`.

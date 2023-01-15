@@ -1,6 +1,7 @@
 import logging
-import typing
 import warnings
+
+from typing import Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -14,10 +15,10 @@ class NoDataBlockWarning(Warning):
 
 def get_extremes_block_maxima(
     ts: pd.Series,
-    extremes_type: str,
-    block_size: typing.Union[str, pd.Timedelta] = "365.2425D",
-    errors: str = "raise",
-    min_last_block: typing.Optional[float] = None,
+    extremes_type: Literal["high", "low"],
+    block_size: Union[str, pd.Timedelta] = "365.2425D",
+    errors: Literal["raise", "ignore", "coerce"] = "raise",
+    min_last_block: Optional[float] = None,
 ) -> pd.Series:
     """
     Get extreme events from time series using the Block Maxima method.

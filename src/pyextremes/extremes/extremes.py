@@ -1,13 +1,40 @@
+from typing import Any, Literal, Optional, Union, overload
+
 import pandas as pd
 
 from pyextremes.extremes.block_maxima import get_extremes_block_maxima
 from pyextremes.extremes.peaks_over_threshold import get_extremes_peaks_over_threshold
 
 
+@overload
 def get_extremes(
     ts: pd.Series,
-    method: str,
-    extremes_type: str = "high",
+    method: Literal["BM"],
+    extremes_type: Literal["high", "low"] = "high",
+    *,
+    block_size: str = "365.2425D",
+    errors: Literal["raise", "ignore", "coerce"] = "raise",
+    min_last_block: Optional[float] = None,
+) -> pd.Series:
+    ...
+
+
+@overload
+def get_extremes(
+    ts: pd.Series,
+    method: Literal["POT"],
+    extremes_type: Literal["high", "low"] = "high",
+    *,
+    threshold: float,
+    r: Union[pd.Timedelta, Any] = "24H",
+) -> pd.Series:
+    ...
+
+
+def get_extremes(
+    ts: pd.Series,
+    method: Literal["BM", "POT"],
+    extremes_type: Literal["high", "low"] = "high",
     **kwargs,
 ) -> pd.Series:
     """

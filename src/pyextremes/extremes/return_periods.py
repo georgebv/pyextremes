@@ -1,4 +1,4 @@
-import typing
+from typing import Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -20,11 +20,21 @@ plotting_positions = {
 def get_return_periods(
     ts: pd.Series,
     extremes: pd.Series,
-    extremes_method: str,
-    extremes_type: str,
-    block_size: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
-    return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
-    plotting_position: str = "weibull",
+    extremes_method: Literal["BM", "POT"],
+    extremes_type: Literal["high", "low"],
+    block_size: Optional[Union[str, pd.Timedelta]] = None,
+    return_period_size: Union[str, pd.Timedelta] = "365.2425D",
+    plotting_position: Literal[
+        "ecdf",
+        "hazen",
+        "weibull",
+        "tukey",
+        "blom",
+        "median",
+        "cunnane",
+        "gringorten",
+        "beard",
+    ] = "weibull",
 ) -> pd.DataFrame:
     """
     Calculate return periods for given extreme values using given plotting position.

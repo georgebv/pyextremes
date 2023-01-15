@@ -18,6 +18,7 @@ neither of these is generally better than another.
     are recommended to be used is provided in subsequent sections of this tutorial.
 
 ## Block Maxima
+
 The Block Maxima extreme values are extracted by selecting a block size
 (typically 1 year, also the default in pyextremes), then partitioning time series
 of your signal into equal consequtive blocks of this size, and for each block getting
@@ -30,6 +31,7 @@ See figure below illustrating this concept:
 </figure>
 
 ## Peaks Over Threshold
+
 The Peaks Over Threshold extreme values are extracted by choosing a threshold
 and selecting values higher or lower (depends on which extreme process is analyzed)
 than the threshold value. The selected values are then declustered by specifying
@@ -46,9 +48,10 @@ See figure below illustrating POT extremes:
 </figure>
 
 ## Which Method to Use
+
 One of the most important concepts of EVA is convergenece. What this means practically
 is that different models and approaches (as long as they are correctly applied)
-should  be converging to the same answer (within reasonable confidence limits).
+should be converging to the same answer (within reasonable confidence limits).
 Because of this, we cannot say that one method is better than another.
 Therefore, for a thorough analysis, user is advised to investigate both routes
 to make sure that the final answer of the analysis provides a robust estimate.
@@ -57,13 +60,13 @@ A general rule of thumb, which is based on years of author's (subjective) experi
 when performing EVA is to do the following:
 
 - Use BM with a reasonable block size to avoid capturing seasonality
-(read more in the next section) to get the first estimates and to see how the extremes
-behave. Generally, BM is a "simpler" and more stable model which requires very little
-input from the user.
+  (read more in the next section) to get the first estimates and to see how the extremes
+  behave. Generally, BM is a "simpler" and more stable model which requires very little
+  input from the user.
 - Use POT with a reasonable threshold and declustering parameters
-(read more in the next section) to investigate how stable the model is in the region
-of target exceedance probabilities (return periods)
-and to gain more confidence in your results.
+  (read more in the next section) to investigate how stable the model is in the region
+  of target exceedance probabilities (return periods)
+  and to gain more confidence in your results.
 
 !!! warning "Attention"
     User is **strongly discouraged** from "playing" with the model parameters until

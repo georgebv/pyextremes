@@ -1,5 +1,7 @@
 import logging
-import typing
+import warnings
+
+from typing import Any, Generator, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -9,13 +11,21 @@ logger = logging.getLogger(__name__)
 
 def _generate_clusters(
     exceedances: pd.Series,
-    r: typing.Union[pd.Timedelta, typing.Any],
-) -> typing.Generator[pd.Series, None, None]:
+    r: Union[pd.Timedelta, Any],
+) -> Generator[pd.Series, None, None]:
     if not isinstance(r, pd.Timedelta):
         try:
             r = pd.to_timedelta(r)
         except Exception as error:
             raise ValueError(f"invalid value in {r} for the 'r' argument") from error
+
+    # There can be no clusters if there are no exceedances
+    if len(exceedances) == 0:
+        return
+    # There can be only one cluster if there is only one exceedance
+    if len(exceedances) == 1:
+        yield exceedances
+        return
 
     # Locate clusters separated by gaps not smaller than `r`
     gap_indices = np.argwhere(
@@ -39,9 +49,9 @@ def _generate_clusters(
 
 def get_extremes_peaks_over_threshold(
     ts: pd.Series,
-    extremes_type: str,
+    extremes_type: Literal["high", "low"],
     threshold: float,
-    r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+    r: Union[pd.Timedelta, Any] = "24H",
 ) -> pd.Series:
     """
     Get extreme events from time series using the Peaks Over Threshold method.
@@ -85,6 +95,12 @@ def get_extremes_peaks_over_threshold(
     else:
         exceedances = ts.loc[ts.values < threshold]
     logger.debug("found %d exceedances", len(exceedances))
+
+    if len(exceedances) == 0:
+        warnings.warn(
+            f"Threshold value '{threshold}' is too {extremes_type} "
+            f"and results in zero extreme values"
+        )
 
     # Locate clusters separated by gaps not smaller than `r`
     # and select min or max (depending on `extremes_type`) within each cluster

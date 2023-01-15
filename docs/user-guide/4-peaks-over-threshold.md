@@ -159,7 +159,7 @@ extracted from the same data and using the same threshold as above, but with a l
     generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
     inter-cluster distance results in a reasonably good separation of independent
     storm events.
-  
+
     User is advised to select this parameter based on the properties of studied
     phenomena. For example, extreme precipitation events in some regions of the world
     can last for more than several days and, because of this, the default value of
