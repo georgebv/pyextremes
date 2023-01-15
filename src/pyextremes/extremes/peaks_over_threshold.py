@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 from typing import Any, Generator, Literal, Union
 
@@ -94,6 +95,12 @@ def get_extremes_peaks_over_threshold(
     else:
         exceedances = ts.loc[ts.values < threshold]
     logger.debug("found %d exceedances", len(exceedances))
+
+    if len(exceedances) == 0:
+        warnings.warn(
+            f"Threshold value '{threshold}' is too {extremes_type} "
+            f"and results in zero extreme values"
+        )
 
     # Locate clusters separated by gaps not smaller than `r`
     # and select min or max (depending on `extremes_type`) within each cluster

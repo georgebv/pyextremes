@@ -78,15 +78,16 @@ def test_threshold_producing_empty_series(battery_wl: pd.Series, extremes_type: 
     would be empty.
 
     """
-    extremes = get_extremes(
-        ts=battery_wl,
-        method="POT",
-        extremes_type=extremes_type,
-        threshold=battery_wl.max() + 1
-        if extremes_type == "high"
-        else battery_wl.min() - 1,
-        r="24H",
-    )
+    with pytest.warns(UserWarning, match=r"^Threshold value.+zero extreme values$"):
+        extremes = get_extremes(
+            ts=battery_wl,
+            method="POT",
+            extremes_type=extremes_type,
+            threshold=battery_wl.max() + 1
+            if extremes_type == "high"
+            else battery_wl.min() - 1,
+            r="24H",
+        )
     assert isinstance(extremes, pd.Series)
     assert len(extremes) == 0
     assert extremes.dtype == np.float64
