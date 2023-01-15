@@ -1,4 +1,4 @@
-import typing
+from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -9,9 +9,9 @@ from pyextremes.plotting.style import pyextremes_rc
 def plot_return_values(
     observed_return_values: pd.DataFrame,
     modeled_return_values: pd.DataFrame,
-    ax: typing.Optional[plt.Axes] = None,
-    figsize: tuple = (8, 5),
-) -> typing.Tuple[plt.Figure, plt.Axes]:
+    ax: Optional[plt.Axes] = None,
+    figsize: Tuple[float, float] = (8, 5),
+) -> Tuple[plt.Figure, plt.Axes]:
     """
     Plot return values and confidence intervals for given return periods.
 

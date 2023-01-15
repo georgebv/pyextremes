@@ -1,4 +1,4 @@
-import typing
+from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +10,9 @@ from pyextremes.plotting.style import pyextremes_rc
 def plot_probability(
     observed: np.ndarray,
     theoretical: np.ndarray,
-    ax: typing.Optional[plt.Axes] = None,
-    figsize: tuple = (8, 8),
-) -> typing.Tuple[plt.Figure, plt.Axes]:
+    ax: Optional[plt.Axes] = None,
+    figsize: Tuple[float, float] = (8, 8),
+) -> Tuple[plt.Figure, plt.Axes]:
     """
     Plot a probability plot (QQ or PP).
 

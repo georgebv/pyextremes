@@ -1,4 +1,4 @@
-import typing
+from typing import Any, Literal, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,14 +31,14 @@ def _plot_cluster(ax: plt.Axes, cluster: pd.Series) -> None:
 def plot_extremes(
     ts: pd.Series,
     extremes: pd.Series,
-    extremes_method: str,
-    extremes_type: typing.Optional[str] = None,
-    block_size: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
-    threshold: typing.Optional[float] = None,
-    r: typing.Optional[typing.Union[pd.Timedelta, typing.Any]] = None,
-    figsize: tuple = (8, 5),
-    ax: typing.Optional[plt.Axes] = None,
-) -> typing.Tuple[plt.Figure, plt.Axes]:
+    extremes_method: Literal["BM", "POT"],
+    extremes_type: Optional[Literal["high", "low"]] = None,
+    block_size: Optional[Union[str, pd.Timedelta]] = None,
+    threshold: Optional[float] = None,
+    r: Optional[Union[pd.Timedelta, Any]] = None,
+    figsize: Tuple[float, float] = (8, 5),
+    ax: Optional[plt.Axes] = None,
+) -> Tuple[plt.Figure, plt.Axes]:
     """
     Plot extreme events.
 
