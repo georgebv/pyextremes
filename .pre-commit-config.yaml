@@ -20,11 +20,6 @@ repos:
         args: ["--check", "."]
   - repo: local
     hooks:
-      - id: pylint
-        name: pylint
-        entry: ./scripts/lint/run-pylint.sh
-        language: system
-        types: [python]
       - id: flake8
         name: flake8
         entry: ./scripts/lint/run-flake8.sh

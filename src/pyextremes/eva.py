@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import calendar
 import logging
 import typing
@@ -626,12 +628,10 @@ class EVA:
             raise ValueError("`extremes` time range must fit within that of data")
 
         # Get `method`
-        method: str = kwargs.pop("method", "BM")
         if method not in ["BM", "POT"]:
             raise ValueError(f"`method` must be either 'BM' or 'POT', not '{method}'")
 
         # Get `extremes_type`
-        extremes_type: str = kwargs.pop("extremes_type", "high")
         if extremes_type not in ["high", "low"]:
             raise ValueError(
                 f"`extremes_type` must be either 'BM' or 'POT', not '{extremes_type}'"
@@ -746,7 +746,7 @@ class EVA:
         method: typing.Literal["BM", "POT"] = "BM",
         extremes_type: typing.Literal["high", "low"] = "high",
         **kwargs,
-    ) -> None:
+    ) -> EVA:
         """
         Create an EVA model using pre-defined `extremes`.
 
