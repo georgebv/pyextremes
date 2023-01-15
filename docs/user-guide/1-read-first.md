@@ -1,4 +1,5 @@
 ## Disclaimer
+
 **pyextremes** was created to make the process of running EVA simpler
 and faster. While the project is built with reasonable defaults which produce
 good results in most cases, one should not rely on the model as a source
@@ -14,6 +15,7 @@ the subject of analysis and to properly interpret the model outputs.
     correctly describes the underlying process (in this example, water waves).
 
 ## Tutorial Structure
+
 Each tutorial section covers a particular area of EVA, such as extreme value
 extraction, fitting a model, or summarizing and visualizing analysis results.
 **pyextremes** was built in a modular fashion where each of these components

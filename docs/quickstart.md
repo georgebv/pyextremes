@@ -166,14 +166,14 @@ summary = model.get_summary(
     argument. A value of `30D` (30 days) would mean that a return period of 12
     corresponds to approximately one year.
 
-Print the results:
+    Print the results:
 
 ```python
 print(summary)
 ```
 
 ```
-               return value  lower ci  upper ci
+            return value  lower ci  upper ci
 return period
 1.0                0.802610 -0.270608  1.024385
 2.0                1.409343  1.370929  1.452727

@@ -32,14 +32,14 @@ pyextremes provides tools necessary to perform a wide range of tasks required to
 perform univariate EVA, such as:
 
 - extraction of extreme events from time series using methods such as
-Block Maxima (BM) or Peaks Over Threshold (POT)
+  Block Maxima (BM) or Peaks Over Threshold (POT)
 - fitting continuous distributions, such as GEVD, GPD, or user-specified
-continous distributions to the extracted extreme events
+  continous distributions to the extracted extreme events
 - visualization of model inputs, results, and goodness-of-fit statistics
 - estimation of extreme events of given probability or return period
-(e.g. 100-year event) and of corresponding confidence intervals
+  (e.g. 100-year event) and of corresponding confidence intervals
 - tools assisting with model selection and tuning, such as selection of
-block size in BM and threshold in POT
+  block size in BM and threshold in POT
 
 Framework provided by the pyextremes library is easy to use and requires
 minimum user input to get production-ready results.
@@ -61,7 +61,7 @@ Multiple ways of fitting the continuous distributions to the data are supported:
 
 - `MLE` (default model) - Maximum Likelihood Estimate, uses [SciPy](https://www.scipy.org)
 - `Emcee` - Markov Chain Monte Calro, see [Emcee](https://emcee.readthedocs.io/en/stable/)
-package by Dan Foreman-Mackey
+  package by Dan Foreman-Mackey
 
 ## Installation
 
@@ -98,7 +98,6 @@ conda install -c conda-forge pyextremes
 |      [**numpy**](https://numpy.org/)       | perform efficient operations with arrays                     |
 |  [**pandas**](https://pandas.pydata.org/)  | `Series` and `DataFrame` objects for model intput and output |
 |    [**scipy**](https://www.scipy.org/)     | statistical models and mathematic functions                  |
-
 
 ### Optional Dependencies
 

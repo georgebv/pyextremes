@@ -70,7 +70,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.details
   - pymdownx.snippets
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - abbr
   - admonition
   - attr_list

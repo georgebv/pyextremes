@@ -78,9 +78,9 @@ parameters of the `get_extremes` function:
     ) / pd.to_timedelta("365.2425D") * 2.87e-3
     ```
 
-    `#!python "battery_wl.csv"` 
+    `#!python "battery_wl.csv"`
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
-  
+
     All figures shown in this tutorial section were generated using
     [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb).
 
