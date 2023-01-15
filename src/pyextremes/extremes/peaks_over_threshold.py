@@ -17,6 +17,14 @@ def _generate_clusters(
         except Exception as error:
             raise ValueError(f"invalid value in {r} for the 'r' argument") from error
 
+    # There can be no clusters if there are no exceedances
+    if len(exceedances) == 0:
+        return
+    # There can be only one cluster if there is only one exceedance
+    if len(exceedances) == 1:
+        yield exceedances
+        return
+
     # Locate clusters separated by gaps not smaller than `r`
     gap_indices = np.argwhere(
         (exceedances.index[1:] - exceedances.index[:-1]) > r

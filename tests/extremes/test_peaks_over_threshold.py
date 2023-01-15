@@ -66,3 +66,28 @@ def test_single_cluster():
     )
     assert len(extremes) == 1
     assert np.isclose(extremes.values[0], data.min())
+
+
+@pytest.mark.parametrize("extremes_type", ["high", "low"])
+def test_threshold_producing_empty_series(battery_wl: pd.Series, extremes_type: str):
+    """
+    Regression test for scenario when threshold value is higher than the maximum value
+    for extremes_type="high" and lower than the minimum value for extremes_type="low"
+    in the time series. Original implementation would throw a ValueError when trying
+    to get the index of the maximum/minium value in the resulting series because it
+    would be empty.
+
+    """
+    extremes = get_extremes(
+        ts=battery_wl,
+        method="POT",
+        extremes_type=extremes_type,
+        threshold=battery_wl.max() + 1
+        if extremes_type == "high"
+        else battery_wl.min() - 1,
+        r="24H",
+    )
+    assert isinstance(extremes, pd.Series)
+    assert len(extremes) == 0
+    assert extremes.dtype == np.float64
+    assert extremes.index.name == battery_wl.index.name
