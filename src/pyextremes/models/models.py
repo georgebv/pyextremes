@@ -1,4 +1,4 @@
-import typing
+from typing import Literal, Optional, Union, overload
 
 import pandas as pd
 import scipy.stats
@@ -7,13 +7,37 @@ from pyextremes.models.model_emcee import Emcee
 from pyextremes.models.model_mle import MLE
 
 
+@overload
 def get_model(
-    model: str,
+    model: Literal["MLE"],
     extremes: pd.Series,
-    distribution: typing.Union[str, scipy.stats.rv_continuous],
-    distribution_kwargs: typing.Optional[dict] = None,
+    distribution: Union[str, scipy.stats.rv_continuous],
+    distribution_kwargs: Optional[dict] = None,
+) -> MLE:
+    ...
+
+
+@overload
+def get_model(
+    model: Literal["Emcee"],
+    extremes: pd.Series,
+    distribution: Union[str, scipy.stats.rv_continuous],
+    distribution_kwargs: Optional[dict] = None,
+    *,
+    n_walkers: int = 100,
+    n_samples: int = 500,
+    progress: bool = False,
+) -> Emcee:
+    ...
+
+
+def get_model(
+    model: Literal["MLE", "Emcee"],
+    extremes: pd.Series,
+    distribution: Union[str, scipy.stats.rv_continuous],
+    distribution_kwargs: Optional[dict] = None,
     **kwargs,
-) -> typing.Union[MLE, Emcee]:
+) -> Union[MLE, Emcee]:
     """
     Get distribution fitting model and fit it to given extreme values.
 
