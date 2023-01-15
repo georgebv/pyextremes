@@ -1,4 +1,4 @@
-import typing
+from typing import List, Optional, Tuple
 
 import matplotlib.gridspec
 import matplotlib.pyplot as plt
@@ -13,11 +13,11 @@ from pyextremes.plotting.style import pyextremes_rc
 
 def plot_trace(
     trace: np.ndarray,
-    trace_map: typing.Optional[tuple] = None,
+    trace_map: Optional[tuple] = None,
     burn_in: int = 0,
-    labels=None,
-    figsize: typing.Optional[tuple] = None,
-) -> typing.Tuple[plt.Figure, list]:
+    labels: List[str] = None,
+    figsize: Optional[Tuple[float, float]] = None,
+) -> Tuple[plt.Figure, list]:
     """
     Plot a trace plot for a given MCMC sampler trace.
 
@@ -33,7 +33,7 @@ def plot_trace(
     burn_in : int, optional
         Burn-in value (number of first steps to discard for each walker).
         By default it is 0 (no values are discarded).
-    labels : array-like, optional
+    labels : list of strings, optional
         Sequence of strings with parameter names, used to label axes.
         If None (default), then axes are labeled sequentially.
     figsize : tuple, optional
@@ -126,12 +126,12 @@ def plot_trace(
 
 def plot_corner(
     trace: np.ndarray,
-    trace_map: typing.Optional[tuple] = None,
+    trace_map: Optional[tuple] = None,
     burn_in: int = 0,
-    labels=None,
-    levels: typing.Optional[int] = None,
-    figsize: tuple = (8, 8),
-) -> typing.Tuple[plt.Figure, list]:
+    labels: List[str] = None,
+    levels: Optional[int] = None,
+    figsize: Tuple[float, float] = (8, 8),
+) -> Tuple[plt.Figure, list]:
     """
     Plot a corner plot for a given MCMC sampler trace.
 

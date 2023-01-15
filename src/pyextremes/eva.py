@@ -54,6 +54,14 @@ class EVA:
         "__model",
     ]
 
+    __data: pd.Series
+    __extremes: typing.Optional[pd.Series]
+    __extremes_method: typing.Optional[typing.Literal["BM", "POT"]]
+    __extremes_type: typing.Optional[typing.Literal["high", "low"]]
+    __extremes_kwargs: typing.Optional[typing.Dict[str, typing.Any]]
+    __extremes_transformer: typing.Optional[ExtremesTransformer]
+    __model: typing.Optional[typing.Union[MLE, Emcee]]
+
     def __init__(self, data: pd.Series) -> None:
         """
         Initialize EVA model.
@@ -127,14 +135,14 @@ class EVA:
         self.__data: pd.Series = data
 
         # Initialize attributes related to extreme value extraction
-        self.__extremes: typing.Optional[pd.Series] = None
-        self.__extremes_method: typing.Optional[str] = None
-        self.__extremes_type: typing.Optional[str] = None
-        self.__extremes_kwargs: typing.Optional[dict] = None
-        self.__extremes_transformer: typing.Optional[ExtremesTransformer] = None
+        self.__extremes = None
+        self.__extremes_method = None
+        self.__extremes_type = None
+        self.__extremes_kwargs = None
+        self.__extremes_transformer = None
 
         # Initialize attributes related to model fitting
-        self.__model: typing.Optional[typing.Union[MLE, Emcee]] = None
+        self.__model = None
 
         logger.info("successfully initialized EVA object")
 
@@ -152,7 +160,7 @@ class EVA:
         return self.__extremes
 
     @property
-    def extremes_method(self) -> str:
+    def extremes_method(self) -> typing.Literal["BM", "POT"]:
         if self.__extremes_method is None:
             raise AttributeError(
                 "extreme values must first be extracted "
@@ -161,7 +169,7 @@ class EVA:
         return self.__extremes_method
 
     @property
-    def extremes_type(self) -> str:
+    def extremes_type(self) -> typing.Literal["high", "low"]:
         if self.__extremes_type is None:
             raise AttributeError(
                 "extreme values must first be extracted "
@@ -170,7 +178,7 @@ class EVA:
         return self.__extremes_type
 
     @property
-    def extremes_kwargs(self) -> dict:
+    def extremes_kwargs(self) -> typing.Dict[str, typing.Any]:
         if self.__extremes_kwargs is None:
             raise AttributeError(
                 "extreme values must first be extracted "

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyextremes"
-version = "2.2.6"
+version = "2.2.7"
 description = "Extreme Value Analysis (EVA) in Python"
 license = "MIT"
 authors = ["George Bocharov <bocharovgeorgii@gmail.com>"]
@@ -47,7 +47,6 @@ pandas = "^1.0.0"
 emcee = "^3.0.3"
 matplotlib = "^3.3.0"
 tqdm = { version = "^4.0.0", optional = true }
-mkdocstrings = { version = "^0.19.1", extras = ["python"]}
 
 [tool.poetry.extras]
 full = ["tqdm"]
@@ -70,6 +69,7 @@ pytest-cov = "^4.0.0"
 mkdocs = "^1.4.0"
 mkdocs-material = "^8.5.3"
 mkdocs-material-extensions = "^1.0.3"
+mkdocstrings = { version = "^0.19.1", extras = ["python"]}
 
 [build-system]
 requires = ["poetry-core"]
