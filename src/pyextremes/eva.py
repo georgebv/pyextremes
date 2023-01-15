@@ -414,7 +414,35 @@ class EVA:
 
         return "\n".join(summary)
 
-    def get_extremes(self, method: str, extremes_type: str = "high", **kwargs) -> None:
+    @typing.overload
+    def get_extremes(
+        self,
+        method: typing.Literal["BM"],
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        block_size: str = "365.2425D",
+        errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
+        min_last_block: typing.Optional[float] = None,
+    ) -> None:
+        ...
+
+    @typing.overload
+    def get_extremes(
+        self,
+        method: typing.Literal["POT"],
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        threshold: float,
+        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+    ) -> None:
+        ...
+
+    def get_extremes(
+        self,
+        method: typing.Literal["BM", "POT"],
+        extremes_type: typing.Literal["high", "low"] = "high",
+        **kwargs,
+    ) -> None:
         """
         Get extreme events from time series.
 
@@ -494,7 +522,38 @@ class EVA:
         logger.info("removing any previously declared models")
         self.__model = None
 
-    def set_extremes(self, extremes: pd.Series, **kwargs) -> None:
+    @typing.overload
+    def set_extremes(
+        self,
+        extremes: pd.Series,
+        method: typing.Literal["BM"] = "BM",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        block_size: str = "365.2425D",
+        errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
+        min_last_block: typing.Optional[float] = None,
+    ) -> None:
+        ...
+
+    @typing.overload
+    def set_extremes(
+        self,
+        extremes: pd.Series,
+        method: typing.Literal["POT"] = "POT",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        threshold: float,
+        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+    ) -> None:
+        ...
+
+    def set_extremes(
+        self,
+        extremes: pd.Series,
+        method: typing.Literal["BM", "POT"] = "BM",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        **kwargs,
+    ) -> None:
         """
         Set extreme values.
 
@@ -508,15 +567,15 @@ class EVA:
             Time series of extreme values to be set onto the model.
             Must be numeric, have date-time index, and have the same name
             as self.data.
+        method : str, optional
+            Extreme value extraction method.
+            Supported values:
+                BM (default) - Block Maxima
+                POT - Peaks Over Threshold
+        extremes_type : str, optional
+            high (default) - extreme high values
+            low - extreme low values
         kwargs:
-            method : str, optional
-                Extreme value extraction method.
-                Supported values:
-                    BM (default) - Block Maxima
-                    POT - Peaks Over Threshold
-            extremes_type : str, optional
-                high (default) - extreme high values
-                low - extreme low values
             if method is BM:
                 block_size : str or pandas.Timedelta, optional
                     Block size.
@@ -653,8 +712,41 @@ class EVA:
         self.__model = None
         logger.info("successfully set extremes")
 
+    @typing.overload
     @classmethod
-    def from_extremes(cls, extremes: pd.Series, **kwargs):
+    def from_extremes(
+        cls,
+        extremes: pd.Series,
+        method: typing.Literal["BM"] = "BM",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        block_size: str = "365.2425D",
+        errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
+        min_last_block: typing.Optional[float] = None,
+    ) -> None:
+        ...
+
+    @typing.overload
+    @classmethod
+    def from_extremes(
+        cls,
+        extremes: pd.Series,
+        method: typing.Literal["POT"] = "POT",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        *,
+        threshold: float,
+        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+    ) -> None:
+        ...
+
+    @classmethod
+    def from_extremes(
+        cls,
+        extremes: pd.Series,
+        method: typing.Literal["BM", "POT"] = "BM",
+        extremes_type: typing.Literal["high", "low"] = "high",
+        **kwargs,
+    ) -> None:
         """
         Create an EVA model using pre-defined `extremes`.
 
@@ -665,8 +757,40 @@ class EVA:
         ----------
         extremes : pd.Series
             Time series of extreme values.
+        method : str, optional
+            Extreme value extraction method.
+            Supported values:
+                BM (default) - Block Maxima
+                POT - Peaks Over Threshold
+        extremes_type : str, optional
+            high (default) - extreme high values
+            low - extreme low values
         kwargs:
-            See '.set_extremes' method documentation.
+            if method is BM:
+                block_size : str or pandas.Timedelta, optional
+                    Block size.
+                    If None (default), then is calculated as median distance
+                    between extreme events.
+                errors : str, optional
+                    raise - raise an exception
+                        when encountering a block with no data
+                    ignore (default) - ignore blocks with no data
+                    coerce - get extreme values for blocks with no data
+                        as mean of all other extreme events in the series
+                        with index being the middle point of corresponding interval
+                min_last_block : float, optional
+                    Minimum data availability ratio (0 to 1) in the last block
+                    for it to be used to extract extreme value from.
+                    This is used to discard last block when it is too short.
+                    If None (default), last block is always used.
+            if method is POT:
+                threshold : float, optional
+                    Threshold used to find exceedances.
+                    By default is taken as smallest value.
+                r : pandas.Timedelta or value convertible to timedelta, optional
+                    Duration of window used to decluster the exceedances.
+                    By default r='24H' (24 hours).
+                    See pandas.to_timedelta for more information.
 
         Returns
         -------
@@ -675,7 +799,12 @@ class EVA:
 
         """
         model = cls(data=extremes)
-        model.set_extremes(extremes=model.data, **kwargs)
+        model.set_extremes(
+            extremes=model.data,
+            method=method,
+            extremes_type=extremes_type,
+            **kwargs,
+        )
         return model
 
     def plot_extremes(
@@ -723,9 +852,30 @@ class EVA:
             ax=ax,
         )
 
+    @typing.overload
     def fit_model(
         self,
-        model: str = "MLE",
+        model: typing.Literal["MLE"] = "MLE",
+        distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
+        distribution_kwargs: typing.Optional[dict] = None,
+    ) -> None:
+        ...
+
+    @typing.overload
+    def fit_model(
+        self,
+        model: typing.Literal["Emcee"] = "Emcee",
+        distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
+        distribution_kwargs: typing.Optional[dict] = None,
+        n_walkers: int = 100,
+        n_samples: int = 500,
+        progress: bool = False,
+    ) -> None:
+        ...
+
+    def fit_model(
+        self,
+        model: typing.Literal["MLE", "Emcee"] = "MLE",
         distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
         distribution_kwargs: typing.Optional[dict] = None,
         **kwargs,
@@ -896,7 +1046,10 @@ class EVA:
             **kwargs,
         )
 
-    def _get_mcmc_plot_inputs(self, labels=None) -> tuple:  # pragma: no cover
+    def _get_mcmc_plot_inputs(
+        self,
+        labels: typing.Optional[typing.List[str]] = None,
+    ) -> tuple:  # pragma: no cover
         try:
             trace = self.model.trace
             trace_map = tuple(
@@ -928,8 +1081,8 @@ class EVA:
     def plot_trace(
         self,
         burn_in: int = 0,
-        labels=None,
-        figsize: typing.Optional[tuple] = None,
+        labels: typing.Optional[typing.List[str]] = None,
+        figsize: typing.Optional[typing.Tuple[float, float]] = None,
     ) -> typing.Tuple[plt.Figure, list]:  # pragma: no cover
         """
         Plot trace plot for MCMC sampler trace.
@@ -967,9 +1120,9 @@ class EVA:
     def plot_corner(
         self,
         burn_in: int = 0,
-        labels=None,
+        labels: typing.Optional[typing.List[str]] = None,
         levels: typing.Optional[int] = None,
-        figsize: tuple = (8, 8),
+        figsize: typing.Tuple[float, float] = (8, 8),
     ) -> typing.Tuple[plt.Figure, list]:  # pragma: no cover
         """
         Plot corner plot for MCMC sampler trace.
@@ -1170,9 +1323,19 @@ class EVA:
         return_period=None,
         return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
-        plotting_position: str = "weibull",
+        plotting_position: typing.Literal[
+            "ecdf",
+            "hazen",
+            "weibull",
+            "tukey",
+            "blom",
+            "median",
+            "cunnane",
+            "gringorten",
+            "beard",
+        ] = "weibull",
         ax: typing.Optional[plt.Axes] = None,
-        figsize: tuple = (8, 5),
+        figsize: typing.Tuple[float, float] = (8, 5),
         **kwargs,
     ) -> tuple:  # pragma: no cover
         """
@@ -1276,9 +1439,19 @@ class EVA:
         self,
         plot_type: str,
         return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
-        plotting_position: str = "weibull",
+        plotting_position: typing.Literal[
+            "ecdf",
+            "hazen",
+            "weibull",
+            "tukey",
+            "blom",
+            "median",
+            "cunnane",
+            "gringorten",
+            "beard",
+        ] = "weibull",
         ax: typing.Optional[plt.Axes] = None,
-        figsize: tuple = (8, 8),
+        figsize: typing.Tuple[float, float] = (8, 8),
     ) -> tuple:  # pragma: no cover
         """
         Plot a probability plot (QQ or PP).
@@ -1361,8 +1534,18 @@ class EVA:
         return_period=None,
         return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
         alpha: typing.Optional[float] = None,
-        plotting_position: str = "weibull",
-        figsize: tuple = (8, 8),
+        plotting_position: typing.Literal[
+            "ecdf",
+            "hazen",
+            "weibull",
+            "tukey",
+            "blom",
+            "median",
+            "cunnane",
+            "gringorten",
+            "beard",
+        ] = "weibull",
+        figsize: typing.Tuple[float, float] = (8, 8),
         **kwargs,
     ):  # pragma: no cover
         """

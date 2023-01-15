@@ -1,5 +1,6 @@
 import logging
-import typing
+
+from typing import Any, Generator, Literal, Union
 
 import numpy as np
 import pandas as pd
@@ -9,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 def _generate_clusters(
     exceedances: pd.Series,
-    r: typing.Union[pd.Timedelta, typing.Any],
-) -> typing.Generator[pd.Series, None, None]:
+    r: Union[pd.Timedelta, Any],
+) -> Generator[pd.Series, None, None]:
     if not isinstance(r, pd.Timedelta):
         try:
             r = pd.to_timedelta(r)
@@ -47,9 +48,9 @@ def _generate_clusters(
 
 def get_extremes_peaks_over_threshold(
     ts: pd.Series,
-    extremes_type: str,
+    extremes_type: Literal["high", "low"],
     threshold: float,
-    r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+    r: Union[pd.Timedelta, Any] = "24H",
 ) -> pd.Series:
     """
     Get extreme events from time series using the Peaks Over Threshold method.
