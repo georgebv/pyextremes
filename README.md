@@ -6,7 +6,7 @@
 </p>
 <p align="center">
 <a href="https://github.com/georgebv/pyextremes/actions/workflows/test.yml" target="_blank">
-    <img src="https://github.com/georgebv/pyextremes/actions/workflows/test.yml/badge.svg" alt="Test">
+    <img src="https://github.com/georgebv/pyextremes/actions/workflows/test.yml/badge.svg?event=pull_request" alt="Test">
 </a>
 <a href="https://codecov.io/gh/georgebv/pyextremes" target="_blank">
     <img src="https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg" alt="Coverage">
