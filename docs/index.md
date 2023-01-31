@@ -5,8 +5,8 @@
     <em>Extreme Value Analysis (EVA) in Python</em>
 </p>
 <p align="center">
-<a href="https://github.com/georgebv/pyextremes/actions?query=workflow%3Abuild" target="_blank">
-    <img src="https://github.com/georgebv/pyextremes/workflows/build/badge.svg" alt="Test">
+<a href="https://github.com/georgebv/pyextremes/actions/workflows/test.yml" target="_blank">
+    <img src="https://github.com/georgebv/pyextremes/actions/workflows/test.yml/badge.svg?event=pull_request" alt="Test">
 </a>
 <a href="https://codecov.io/gh/georgebv/pyextremes" target="_blank">
     <img src="https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg" alt="Coverage">
