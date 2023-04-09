@@ -118,6 +118,7 @@ exclude_lines = [
     'raise NotImplementedError',
     'if __name__ == .__main__.:',
     'def __repr__',
+    '...',
 ]
 fail_under = 90
 precision = 1
