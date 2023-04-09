@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class Distribution:
-
     __slots__ = [
         "extremes",
         "distribution",
