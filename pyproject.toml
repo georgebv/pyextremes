@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyextremes"
-version = "2.2.7"
+version = "2.3.0"
 description = "Extreme Value Analysis (EVA) in Python"
 license = "MIT"
 authors = ["George Bocharov <bocharovgeorgii@gmail.com>"]
@@ -24,8 +24,8 @@ classifiers=[
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Hydrology",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -40,10 +40,10 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 numpy = "^1.19.0"
 scipy = "^1.5.0"
-pandas = "^1.0.0"
+pandas = ">=1.0.0,<3.0.0"
 emcee = "^3.0.3"
 matplotlib = "^3.3.0"
 tqdm = { version = "^4.0.0", optional = true }
@@ -52,24 +52,24 @@ tqdm = { version = "^4.0.0", optional = true }
 full = ["tqdm"]
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^2.20.0"
+pre-commit = "^3.2.2"
 
 [tool.poetry.group.lint.dependencies]
-black = "^22.8.0"
-pylint = "^2.15.3"
-flake8 = "^5.0.4"
-mypy = "^0.981"
-isort = "^5.10.1"
+black = "^23.0.0"
+pylint = "^2.0.0"
+flake8 = "^6.0.0"
+mypy = "^1.0.0"
+isort = "^5.0.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.1.3"
+pytest = "^7.0.0"
 pytest-cov = "^4.0.0"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.4.0"
-mkdocs-material = "^8.5.3"
-mkdocs-material-extensions = "^1.0.3"
-mkdocstrings = { version = "^0.19.1", extras = ["python"]}
+mkdocs = "^1.4.2"
+mkdocs-material = "^9.1.6"
+mkdocs-material-extensions = "^1.1.1"
+mkdocstrings = { version = "^0.20.0", extras = ["python"]}
 
 [build-system]
 requires = ["poetry-core"]
