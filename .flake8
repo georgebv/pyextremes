@@ -1,6 +1,9 @@
 [flake8]
 ignore =
-    E501,  # line too long (we have to break this to preserve long links)
-    E203,  # whitespace before ':' (ignore to stay compatible with black)
-    W503,  # line break before binary operator
+    # line too long (we have to break this to preserve long links)
+    E501,
+    # whitespace before ':' (ignore to stay compatible with black)
+    E203,
+    # line break before binary operator
+    W503,
 max-line-length = 88
