@@ -230,7 +230,7 @@ class EVA:
         # Separator used to separate two columns of the repr block
         sep = " " * 6
 
-        # Widths of left and ridght columns
+        # Widths of left and right columns
         lwidth = (width - len(sep)) // 2
         rwidth = width - (lwidth + len(sep))
 
@@ -910,7 +910,7 @@ class EVA:
             and 'genpareto' and 'expon' for 'POT' extremes.
             Best distribution is selected using the AIC metric.
         distribution_kwargs : dict, optional
-            Special keyword arguments, passsed to the `.fit` method of the distribution.
+            Special keyword arguments, passed to the `.fit` method of the distribution.
             These keyword arguments represent parameters to be held fixed.
             Names of parameters to be fixed must have 'f' prefixes. Valid parameters:
                 - shape(s): 'fc', e.g. fc=0
