@@ -28,7 +28,7 @@ class Distribution:
         """
         Distribution class compatible with pyextremes models.
 
-        It is a wrapper around the scipy.stats.rv_continous class and its subclasses.
+        It is a wrapper around the scipy.stats.rv_continuous class and its subclasses.
         https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.html
 
         Parameters
@@ -40,7 +40,7 @@ class Distribution:
             or a subclass of scipy.stats.rv_continuous.
             See https://docs.scipy.org/doc/scipy/reference/stats.html
         kwargs
-            Special keyword arguments, passsed to the `.fit` method of the distribution.
+            Special keyword arguments, passed to the `.fit` method of the distribution.
             These keyword arguments represent parameters to be held fixed.
             Names of parameters to be fixed must have 'f' prefixes. Valid parameters:
                 - shape(s): 'fc', e.g. fc=0
@@ -138,7 +138,7 @@ class Distribution:
         # Calculate full MLE of distribution parameters
         full_mle = self.distribution.fit(data=data, **self.fixed_parameters)
 
-        # Package distribtuon parameters into ordered free distribution parameters
+        # Package distribution parameters into ordered free distribution parameters
         free_parameters = {}
         for i, parameter in enumerate(self.distribution_parameters):
             if parameter in self.free_parameters:
@@ -381,7 +381,7 @@ class Distribution:
                 with length equal to number of `free_parameters` combinations
                     for 1D free_parameters=[1, 2] output is a scalar
                     for 2D free parameters=[[1, 2], [3, 4], [5, 6]]
-                        output is an array of length len(free_paramters)
+                        output is an array of length len(free_parameters)
             If x is a 1D array:
                 output is a 1D or 2D array
                     for 1D free_parameters=[1, 2] output is a 1D array of length len(x)
