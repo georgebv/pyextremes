@@ -2,6 +2,7 @@
 .devcontainer
 .vscode
 .venv
+.idea
 
 # Python
 __pycache__/
