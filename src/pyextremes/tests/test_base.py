@@ -26,7 +26,7 @@ class TestBase(ABC):
             See https://docs.scipy.org/doc/scipy/reference/stats.html
         fit_parameters : dict
             Dictionary with fit parameters passed to the `distribution` '.cdf' method.
-            E.g. {"c": 0.3, loc: 10, "scale": 2} for `distribution`
+            E.g. {"c": 0.3, "loc": 10, "scale": 2} for `distribution`
             with shape, location, and scale parameters.
         significance_level : float, optional
             Significance level in the range (0, 1).

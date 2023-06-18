@@ -217,9 +217,15 @@ class EVA:
 
     def test_ks(self, significance_level: float = 0.05) -> KolmogorovSmirnov:
         return KolmogorovSmirnov(
-            extremes=self.extremes,
+            extremes=self.extremes_transformer.transformed_extremes,
             distribution=self.distribution.distribution,
-            fit_parameters=self.model.fit_parameters,
+            fit_parameters={
+                **self.model.fit_parameters,
+                **{
+                    'loc' if k=='floc' else
+                    k: v for k, v in model.distribution.fixed_parameters.items()
+                }
+            },
             significance_level=significance_level,
         )
 

@@ -592,7 +592,4 @@ class TestEVA:
             "POT": eva_model_pot_mle,
         }[extremes_method]
         assert isinstance(eva_model.test_ks(), KolmogorovSmirnov)
-        if extremes_method == "BM":
-            assert eva_model.test_ks().success
-        else:
-            assert eva_model.test_ks().success
+        assert eva_model.test_ks().success
