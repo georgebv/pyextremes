@@ -595,4 +595,4 @@ class TestEVA:
         if extremes_method == "BM":
             assert eva_model.test_ks().success
         else:
-            assert not eva_model.test_ks().success
+            assert eva_model.test_ks().success

@@ -89,10 +89,10 @@ class Emcee(AbstractModelBaseClass):
         def kde_func(x):
             return -kernel(x)[0]
 
-        fit_paramters = self._trace.mean(axis=(0, 1))
+        fit_parameters = self._trace.mean(axis=(0, 1))
         solution = scipy.optimize.minimize(
             kde_func,
-            x0=fit_paramters,
+            x0=fit_parameters,
             method="Nelder-Mead",
         )
         if solution.success:

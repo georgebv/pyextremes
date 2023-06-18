@@ -139,10 +139,10 @@ def get_return_periods(
             f"for the 'plotting_position' argument"
         ) from _error
 
-    # Caclucate exceedance probabilities
+    # Calculate exceedance probabilities
     exceedance_probability = (ranks - alpha) / (len(extremes) + 1 - alpha - beta)
 
-    # Calcule return periods
+    # Calculate return periods
     return_periods = 1 / exceedance_probability / extremes_rate
 
     # Copy `extremes` to make the returned DataFrame independent from the original

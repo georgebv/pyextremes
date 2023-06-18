@@ -31,7 +31,7 @@ class AbstractModelBaseClass(abc.ABC):
             or a subclass of scipy.stats.rv_continuous.
             See https://docs.scipy.org/doc/scipy/reference/stats.html
         distribution_kwargs : dict, optional
-            Special keyword arguments, passsed to the `.fit` method of the distribution.
+            Special keyword arguments, passed to the `.fit` method of the distribution.
             These keyword arguments represent parameters to be held fixed.
             Names of parameters to be fixed must have 'f' prefixes. Valid parameters:
                 - shape(s): 'fc', e.g. fc=0
