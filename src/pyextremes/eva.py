@@ -221,10 +221,7 @@ class EVA:
             distribution=self.distribution.distribution,
             fit_parameters={
                 **self.model.fit_parameters,
-                **{
-                    'loc' if k=='floc' else
-                    k: v for k, v in model.distribution.fixed_parameters.items()
-                }
+                **self.model.distribution._fixed_parameters,
             },
             significance_level=significance_level,
         )
