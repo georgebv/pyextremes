@@ -217,9 +217,12 @@ class EVA:
 
     def test_ks(self, significance_level: float = 0.05) -> KolmogorovSmirnov:
         return KolmogorovSmirnov(
-            extremes=self.extremes,
+            extremes=self.extremes_transformer.transformed_extremes,
             distribution=self.distribution.distribution,
-            fit_parameters=self.model.fit_parameters,
+            fit_parameters={
+                **self.model.fit_parameters,
+                **self.model.distribution._fixed_parameters,
+            },
             significance_level=significance_level,
         )
 
