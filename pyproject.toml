@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyextremes"
-version = "2.3.0"
+version = "2.3.1"
 description = "Extreme Value Analysis (EVA) in Python"
 license = "MIT"
 authors = ["George Bocharov <bocharovgeorgii@gmail.com>"]
