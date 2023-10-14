@@ -128,7 +128,7 @@ def plot_mean_residual_life(
         if alpha is not None:
             mrl_confidence.append(
                 scipy.stats.norm.interval(
-                    alpha=alpha,
+                    alpha,
                     loc=exceedances.mean(),
                     scale=exceedances.std(ddof=1) / np.sqrt(len(exceedances)),
                 )
