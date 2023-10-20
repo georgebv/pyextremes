@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: pyextremes
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Georgii
+    family-names: Bocharov
+    email: bocharovgeorgii@gmail.com
+repository-code: 'https://github.com/georgebv/pyextremes'
+url: 'https://georgebv.github.io/pyextremes'
+abstract: >-
+  pyextremes is a Python library aimed at performing
+  univariate Extreme Value Analysis.
+keywords:
+  - Extreme Value Analysis
+  - EVA
+  - Python
+  - Statistics
+license: MIT
+commit: b003286e436db73e7f12c9f7c3298c05773bdf88
+version: 2.3.2
+date-released: '2023-10-14'
