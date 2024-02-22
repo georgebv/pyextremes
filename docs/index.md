@@ -60,7 +60,7 @@ Any parameter of a distribution may be frozen to investigate degenerate models
 Multiple ways of fitting the continuous distributions to the data are supported:
 
 - `MLE` (default model) - Maximum Likelihood Estimate, uses [SciPy](https://www.scipy.org)
-- `Emcee` - Markov Chain Monte Calro, see [Emcee](https://emcee.readthedocs.io/en/stable/)
+- `Emcee` - Markov Chain Monte Carlo, see [Emcee](https://emcee.readthedocs.io/en/stable/)
   package by Dan Foreman-Mackey
 
 ## Installation
