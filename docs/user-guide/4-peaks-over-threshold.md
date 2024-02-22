@@ -8,7 +8,7 @@ that these values are IID (independent and identically distributed) which is req
 for the corresponding limit distribution to be applicable.
 The POT extreme values asymptotically follow the
 [Generalized Pareto Distribution](https://en.wikipedia.org/wiki/Generalized_Pareto_distribution)
-famliy, according to the
+family, according to the
 [Pickands–Balkema–De Haan theorem](https://en.wikipedia.org/wiki/Pickands%E2%80%93Balkema%E2%80%93De_Haan_theorem).
 
 <figure>
