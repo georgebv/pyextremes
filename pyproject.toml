@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyextremes"
-version = "2.3.2"
+version = "2.3.3"
 description = "Extreme Value Analysis (EVA) in Python"
 license = "MIT"
 authors = ["George Bocharov <bocharovgeorgii@gmail.com>"]
@@ -41,7 +41,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.19.0"
+numpy = ">=1.19.0,<3.0.0"
 scipy = "^1.5.0"
 pandas = ">=1.0.0,<3.0.0"
 emcee = "^3.0.3"

@@ -10,19 +10,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python-version }}"
       - name: Cache poetry installation
         id: cache-poetry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-${{ matrix.python-version }}
           path: |
             ~/.local/bin/poetry
             ~/.local/share/pypoetry
@@ -37,12 +37,12 @@ jobs:
       - name: Run tests and generate coverage report
         run: scripts/run-pytest.sh
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        if: success() && matrix.python-version == '3.9'
+        uses: codecov/codecov-action@v4
+        if: success() && matrix.python-version == '3.12'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
           fail_ci_if_error: true
+          files: ./coverage.xml
           verbose: true
   test-windows:
     name: Test on windows
@@ -50,12 +50,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python-version }}"
       - name: Install poetry
