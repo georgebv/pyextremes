@@ -26,7 +26,7 @@ def get_extremes(
     extremes_type: Literal["high", "low"] = "high",
     *,
     threshold: float,
-    r: Union[pd.Timedelta, Any] = "24H",
+    r: Union[pd.Timedelta, Any] = "24h",
 ) -> pd.Series:
     ...
 

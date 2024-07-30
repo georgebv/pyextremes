@@ -26,9 +26,9 @@ def main() -> None:
                 kwargs = {"block_size": "365.2425D", "errors": "ignore"}
             else:
                 if extremes_type == "high":
-                    kwargs = {"threshold": 1.35, "r": "24H"}
+                    kwargs = {"threshold": 1.35, "r": "24h"}
                 else:
-                    kwargs = {"threshold": -1.55, "r": "24H"}
+                    kwargs = {"threshold": -1.55, "r": "24h"}
             extremes = get_extremes(
                 ts=data, method=method, extremes_type=extremes_type, **kwargs
             )

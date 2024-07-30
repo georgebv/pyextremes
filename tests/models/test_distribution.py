@@ -59,7 +59,7 @@ class TestDistribution:
             scipy_distribution = getattr(scipy.stats, distribution_name)
         distribution = Distribution(
             extremes=pd.Series(
-                index=pd.date_range(start="2000-01-01", periods=100, freq="1H"),
+                index=pd.date_range(start="2000-01-01", periods=100, freq="1h"),
                 data=scipy_distribution.rvs(*scipy_parameters, size=100),
             ),
             distribution=distribution_input,

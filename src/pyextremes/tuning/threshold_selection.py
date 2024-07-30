@@ -251,7 +251,7 @@ def _calculate_modified_parameters(
 def plot_parameter_stability(
     ts: pd.Series,
     thresholds=None,
-    r: typing.Union[str, pd.Timedelta] = "24H",
+    r: typing.Union[str, pd.Timedelta] = "24h",
     extremes_type: str = "high",
     alpha: typing.Optional[float] = None,
     n_samples: int = 100,
@@ -518,7 +518,7 @@ def plot_return_value_stability(
     return_period: float,
     return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     thresholds=None,
-    r: typing.Union[str, pd.Timedelta] = "24H",
+    r: typing.Union[str, pd.Timedelta] = "24h",
     extremes_type: str = "high",
     distributions: typing.Optional[
         typing.List[typing.Union[str, scipy.stats.rv_continuous]]
@@ -728,7 +728,7 @@ def plot_return_value_stability(
 def plot_aic_scores(
     ts: pd.Series,
     thresholds=None,
-    r: typing.Union[str, pd.Timedelta] = "24H",
+    r: typing.Union[str, pd.Timedelta] = "24h",
     extremes_type: str = "high",
     distributions: typing.Optional[
         typing.List[typing.Union[str, scipy.stats.rv_continuous]]
@@ -853,7 +853,7 @@ def plot_threshold_stability(
     return_period: float,
     return_period_size: typing.Union[str, pd.Timedelta] = "365.2425D",
     thresholds=None,
-    r: typing.Union[str, pd.Timedelta] = "24H",
+    r: typing.Union[str, pd.Timedelta] = "24h",
     extremes_type: str = "high",
     distributions: typing.Optional[
         typing.List[typing.Union[str, scipy.stats.rv_continuous]]

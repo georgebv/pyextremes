@@ -12,7 +12,7 @@ from pyextremes.models import MLE, get_model
 def extremes() -> pd.Series:
     np.random.seed(0)
     return pd.Series(
-        index=pd.date_range(start="2000-01-01", periods=1000, freq="1H"),
+        index=pd.date_range(start="2000-01-01", periods=1000, freq="1h"),
         data=scipy.stats.genextreme.rvs(c=0, loc=10, scale=2, size=1000),
     )
 
@@ -214,7 +214,7 @@ class TestMLE:
 
         np.random.seed(0)
         extremes = pd.Series(
-            index=pd.date_range(start="2000-01-01", periods=100, freq="1H"),
+            index=pd.date_range(start="2000-01-01", periods=100, freq="1h"),
             data=scipy_distribution.rvs(*scipy_parameters, size=100),
         )
         model = get_model(

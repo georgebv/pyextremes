@@ -119,7 +119,7 @@ The `plot_parameter_stability` function uses the following parameters:
   to decluster exceedances by locating clusters where all exceedances are separated
   by distances no more than `r` and then locating maximum or minimum
   (depends on `extremes_type`) values within each cluster.
-  By default `#!python r="24H"` (24 hours).
+  By default `#!python r="24h"` (24 hours).
 - **extremes_type** - extreme value type:
   `#!python "high"` for above threshold (default)
   and `#!python "low"` for below threshold.
@@ -172,7 +172,7 @@ The `plot_return_value_stability` function uses the following parameters:
   to decluster exceedances by locating clusters where all exceedances are separated
   by distances no more than `r` and then locating maximum or minimum
   (depends on `extremes_type`) values within each cluster.
-  By default `#!python r="24H"` (24 hours).
+  By default `#!python r="24h"` (24 hours).
 - **extremes_type** - extreme value type:
   `#!python "high"` for above threshold (default)
   and `#!python "low"` for below threshold.
@@ -239,7 +239,7 @@ The `plot_threshold_stability` function uses the following parameters:
   to decluster exceedances by locating clusters where all exceedances are separated
   by distances no more than `r` and then locating maximum or minimum
   (depends on `extremes_type`) values within each cluster.
-  By default `#!python r="24H"` (24 hours).
+  By default `#!python r="24h"` (24 hours).
 - **extremes_type** - extreme value type:
   `#!python "high"` for above threshold (default)
   and `#!python "low"` for below threshold.

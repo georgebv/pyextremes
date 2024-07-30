@@ -446,7 +446,7 @@ class EVA:
         extremes_type: typing.Literal["high", "low"] = "high",
         *,
         threshold: float,
-        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+        r: typing.Union[pd.Timedelta, typing.Any] = "24h",
     ) -> None:
         ...
 
@@ -522,7 +522,7 @@ class EVA:
             )
         else:
             self.__extremes_kwargs["threshold"] = kwargs.get("threshold")
-            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24H"))
+            self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24h"))
         logger.info("successfully collected extreme value properties")
 
         logger.debug("creating extremes transformer")
@@ -556,7 +556,7 @@ class EVA:
         extremes_type: typing.Literal["high", "low"] = "high",
         *,
         threshold: float,
-        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+        r: typing.Union[pd.Timedelta, typing.Any] = "24h",
     ) -> None:
         ...
 
@@ -699,7 +699,7 @@ class EVA:
                 raise ValueError("invalid `threshold` value")
 
             # Get `r`
-            extremes_kwargs["r"] = pd.to_timedelta(kwargs.pop("r", "24H"))
+            extremes_kwargs["r"] = pd.to_timedelta(kwargs.pop("r", "24h"))
             if extremes_kwargs["r"] <= pd.to_timedelta("0D"):
                 raise ValueError(
                     "`r` must be a positive timedelta, not %s" % extremes_kwargs["r"]
@@ -746,7 +746,7 @@ class EVA:
         extremes_type: typing.Literal["high", "low"] = "high",
         *,
         threshold: float,
-        r: typing.Union[pd.Timedelta, typing.Any] = "24H",
+        r: typing.Union[pd.Timedelta, typing.Any] = "24h",
     ) -> None:
         ...
 
