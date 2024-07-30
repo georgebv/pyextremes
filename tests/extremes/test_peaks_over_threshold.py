@@ -13,7 +13,7 @@ def test_invalid_arguments(battery_wl):
             method="POT",
             extremes_type="BAD EXTREMES_TYPE VALUE",
             threshold=2,
-            r="24H",
+            r="24h",
         )
 
     # Test wrong r type
@@ -30,7 +30,7 @@ def test_extreme_value_extraction(battery_wl, extremes_type, threshold):
         method="POT",
         extremes_type=extremes_type,
         threshold=threshold,
-        r="24H",
+        r="24h",
     )
     if extremes_type == "high":
         assert np.isclose(extremes.max(), battery_wl.max())
@@ -38,11 +38,11 @@ def test_extreme_value_extraction(battery_wl, extremes_type, threshold):
     elif extremes_type == "low":
         assert np.isclose(extremes.min(), battery_wl.min())
         assert len(extremes) == 104
-    assert np.all(np.diff(extremes.index) > pd.to_timedelta("24H").to_numpy())
+    assert np.all(np.diff(extremes.index) > pd.to_timedelta("24h").to_numpy())
 
 
 def test_single_cluster():
-    index = pd.date_range(start="2021/01/01", end="2021/01/02", freq="1H")
+    index = pd.date_range(start="2021/01/01", end="2021/01/02", freq="1h")
     data = pd.Series(data=np.random.random(size=len(index)), index=index)
 
     # Tesh high extremes
@@ -51,7 +51,7 @@ def test_single_cluster():
         method="POT",
         extremes_type="high",
         threshold=data.min() - 1,
-        r="24H",
+        r="24h",
     )
     assert len(extremes) == 1
     assert np.isclose(extremes.values[0], data.max())
@@ -62,7 +62,7 @@ def test_single_cluster():
         method="POT",
         extremes_type="low",
         threshold=data.max() + 1,
-        r="24H",
+        r="24h",
     )
     assert len(extremes) == 1
     assert np.isclose(extremes.values[0], data.min())
@@ -86,7 +86,7 @@ def test_threshold_producing_empty_series(battery_wl: pd.Series, extremes_type: 
             threshold=battery_wl.max() + 1
             if extremes_type == "high"
             else battery_wl.min() - 1,
-            r="24H",
+            r="24h",
         )
     assert isinstance(extremes, pd.Series)
     assert len(extremes) == 0

@@ -36,14 +36,14 @@ parameters of the `get_extremes` function:
     from pyextremes import get_extremes
     from pyextremes.plotting import plot_extremes
 
-    extremes = get_extremes(data, "POT", threshold=0.5, r="12H")
+    extremes = get_extremes(data, "POT", threshold=0.5, r="12h")
     plot_extremes(
         ts=data,
         extremes=extremes,
         extremes_method="POT",
         extremes_type="high",
         threshold=0.5,
-        r="12H",
+        r="12h",
     )
     ```
 
@@ -53,7 +53,7 @@ parameters of the `get_extremes` function:
     from pyextremes import EVA
 
     model = EVA(data=data)
-    model.get_extremes("POT", threshold=0.5, r="12H")
+    model.get_extremes("POT", threshold=0.5, r="12h")
     model.plot_extremes(show_clusters=True)
     ```
 
@@ -104,7 +104,7 @@ The following paramters are used only when `#!python method="POT"`:
   to decluster exceedances by locating clusters where all exceedances are separated
   by distances no more than `r` and then locating maximum or minimum
   (depends on `extremes_type`) values within each cluster.
-  By default `#!python r="24H"` (24 hours).
+  By default `#!python r="24h"` (24 hours).
 
 If we specify all of these parameters then the function would look as:
 
@@ -114,7 +114,7 @@ get_extremes(
     method="POT",
     extremes_type="high",
     threshold=0.5,
-    r="12H",
+    r="12h",
 )
 ```
 
@@ -129,14 +129,14 @@ extracted from the same data and using the same threshold as above, but with a l
 === "Standalone"
 
     ```python
-    extremes = get_extremes(data, "POT", threshold=0.5, r="24H")
+    extremes = get_extremes(data, "POT", threshold=0.5, r="24h")
     plot_extremes(
         ts=data,
         extremes=extremes,
         extremes_method="POT",
         extremes_type="high",
         threshold=0.5,
-        r="24H",
+        r="24h",
     )
     ```
 
@@ -144,7 +144,7 @@ extracted from the same data and using the same threshold as above, but with a l
 
     ```python
     model = EVA(data=data)
-    model.get_extremes("POT", threshold=0.5, r="24H")
+    model.get_extremes("POT", threshold=0.5, r="24h")
     model.plot_extremes(show_clusters=True)
     ```
 
@@ -153,7 +153,7 @@ extracted from the same data and using the same threshold as above, but with a l
 </figure>
 
 !!! tip
-    Declustering value of `#!python r="24H"` was selected as a default value because
+    Declustering value of `#!python r="24h"` was selected as a default value because
     `pyextremes` was developed when working with meteorological phenomena - namely,
     storms. Extreme storm surge and waves are generally caused by a storm event which
     generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
@@ -178,7 +178,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
         data,
         "POT",
         threshold=0.5,
-        r="24H",
+        r="24h",
         extremes_type="low",
     )
     plot_extremes(
@@ -187,7 +187,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
         extremes_method="POT",
         extremes_type="low",
         threshold=0.5,
-        r="24H",
+        r="24h",
     )
     ```
 
@@ -195,7 +195,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
 
     ```python
     model = EVA(data=data)
-    model.get_extremes("POT", threshold=0.5, r="24H", extremes_type="low")
+    model.get_extremes("POT", threshold=0.5, r="24h", extremes_type="low")
     model.plot_extremes(show_clusters=True)
     ```
 

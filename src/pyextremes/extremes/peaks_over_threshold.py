@@ -51,7 +51,7 @@ def get_extremes_peaks_over_threshold(
     ts: pd.Series,
     extremes_type: Literal["high", "low"],
     threshold: float,
-    r: Union[pd.Timedelta, Any] = "24H",
+    r: Union[pd.Timedelta, Any] = "24h",
 ) -> pd.Series:
     """
     Get extreme events from time series using the Peaks Over Threshold method.

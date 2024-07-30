@@ -31,7 +31,7 @@ def eva_model_pot(battery_wl_preprocessed) -> EVA:
         method="POT",
         extremes_type="high",
         threshold=1.35,
-        r="24H",
+        r="24h",
     )
     return eva_model
 
@@ -69,7 +69,7 @@ def eva_model_pot_mle(battery_wl_preprocessed) -> EVA:
         method="POT",
         extremes_type="high",
         threshold=1.35,
-        r="24H",
+        r="24h",
     )
     eva_model.fit_model("MLE")
     return eva_model
@@ -163,7 +163,7 @@ class TestEVA:
                 "method": "POT",
                 "extremes_type": "high",
                 "threshold": 1.35,
-                "r": "24H",
+                "r": "24h",
             },
             {
                 "method": "POT",
@@ -188,7 +188,7 @@ class TestEVA:
         else:
             assert len(eva_model.extremes_kwargs) == 2
             assert eva_model.extremes_kwargs["threshold"] == 1.35
-            assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
+            assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24h")
         with pytest.raises(AttributeError, match=r"model must first"):
             eva_model.model
 
@@ -384,7 +384,7 @@ class TestEVA:
             extremes_type="high",
         )
         assert np.isclose(eva_model.extremes_kwargs["threshold"], 0, rtol=0, atol=1e-6)
-        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
+        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24h")
         eva_model = EVA.from_extremes(
             extremes=pd.Series(
                 data=np.arange(100),
@@ -395,7 +395,7 @@ class TestEVA:
             extremes_type="low",
         )
         assert np.isclose(eva_model.extremes_kwargs["threshold"], 99, rtol=0, atol=1e-6)
-        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24H")
+        assert eva_model.extremes_kwargs["r"] == pd.to_timedelta("24h")
 
     @pytest.mark.parametrize(
         "extremes_params",
