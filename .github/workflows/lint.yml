@@ -13,14 +13,14 @@ jobs:
         command: [black, pylint, flake8, isort]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
       - name: Cache poetry installation
         id: cache-poetry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: poetry-${{ hashFiles('poetry.lock') }}
           path: |
