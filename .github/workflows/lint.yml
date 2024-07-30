@@ -22,7 +22,7 @@ jobs:
         id: cache-poetry
         uses: actions/cache@v4
         with:
-          key: poetry-${{ hashFiles('poetry.lock') }}
+          key: poetry-${{ hashFiles('poetry.lock') }}-3.12
           path: |
             ~/.local/bin/poetry
             ~/.local/share/pypoetry
