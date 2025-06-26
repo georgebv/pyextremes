@@ -8,7 +8,7 @@ for extreme low values (`#!python extremes_type="low"`).
 
 The key goal of threshold selection can, therefore, be formulated as follows:
 
-!!! quote "Goal of threshold selection"
+!!! info "Goal of threshold selection"
     Select the smallest threshold value among those which produce extreme values
     following the limit exceedance model (Generalized Pareto Distribution family).
 
