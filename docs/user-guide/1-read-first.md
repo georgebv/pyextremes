@@ -25,7 +25,7 @@ components together to streamline the most common types of EVA workflows and to 
 the amount of code a user needs to write when performing analysis.
 
 When possible, sections of this tutorial present two alternative ways to perform the
-same action: via `EVA` and via low-level functions which are using by `EVA` behind the
+same action: via `EVA` and via low-level functions which are used by `EVA` behind the
 scenes.
 
 --8<-- "docs/includes/abbreviations.md"
