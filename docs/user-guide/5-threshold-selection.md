@@ -8,7 +8,7 @@ for extreme low values (`#!python extremes_type="low"`).
 
 The key goal of threshold selection can, therefore, be formulated as follows:
 
-!!! quote "Goal of threshold selection"
+!!! info "Goal of threshold selection"
     Select the smallest threshold value among those which produce extreme values
     following the limit exceedance model (Generalized Pareto Distribution family).
 
@@ -193,11 +193,11 @@ The `plot_return_value_stability` function uses the following parameters:
   Requires `tqdm` package.
 
 !!! warning
-    This is the most dangerous threshold selection teqchnique presented in this section.
+    This is the most dangerous threshold selection technique presented in this section.
     It can be abused by selecting a threshold value which gives a desired result.
-    Results of such analysis would be biased and invalid. Analyst should honestly
+    Results of such analysis would be biased and invalid. Analysts should honestly
     present results of their analysis and high variance in answer should be considered
-    a valuable result as well - it indicates that available data cann be used to obtain
+    a valuable result as well - it indicates that available data can be used to obtain
     reliable results and that there is high uncertainty in the analyzed process.
 
 ## Putting it all Together

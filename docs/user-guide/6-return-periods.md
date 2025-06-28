@@ -29,7 +29,7 @@ Where $n$ is number of return period blocks within a time period
 
 ## Empirical Return Periods
 
-Empirical return periods are assigned to observed extreme values using an empricial rule
+Empirical return periods are assigned to observed extreme values using an empirical rule
 where extreme values are ordered and ranked from the most extreme (1) to the
 least extreme (n), then exceedance probabilities are calculated
 (see the following sub-section), and return periods are calculated as multiples of

@@ -214,4 +214,4 @@ by setting the `extremes_type` argument to `#!python "low"`:
     being censored. An example of this would be water level time series - water levels
     cannot go below the seabed and will, therefore, be censored by the seabed elevation.
     Such series would no longer follow the GPD and any results of such analysis
-    would be unerliable.
+    would be unreliable.
