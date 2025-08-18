@@ -7,7 +7,16 @@ on:
       - "created"
 
 jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
   publish:
+    name: Publish to PyPI
+    needs: [lint, test]
     runs-on: ubuntu-latest
     environment:
       name: PyPI
@@ -15,25 +24,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Install python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Cache poetry installation
-        id: cache-poetry
-        uses: actions/cache@v4
-        with:
-          key: poetry-${{ hashFiles('poetry.lock') }}-3.12
-          path: |
-            ~/.local/bin/poetry
-            ~/.local/share/pypoetry
-            ~/.cache/pypoetry
-      - name: Install poetry
-        if: ${{ steps.cache-poetry.outputs.cache-hit != 'true' }}
-        run: curl -sSL https://install.python-poetry.org | python3 -
-      - name: Install project and its dependencies
-        run: |
-          export PATH="~/.local/share/pypoetry/bin:$PATH"
-          poetry install
+        run: uv python install
+      - name: Install the project
+        run: uv sync --all-groups
+      - name: Build
+        run: uv build
       - name: Publish
-        run: poetry publish --build --username __token__ --password ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --token ${{ secrets.PYPI_TOKEN }}

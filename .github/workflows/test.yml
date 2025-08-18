@@ -1,70 +1,53 @@
 name: Test
 
 on:
+  workflow_call:
   pull_request:
+    branches:
+      - "main"
 
 jobs:
   test-linux:
-    name: Test on linux and generate coverage
+    name: Linux, Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install python
-        uses: actions/setup-python@v5
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "${{ matrix.python-version }}"
-      - name: Cache poetry installation
-        id: cache-poetry
-        uses: actions/cache@v4
-        with:
-          key: poetry-${{ hashFiles('poetry.lock') }}-${{ matrix.python-version }}
-          path: |
-            ~/.local/bin/poetry
-            ~/.local/share/pypoetry
-            ~/.cache/pypoetry
-      - name: Install poetry
-        if: ${{ steps.cache-poetry.outputs.cache-hit != 'true' }}
-        run: curl -sSL https://install.python-poetry.org | python3 -
-      - name: Install project and its dependencies
-        run: |
-          export PATH="~/.local/share/pypoetry/bin:$PATH"
-          poetry install
+          python-version: ${{ matrix.python-version }}
+      - name: Install the project
+        run: uv sync --all-groups
       - name: Run tests and generate coverage report
-        run: scripts/run-pytest.sh
+        run: uv run pytest
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: success() && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v5
+        if: success() && matrix.python-version == '3.13'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
           files: ./coverage.xml
+          fail_ci_if_error: true
           verbose: true
   test-windows:
-    name: Test on windows
+    name: Windows, Python ${{ matrix.python-version }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install python
-        uses: actions/setup-python@v5
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "${{ matrix.python-version }}"
-      - name: Install pipx and poetry
-        run: |
-          python -m pip install --upgrade pip pipx
-          pipx install poetry
-      - name: Ensure poetry uses correct Python
-        run: poetry env use python
-      - name: Install project and its dependencies
-        run: poetry install
-      - name: Run tests and generate coverage report
-        run: poetry run pytest
+          python-version: ${{ matrix.python-version }}
+      - name: Install the project
+        run: uv sync --all-groups
+      - name: Run tests
+        run: uv run pytest
