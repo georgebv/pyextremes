@@ -92,3 +92,18 @@ def test_threshold_producing_empty_series(battery_wl: pd.Series, extremes_type: 
     assert len(extremes) == 0
     assert extremes.dtype == np.float64
     assert extremes.index.name == battery_wl.index.name
+
+
+def test_generate_clusters_single_exceedance():
+    index = pd.to_datetime(["2021-01-01 00:00:00"])
+    data = pd.Series([42.0], index=index)
+    extremes = get_extremes(
+        ts=data,
+        method="POT",
+        extremes_type="high",
+        threshold=41.0,
+        r="24h",
+    )
+    assert len(extremes) == 1
+    assert extremes.iloc[0] == 42.0
+    assert extremes.index[0] == index[0]
