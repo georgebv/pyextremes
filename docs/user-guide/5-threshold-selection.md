@@ -1,3 +1,5 @@
+--8<-- "docs/includes/abbreviations.md"
+
 Selection of the threshold value is a very important step because it has the strongest
 effect on the results of EVA. The core idea of threshold selection is the same as when
 selecting block size in the Block Maxima approach - it is a trade-off between bias

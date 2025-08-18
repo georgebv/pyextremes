@@ -1,3 +1,5 @@
+--8<-- "docs/includes/abbreviations.md"
+
 Block Maxima or Minima (BM) extreme values are extracted from time series
 by partitioning it into blocks (segments) of equal duration (e.g. 1 year)
 and locating maximum or minimum values within each block.

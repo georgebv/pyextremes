@@ -1,3 +1,5 @@
+--8<-- "docs/includes/abbreviations.md"
+
 Peaks Over Threshold (POT) extreme values are extracted from time series
 by first generating a time series of exceedances by selecting values above
 (or below for `#!python extremes_type="low"`) a certain threshold

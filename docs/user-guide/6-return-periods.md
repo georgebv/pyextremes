@@ -1,3 +1,5 @@
+--8<-- "docs/includes/abbreviations.md"
+
 This section demonstrates how empirical probabilities (return periods) can be obtained
 for extreme values extracted using methods described in earlier sections.
 
