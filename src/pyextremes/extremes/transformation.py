@@ -17,10 +17,10 @@ class ExtremesTransformer:
     """
 
     __slots__ = [
-        "extremes",
-        "extremes_type",
         "__pivot_point",
         "__transformed_extremes",
+        "extremes",
+        "extremes_type",
     ]
 
     def __init__(self, extremes: pd.Series, extremes_type: str) -> None:

@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 class Distribution:
     __slots__ = [
-        "extremes",
+        "_fixed_parameters",
         "distribution",
         "distribution_parameters",
+        "extremes",
         "fixed_parameters",
-        "_fixed_parameters",
         "free_parameters",
         "mle_parameters",
     ]

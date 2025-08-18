@@ -15,7 +15,7 @@ def plot_trace(
     trace: np.ndarray,
     trace_map: Optional[tuple] = None,
     burn_in: int = 0,
-    labels: List[str] = None,
+    labels: Optional[List[str]] = None,
     figsize: Optional[Tuple[float, float]] = None,
 ) -> Tuple[plt.Figure, list]:
     """
@@ -128,7 +128,7 @@ def plot_corner(
     trace: np.ndarray,
     trace_map: Optional[tuple] = None,
     burn_in: int = 0,
-    labels: List[str] = None,
+    labels: Optional[List[str]] = None,
     levels: Optional[int] = None,
     figsize: Tuple[float, float] = (8, 8),
 ) -> Tuple[plt.Figure, list]:

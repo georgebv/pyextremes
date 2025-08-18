@@ -1,4 +1,9 @@
-__all__ = ["Distribution", "Emcee", "MLE", "get_model"]
+__all__ = [
+    "MLE",
+    "Distribution",
+    "Emcee",
+    "get_model",
+]
 
 from pyextremes.models.distribution import Distribution
 from pyextremes.models.model_emcee import Emcee

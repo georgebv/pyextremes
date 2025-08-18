@@ -1,6 +1,6 @@
 [project]
 name = "pyextremes"
-dynamic = ["version"]
+version = "2.3.3"
 description = "Extreme Value Analysis (EVA) in Python"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -62,17 +62,8 @@ docs = [
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.sdist]
-include = ["README.md", "LICENSE", "src/**/*.py", "src/*/py.typed"]
-
-[tool.hatch.build.targets.wheel]
-include = ["README.md", "LICENSE", "src/**/*.py", "src/*/py.typed"]
-
-[tool.hatch.version]
-path = "src/pyextremes/__init__.py"
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
 
 [[tool.uv.index]]
 name = "testpypi"
@@ -80,7 +71,7 @@ url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
 
-[tool.ruff]
+[tool.ruff.lint]
 # https://docs.astral.sh/ruff/rules
 select = [
     # Pyflakes
@@ -135,9 +126,9 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 omit = [
-    "./src/pyextremes/plotting/*",
-    "./src/pyextremes/tuning/*",
-    "./src/pyextremes/tests/test_base.py",
+    "src/pyextremes/plotting/*",
+    "src/pyextremes/tuning/*",
+    "src/pyextremes/tests/test_base.py",
 ]
 
 [tool.coverage.report]
@@ -147,7 +138,6 @@ exclude_lines = [
     'raise NotImplementedError',
     'if __name__ == .__main__.:',
     'def __repr__',
-    '    ...',
     "if (typing.)?TYPE_CHECKING:",
 ]
 fail_under = 90

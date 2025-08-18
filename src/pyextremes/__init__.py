@@ -2,8 +2,8 @@ __version__ = "2.3.3"
 __all__ = [
     "EVA",
     "get_extremes",
-    "get_return_periods",
     "get_model",
+    "get_return_periods",
     "plot_mean_residual_life",
     "plot_parameter_stability",
     "plot_return_value_stability",

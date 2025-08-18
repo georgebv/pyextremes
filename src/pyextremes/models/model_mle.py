@@ -270,7 +270,6 @@ class MLE(AbstractModelBaseClass):
         # Extend fit parameter cache
         logger.debug("extending fit parameter cache with %d new entries", n)
         self.fit_parameter_cache.extend(new_fit_parameters)
-        return None
 
     def __repr__(self) -> str:
         free_parameters = ", ".join(

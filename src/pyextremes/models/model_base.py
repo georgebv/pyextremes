@@ -113,7 +113,7 @@ class AbstractModelBaseClass(abc.ABC):
         return np.sum(self.logpdf(x=self.extremes.values))
 
     @property
-    def AIC(self) -> float:
+    def AIC(self) -> float:  # noqa: N802
         """
         Return corrected Akaike Information Criterion (AIC) of the model.
 

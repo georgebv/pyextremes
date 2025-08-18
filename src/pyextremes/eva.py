@@ -47,10 +47,10 @@ class EVA:
     __slots__ = [
         "__data",
         "__extremes",
-        "__extremes_method",
-        "__extremes_type",
         "__extremes_kwargs",
+        "__extremes_method",
         "__extremes_transformer",
+        "__extremes_type",
         "__model",
     ]
 
@@ -212,7 +212,7 @@ class EVA:
         return self.model.loglikelihood
 
     @property
-    def AIC(self) -> float:
+    def AIC(self) -> float:  # noqa: N802
         return self.model.AIC
 
     def test_ks(self, significance_level: float = 0.05) -> KolmogorovSmirnov:
@@ -294,8 +294,7 @@ class EVA:
 
         # Create summary header
         start_date = (
-            f"{calendar.month_name[self.data.index[0].month]} "
-            f"{self.data.index[0].year}"
+            f"{calendar.month_name[self.data.index[0].month]} {self.data.index[0].year}"
         )
         end_date = (
             f"{calendar.month_name[self.data.index[-1].month]} "
@@ -436,8 +435,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @typing.overload
     def get_extremes(
@@ -447,8 +445,7 @@ class EVA:
         *,
         threshold: float,
         r: typing.Union[pd.Timedelta, typing.Any] = "24h",
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def get_extremes(
         self,
@@ -545,8 +542,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @typing.overload
     def set_extremes(
@@ -557,8 +553,7 @@ class EVA:
         *,
         threshold: float,
         r: typing.Union[pd.Timedelta, typing.Any] = "24h",
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def set_extremes(
         self,
@@ -629,9 +624,8 @@ class EVA:
             raise TypeError("`extremes` must have numeric values")
         if extremes.name is None:
             extremes.name = self.data.name
-        else:
-            if extremes.name != self.data.name:
-                raise ValueError("`extremes` name doesn't match that of `data`")
+        elif extremes.name != self.data.name:
+            raise ValueError("`extremes` name doesn't match that of `data`")
         if (
             extremes.index.min() < self.data.index.min()
             or extremes.index.max() > self.data.index.max()
@@ -734,8 +728,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @typing.overload
     @classmethod
@@ -747,8 +740,7 @@ class EVA:
         *,
         threshold: float,
         r: typing.Union[pd.Timedelta, typing.Any] = "24h",
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @classmethod
     def from_extremes(
@@ -869,8 +861,7 @@ class EVA:
         model: typing.Literal["MLE"] = "MLE",
         distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
         distribution_kwargs: typing.Optional[dict] = None,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @typing.overload
     def fit_model(
@@ -881,8 +872,7 @@ class EVA:
         n_walkers: int = 100,
         n_samples: int = 500,
         progress: bool = False,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def fit_model(
         self,
@@ -998,7 +988,7 @@ class EVA:
 
         # Checking if distribution is valid per extreme value theory:
         # Fisher-Tippet-Gnedenko theorem for 'BM'
-        # Pickands–Balkema–de Haan theorem for 'POT'
+        # Pickands-Balkema-de Haan theorem for 'POT'
         if distribution_name is None:
             warnings.warn(
                 message=(
@@ -1007,33 +997,32 @@ class EVA:
                 ),
                 category=RuntimeWarning,
             )
-        else:
-            if self.extremes_method == "BM" and distribution_name not in [
-                "genextreme",
-                "gumbel_r",
-            ]:
-                warnings.warn(
-                    message=(
-                        f"'{distribution_name}' distribution is not "
-                        f"recommended to be used with extremes extracted "
-                        f"using the 'BM' method, 'genextreme' or 'gumebel_r' "
-                        f"should be used per the Fisher-Tippet-Gnedenko theorem"
-                    ),
-                    category=RuntimeWarning,
-                )
-            elif self.extremes_method == "POT" and distribution_name not in [
-                "genpareto",
-                "expon",
-            ]:
-                warnings.warn(
-                    message=(
-                        f"'{distribution_name}' distribution is not "
-                        f"recommended to be used with extremes extracted "
-                        f"using the 'POT' method, 'genpareto' or 'expon' "
-                        f"should be used per the Pickands–Balkema–de Haan theorem"
-                    ),
-                    category=RuntimeWarning,
-                )
+        elif self.extremes_method == "BM" and distribution_name not in [
+            "genextreme",
+            "gumbel_r",
+        ]:
+            warnings.warn(
+                message=(
+                    f"'{distribution_name}' distribution is not "
+                    f"recommended to be used with extremes extracted "
+                    f"using the 'BM' method, 'genextreme' or 'gumbel_r' "
+                    f"should be used per the Fisher-Tippet-Gnedenko theorem"
+                ),
+                category=RuntimeWarning,
+            )
+        elif self.extremes_method == "POT" and distribution_name not in [
+            "genpareto",
+            "expon",
+        ]:
+            warnings.warn(
+                message=(
+                    f"'{distribution_name}' distribution is not "
+                    f"recommended to be used with extremes extracted "
+                    f"using the 'POT' method, 'genpareto' or 'expon' "
+                    f"should be used per the Pickands-Balkema-de Haan theorem"
+                ),
+                category=RuntimeWarning,
+            )
 
         # Freeze (fix) location parameter for genpareto/expon distributions
         if distribution_kwargs is None and distribution_name in ["genpareto", "expon"]:
@@ -1318,10 +1307,10 @@ class EVA:
         )
         return_values = []
         for value in rv:
-            value = np.asarray(a=value, dtype=np.float64)
-            if value.ndim == 0:
-                value = value[np.newaxis]
-            return_values.append(value)
+            arr = np.asarray(a=value, dtype=np.float64)
+            if arr.ndim == 0:
+                arr = arr[np.newaxis]
+            return_values.append(arr)
 
         return pd.DataFrame(
             data=np.transpose(return_values),

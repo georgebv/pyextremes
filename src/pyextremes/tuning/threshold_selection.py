@@ -312,7 +312,7 @@ def plot_parameter_stability(
 
     """
     try:
-        import tqdm  # pylint: disable=import-outside-toplevel
+        import tqdm  # noqa: PLC0415
     except ImportError as error:
         if progress:
             raise ImportError(
@@ -330,21 +330,19 @@ def plot_parameter_stability(
     # List of unique seeds - ensures same seed is not reused across sub-processes
     seeds: typing.List[int] = []
 
-    def _input_generator() -> (
-        typing.Generator[
-            typing.Tuple[
-                pd.Series,  # ts (time series)
-                str,  # extremes_type
-                float,  # threshold
-                typing.Union[str, pd.Timedelta],  # r
-                typing.Optional[float],  # alpha
-                int,  # n_samples
-                int,  # seed
-            ],
-            None,
-            None,
-        ]
-    ):
+    def _input_generator() -> typing.Generator[
+        typing.Tuple[
+            pd.Series,  # ts (time series)
+            str,  # extremes_type
+            float,  # threshold
+            typing.Union[str, pd.Timedelta],  # r
+            typing.Optional[float],  # alpha
+            int,  # n_samples
+            int,  # seed
+        ],
+        None,
+        None,
+    ]:
         for threshold in thresholds:
             seed = np.random.randint(low=0, high=1e6, size=None)
             while seed in seeds:
@@ -592,7 +590,7 @@ def plot_return_value_stability(
 
     """
     try:
-        import tqdm  # pylint: disable=import-outside-toplevel
+        import tqdm  # noqa: PLC0415
     except ImportError as error:
         if progress:
             raise ImportError(
@@ -620,24 +618,22 @@ def plot_return_value_stability(
         else:
             distribution_names.append(distribution.name)
 
-    def _input_generator() -> (
-        typing.Generator[
-            typing.Tuple[
-                pd.Series,  # ts (time series)
-                float,  # return_period
-                typing.Union[str, pd.Timedelta],  # return_period_size
-                float,  # threshold
-                typing.Union[str, pd.Timedelta],  # r
-                str,  # extremes_type
-                typing.Union[str, scipy.stats.rv_continuous],  # distribution
-                str,  # distribution_name
-                typing.Optional[float],  # alpha
-                int,  # n_samples
-            ],
-            None,
-            None,
-        ]
-    ):
+    def _input_generator() -> typing.Generator[
+        typing.Tuple[
+            pd.Series,  # ts (time series)
+            float,  # return_period
+            typing.Union[str, pd.Timedelta],  # return_period_size
+            float,  # threshold
+            typing.Union[str, pd.Timedelta],  # r
+            str,  # extremes_type
+            typing.Union[str, scipy.stats.rv_continuous],  # distribution
+            str,  # distribution_name
+            typing.Optional[float],  # alpha
+            int,  # n_samples
+        ],
+        None,
+        None,
+    ]:
         for distribution, distribution_name in zip(distributions, distribution_names):
             for threshold in thresholds:
                 yield (

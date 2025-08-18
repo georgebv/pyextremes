@@ -15,8 +15,7 @@ def get_extremes(
     block_size: str = "365.2425D",
     errors: Literal["raise", "ignore", "coerce"] = "raise",
     min_last_block: Optional[float] = None,
-) -> pd.Series:
-    ...
+) -> pd.Series: ...
 
 
 @overload
@@ -27,8 +26,7 @@ def get_extremes(
     *,
     threshold: float,
     r: Union[pd.Timedelta, Any] = "24h",
-) -> pd.Series:
-    ...
+) -> pd.Series: ...
 
 
 def get_extremes(

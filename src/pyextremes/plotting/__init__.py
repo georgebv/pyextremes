@@ -1,9 +1,9 @@
 __all__ = [
-    "plot_extremes",
     "plot_corner",
-    "plot_trace",
+    "plot_extremes",
     "plot_probability",
     "plot_return_values",
+    "plot_trace",
     "pyextremes_rc",
 ]
 

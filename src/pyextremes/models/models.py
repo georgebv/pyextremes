@@ -13,8 +13,7 @@ def get_model(
     extremes: pd.Series,
     distribution: Union[str, scipy.stats.rv_continuous],
     distribution_kwargs: Optional[dict] = None,
-) -> MLE:
-    ...
+) -> MLE: ...
 
 
 @overload
@@ -27,8 +26,7 @@ def get_model(
     n_walkers: int = 100,
     n_samples: int = 500,
     progress: bool = False,
-) -> Emcee:
-    ...
+) -> Emcee: ...
 
 
 def get_model(

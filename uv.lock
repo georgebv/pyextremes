@@ -1785,6 +1785,7 @@ wheels = [
 
 [[package]]
 name = "pyextremes"
+version = "2.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "emcee" },

@@ -139,15 +139,14 @@ def plot_extremes(
                         0.5,
                     )
                 )
-            else:
-                if not isinstance(block_size, pd.Timedelta):
-                    if isinstance(block_size, str):
-                        block_size = pd.to_timedelta(block_size)
-                    else:
-                        raise TypeError(
-                            f"invalid type in {type(block_size)} "
-                            f"for the 'block_size' argument"
-                        )
+            elif not isinstance(block_size, pd.Timedelta):
+                if isinstance(block_size, str):
+                    block_size = pd.to_timedelta(block_size)
+                else:
+                    raise TypeError(
+                        f"invalid type in {type(block_size)} "
+                        f"for the 'block_size' argument"
+                    )
 
             # Plot block boundaries
             block_left_boundary = ts.index[0]
@@ -169,15 +168,14 @@ def plot_extremes(
                     threshold = extremes.min()
                 else:
                     threshold = extremes.max()
-            else:
-                if r is not None:
-                    # Plot clusters (only if both threshold and r are provided)
-                    if extremes_type == "high":
-                        exceedances = ts.loc[ts.values > threshold]
-                    else:
-                        exceedances = ts.loc[ts.values < threshold]
-                    for cluster in _generate_clusters(exceedances=exceedances, r=r):
-                        _plot_cluster(ax=ax, cluster=cluster)
+            elif r is not None:
+                # Plot clusters (only if both threshold and r are provided)
+                if extremes_type == "high":
+                    exceedances = ts.loc[ts.values > threshold]
+                else:
+                    exceedances = ts.loc[ts.values < threshold]
+                for cluster in _generate_clusters(exceedances=exceedances, r=r):
+                    _plot_cluster(ax=ax, cluster=cluster)
 
             # Plot threshold line
             ax.axhline(threshold, ls="--", lw=1, color="#FF756B", zorder=15)

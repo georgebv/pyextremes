@@ -81,21 +81,18 @@ def get_return_periods(
         if block_size is None:
             # Calculate 'block_size' as median distance between extremes
             block_size = pd.to_timedelta(np.quantile(np.diff(extremes.index), 0.5))
-        else:
-            if not isinstance(block_size, pd.Timedelta):
-                if isinstance(block_size, str):
-                    block_size = pd.to_timedelta(block_size)
-                else:
-                    raise TypeError(
-                        f"invalid type in {type(block_size)} "
-                        f"for the 'block_size' argument"
-                    )
-    else:
-        if block_size is not None:
-            raise ValueError(
-                f"'block_size' value is used only if 'extremes_method' is 'BM', "
-                f"provided 'extremes_method' is {extremes_method}"
-            )
+        elif not isinstance(block_size, pd.Timedelta):
+            if isinstance(block_size, str):
+                block_size = pd.to_timedelta(block_size)
+            else:
+                raise TypeError(
+                    f"invalid type in {type(block_size)} for the 'block_size' argument"
+                )
+    elif block_size is not None:
+        raise ValueError(
+            f"'block_size' value is used only if 'extremes_method' is 'BM', "
+            f"provided 'extremes_method' is {extremes_method}"
+        )
 
     # Parse the 'return_period_size' argument
     if not isinstance(return_period_size, pd.Timedelta):

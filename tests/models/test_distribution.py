@@ -63,7 +63,7 @@ class TestDistribution:
                 data=scipy_distribution.rvs(*scipy_parameters, size=100),
             ),
             distribution=distribution_input,
-            **kwargs
+            **kwargs,
         )
 
         # Test '__init__' and 'fit' methods
@@ -218,7 +218,7 @@ class TestDistribution:
                                 [scipy_parameters, scipy_parameters],
                                 [scipy_parameters, scipy_parameters],
                             ]
-                        )
+                        ),
                     )
                 ),
             )

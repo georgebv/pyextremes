@@ -494,7 +494,7 @@ class TestEVA:
             model=model,
             distribution=input_parameters["distribution"],
             distribution_kwargs=input_parameters["distribution_kwargs"],
-            **model_kwargs
+            **model_kwargs,
         )
 
         assert eva_model.model.name == model

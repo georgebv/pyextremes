@@ -1,7 +1,7 @@
 __all__ = [
+    "ExtremesTransformer",
     "get_extremes",
     "get_return_periods",
-    "ExtremesTransformer",
 ]
 
 from pyextremes.extremes.extremes import get_extremes
