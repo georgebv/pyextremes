@@ -5,6 +5,8 @@ import scipy.stats
 
 from pyextremes.models.model_emcee import Emcee
 from pyextremes.models.model_mle import MLE
+from pyextremes.models.model_mom import MOM
+from pyextremes.models.model_lmom import LMOM
 
 
 @overload
@@ -15,6 +17,21 @@ def get_model(
     distribution_kwargs: Optional[dict] = None,
 ) -> MLE: ...
 
+@overload
+def get_model(
+    model: Literal["MOM"],
+    extremes: pd.Series,
+    distribution: Union[str, scipy.stats.rv_continuous],
+    distribution_kwargs: Optional[dict] = None,
+) -> MOM: ...
+
+@overload
+def get_model(
+    model: Literal["LMOM"],
+    extremes: pd.Series,
+    distribution: Union[str, scipy.stats.rv_continuous],
+    distribution_kwargs: Optional[dict] = None,
+) -> LMOM: ...
 
 @overload
 def get_model(
@@ -30,12 +47,12 @@ def get_model(
 
 
 def get_model(
-    model: Literal["MLE", "Emcee"],
+    model: Literal["MLE", "Emcee", "MOM", "LMOM"],
     extremes: pd.Series,
     distribution: Union[str, scipy.stats.rv_continuous],
     distribution_kwargs: Optional[dict] = None,
     **kwargs,
-) -> Union[MLE, Emcee]:
+) -> Union[MLE, Emcee, MOM, LMOM]:
     """
     Get distribution fitting model and fit it to given extreme values.
 
@@ -48,6 +65,10 @@ def get_model(
                 Based on 'scipy' package (scipy.stats.rv_continuous.fit).
             Emcee - Markov Chain Monte Carlo (MCMC) model.
                 Based on 'emcee' package by Daniel Foreman-Mackey.
+            MOM - Method of Moments (MOM) model.
+                Based on 'scipy' package (scipy.stats.rv_continuous.fit).
+            LMOM - L-moments (LMOM) model.
+                Based on 'lmoments3' package, https://github.com/OpenHydrology/lmoments3
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
@@ -83,8 +104,8 @@ def get_model(
 
     Returns
     -------
-    model : MLE or Emcee
-        Distribution fitting model fitted to the `extremes`.
+    model : MLE, Emcee, MOM, or LMOM
+    Distribution fitting model fitted to the `extremes`.
 
     """
     distribution_model_kwargs = {
@@ -98,7 +119,11 @@ def get_model(
         return MLE(**distribution_model_kwargs)
     if model == "Emcee":
         return Emcee(**distribution_model_kwargs)
+    if model == "MOM":
+        return MOM(**distribution_model_kwargs)
+    if model == "LMOM":
+        return LMOM(**distribution_model_kwargs)
     raise ValueError(
         f"invalid value in '{model}' for the 'model' argument, "
-        f"available model: 'MLE', 'Emcee'"
+        f"available model: 'MLE', 'Emcee', 'MOM', 'LMOM'"
     )

@@ -61,7 +61,7 @@ class Distribution:
         """
         self.extremes = extremes
 
-        if method.lower() not in ['mle','mom','lmom']:
+        if method not in ['MLE','MOM','LMOM']:
             raise ValueError(f'Method must be MLE, MOM, or LMOM. Got {method}.')
         self.method = method
 
@@ -69,7 +69,7 @@ class Distribution:
         if isinstance(distribution, scipy.stats.rv_continuous):
             self.distribution = distribution
         elif isinstance(distribution, str):
-            if method == 'lmom':
+            if method == 'LMOM':
                 # Help users by converting scipy names to lmoments3 name.
                 scipy_to_lmom = {
                     "expon": "exp",          # Exponential
@@ -87,6 +87,11 @@ class Distribution:
                 if distribution in scipy_to_lmom.keys():
                     distribution = scipy_to_lmom[distribution]
                 self.distribution = getattr(lmoments3.distr, distribution)
+
+                for k in kwargs: 
+                    if k != "floc": 
+                        raise ValueError("L-moments does not allow fixed parameters.")
+
             else:
                 self.distribution = getattr(scipy.stats, distribution)
             if not isinstance(self.distribution, scipy.stats.rv_continuous):
@@ -168,12 +173,18 @@ class Distribution:
         """
 
         # Calculate full distribution parameters
-        if self.method.lower() == 'lmom':
-            parameters = self.distribution.lmom_fit(data=data, **self.fixed_parameters)
-        elif self.method.lower() == 'mle':
+        if self.method == 'MLE':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mle')
-        elif self.method.lower() == 'mom':
+        if self.method == 'MOM':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
+        if self.method == 'LMOM':
+            floc = self.fixed_parameters.get("floc",0.)
+            parameters = self.distribution.lmom_fit(data=data-floc)
+            parameters = list(parameters.values())
+            if "floc" in self.fixed_parameters:
+                self.fixed_parameters["floc"] += parameters[-2]
+                self._fixed_parameters["loc"] += parameters[-2]
+                parameters[-2] = self.fixed_parameters["floc"]
 
         # Package distribution parameters into ordered free distribution parameters
         free_parameters = {}

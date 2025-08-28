@@ -13,7 +13,7 @@ from pyextremes.models.model_scipy import ScipyModel
 
 logger = logging.getLogger(__name__)
 
-class MLE(ScipyModel):
+class LMOM(ScipyModel):
     def __init__(
         self,
         extremes: pd.Series,
@@ -21,7 +21,7 @@ class MLE(ScipyModel):
         distribution_kwargs: typing.Optional[dict] = None,
     ) -> None:
         """
-        Maximum Likelihood Estimate (MLE) model.
+        L-Moments (LMOM) model.
 
         Built around the scipy.stats.rv_continuous.fit method.
 
@@ -30,9 +30,9 @@ class MLE(ScipyModel):
             extremes=extremes,
             distribution=distribution,
             distribution_kwargs=distribution_kwargs,
-            method="MLE"
+            method="LMOM"
         )
 
     @property
     def name(self) -> str:
-        return "MLE"
+        return "LMOM"
