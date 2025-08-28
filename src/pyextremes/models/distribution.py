@@ -4,6 +4,7 @@ import typing
 import numpy as np
 import pandas as pd
 import scipy.stats
+import lmoments3
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,15 @@ class Distribution:
         "extremes",
         "fixed_parameters",
         "free_parameters",
-        "mle_parameters",
+        "parameters",
+        "method",
     ]
 
     def __init__(
         self,
         extremes: pd.Series,
         distribution: typing.Union[str, scipy.stats.rv_continuous],
+        method: str = "MLE",
         **kwargs,
     ) -> None:
         """
@@ -39,6 +42,11 @@ class Distribution:
             Distribution name compatible with scipy.stats
             or a subclass of scipy.stats.rv_continuous.
             See https://docs.scipy.org/doc/scipy/reference/stats.html
+        method : str, default 'MLE'
+            Fit method. One of:
+             - Maximum Likelihood Estimation, from scipy: 'MLE'
+             - Method of Moments, from scipy: 'MOM'
+             - L-moments, from lmoments3: 'LMOM'
         kwargs
             Special keyword arguments, passed to the `.fit` method of the distribution.
             These keyword arguments represent parameters to be held fixed.
@@ -53,11 +61,34 @@ class Distribution:
         """
         self.extremes = extremes
 
+        if method.lower() not in ['mle','mom','lmom']:
+            raise ValueError(f'Method must be MLE, MOM, or LMOM. Got {method}.')
+        self.method = method
+
         # Get distribution object
         if isinstance(distribution, scipy.stats.rv_continuous):
             self.distribution = distribution
         elif isinstance(distribution, str):
-            self.distribution = getattr(scipy.stats, distribution)
+            if method == 'lmom':
+                # Help users by converting scipy names to lmoments3 name.
+                scipy_to_lmom = {
+                    "expon": "exp",          # Exponential
+                    "gamma": "gam",          # Gamma
+                    "genextreme": "gev",     # Generalised Extreme Value
+                    "genlogistic": "glo",    # Generalised Logistic
+                    "gennorm": "gno",        # Generalised Normal
+                    "genpareto": "gpa",      # Generalised Pareto
+                    "gumbel_r": "gum",       # Gumbel
+                    "kappa4": "kap",         # Kappa
+                    "norm": "nor",           # Normal
+                    "pearson3": "pe3",       # Pearson III
+                    "weibull_min": "wei"     # Weibull
+                }
+                if distribution in scipy_to_lmom.keys():
+                    distribution = scipy_to_lmom[distribution]
+                self.distribution = getattr(lmoments3.distr, distribution)
+            else:
+                self.distribution = getattr(scipy.stats, distribution)
             if not isinstance(self.distribution, scipy.stats.rv_continuous):
                 raise ValueError(f"'{distribution}' is not a continuous distribution")
         else:
@@ -111,13 +142,13 @@ class Distribution:
                 self.free_parameters.append(parameter)
 
         # Fit distribution
-        self.mle_parameters = self.fit(data=self.extremes.values)
-        free_parameters_mle = ", ".join(
-            [f"{key}={value}" for key, value in self.mle_parameters.items()]
+        self.parameters = self.fit(data=self.extremes.values)
+        free_parameters = ", ".join(
+            [f"{key}={value}" for key, value in self.parameters.items()]
         )
         logger.debug(
             "calculated free distribution parameters in: %s",
-            free_parameters_mle,
+            free_parameters,
         )
 
     def fit(self, data: np.ndarray) -> dict:
@@ -128,23 +159,29 @@ class Distribution:
         ----------
         data : numpy.ndarray
             Array with data to which the distribution is fit.
-
+            
         Returns
         -------
         parameters : dict
-            Dictionary with MLE of free distribution parameters.
+            Dictionary with free distribution parameters.
 
         """
-        # Calculate full MLE of distribution parameters
-        full_mle = self.distribution.fit(data=data, **self.fixed_parameters)
+
+        # Calculate full distribution parameters
+        if self.method.lower() == 'lmom':
+            parameters = self.distribution.lmom_fit(data=data, **self.fixed_parameters)
+        elif self.method.lower() == 'mle':
+            parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mle')
+        elif self.method.lower() == 'mom':
+            parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
 
         # Package distribution parameters into ordered free distribution parameters
         free_parameters = {}
         for i, parameter in enumerate(self.distribution_parameters):
             if parameter in self.free_parameters:
-                free_parameters[parameter] = full_mle[i]
+                free_parameters[parameter] = parameters[i]
             else:
-                assert np.isclose(full_mle[i], self._fixed_parameters[parameter])
+                assert np.isclose(parameters[i], self._fixed_parameters[parameter])
         return free_parameters
 
     @property
@@ -165,8 +202,8 @@ class Distribution:
                 [f"{key}={value:,.3f}" for key, value in self.fixed_parameters.items()]
             )
 
-        mle_parameters = ", ".join(
-            [f"{key}={value:,.3f}" for key, value in self.mle_parameters.items()]
+        parameters = ", ".join(
+            [f"{key}={value:,.3f}" for key, value in self.parameters.items()]
         )
 
         summary = [
@@ -175,7 +212,7 @@ class Distribution:
             f"name: {self.name}",
             f"free parameters: {free_parameters}",
             f"fixed parameters: {fixed_parameters}",
-            f"MLE parameters: {mle_parameters}",
+            f"fitted parameters: {parameters}",
         ]
 
         longest_row = max(map(len, summary))
@@ -244,9 +281,9 @@ class Distribution:
 
         """
         logger.debug("getting initial positions for %s walkers", n_walkers)
-        mle_parameters = [self.mle_parameters[key] for key in self.free_parameters]
+        parameters = [self.parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(
-            loc=mle_parameters,
+            loc=parameters,
             scale=0.01,
             size=(n_walkers, self.number_of_parameters),
         )
