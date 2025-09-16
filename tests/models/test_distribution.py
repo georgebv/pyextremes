@@ -83,10 +83,10 @@ class TestDistribution:
         assert len(distribution.free_parameters) == (
             len(distribution.distribution_parameters) - len(kwargs)
         )
-        for key in distribution.parameters.keys():
+        for key in distribution.mle_parameters.keys():
             assert key in distribution.free_parameters
             assert key not in distribution._fixed_parameters
-        assert len(distribution.parameters) == distribution.number_of_parameters
+        assert len(distribution.mle_parameters) == distribution.number_of_parameters
 
         # Test properties
         assert distribution.name == distribution_name
@@ -115,7 +115,7 @@ class TestDistribution:
         assert initial_state.shape == (1000, distribution.number_of_parameters)
         assert np.allclose(
             initial_state.mean(axis=0),
-            list(distribution.parameters.values()),
+            list(distribution.mle_parameters.values()),
             atol=0.1,
         )
 

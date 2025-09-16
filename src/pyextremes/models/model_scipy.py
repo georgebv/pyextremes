@@ -59,7 +59,7 @@ class ScipyModel(AbstractModelBaseClass):
             raise TypeError(
                 f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
             )
-        self._fit_parameters = self.distribution.parameters
+        self._fit_parameters = self.distribution.mle_parameters
         logger.debug(
             "fit %s distribution with %s parameters",
             self.distribution.name,
@@ -289,7 +289,7 @@ class ScipyModel(AbstractModelBaseClass):
             fixed_parameters = "all parameters are free"
 
         summary = [
-            "MLE model",
+            f"{self.distribution.method} model",
             "",
             f"free parameters: {free_parameters}",
             f"fixed parameters: {fixed_parameters}",
