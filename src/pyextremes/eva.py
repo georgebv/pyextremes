@@ -1025,7 +1025,7 @@ class EVA:
             )
 
         # Freeze (fix) location parameter for genpareto/expon distributions
-        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"] and model is not "LMOM":
+        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"] and model != "LMOM":
             distribution_kwargs = {
                 "floc": self.extremes_kwargs.get(
                     "threshold", self.extremes_transformer.transformed_extremes.min()

@@ -38,8 +38,8 @@ class Distribution:
         "extremes",
         "fixed_parameters",
         "free_parameters",
-        "mle_parameters",
         "method",
+        "mle_parameters",
     ]
 
     def __init__(
@@ -89,7 +89,7 @@ class Distribution:
             if kwargs:
                 raise ValueError("Method LMOM does not allow fixed parameters.")
             if lmoments3 is None:
-                raise ImportError(f"The lmoments3 package is required to use method LMOM. You may install it with `pip install pyextremes[lmom]`.")
+                raise ImportError("The lmoments3 package is required to use method LMOM. You may install it with `pip install pyextremes[lmom]`.")
         self.method = method
 
         # Get distribution object

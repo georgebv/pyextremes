@@ -1,14 +1,9 @@
-import itertools
 import logging
-import multiprocessing
-import os
 import typing
 
-import numpy as np
 import pandas as pd
 import scipy.stats
 
-from pyextremes.models.model_base import AbstractModelBaseClass
 from pyextremes.models.model_scipy import ScipyModel
 
 logger = logging.getLogger(__name__)
