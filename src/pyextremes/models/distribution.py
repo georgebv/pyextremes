@@ -86,9 +86,8 @@ class Distribution:
         if method not in ['MLE','MOM','LMOM']:
             raise ValueError(f'Method must be MLE, MOM, or LMOM. Got {method}.')
         if method == "LMOM":
-            for k in kwargs: 
-                if k != "floc": 
-                    raise ValueError("Method LMOM does not allow fixed parameters.")
+            if kwargs:
+                raise ValueError("Method LMOM does not allow fixed parameters.")
             if lmoments3 is None:
                 raise ImportError(f"The lmoments3 package is required to use method LMOM. You may install it with `pip install pyextremes[lmom]`.")
         self.method = method
@@ -185,14 +184,9 @@ class Distribution:
         if self.method == 'MOM':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
         if self.method == 'LMOM':
-            floc = self.fixed_parameters.get("floc",0.)
-            parameters = self.distribution.lmom_fit(data=data-floc)
+            parameters = self.distribution.lmom_fit(data=data)
             parameters = list(parameters.values())
-            if "floc" in self.fixed_parameters:
-                self.fixed_parameters["floc"] += parameters[-2]
-                self._fixed_parameters["loc"] += parameters[-2]
-                parameters[-2] = self.fixed_parameters["floc"]
-
+            
         # Package distribution parameters into ordered free distribution parameters
         free_parameters = {}
         for i, parameter in enumerate(self.distribution_parameters):
