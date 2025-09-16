@@ -4,10 +4,31 @@ import typing
 import numpy as np
 import pandas as pd
 import scipy.stats
-import lmoments3
+try:
+    import lmoments3
+except:
+    lmoments3 = None
 
 logger = logging.getLogger(__name__)
 
+def _get_lmoments3_distr(distribution:str):
+    """Convert scipy distribution name to lmoments3."""
+    scipy_to_lmom = {
+        "expon": "exp",          # Exponential
+        "gamma": "gam",          # Gamma
+        "genextreme": "gev",     # Generalised Extreme Value
+        "genlogistic": "glo",    # Generalised Logistic
+        "gennorm": "gno",        # Generalised Normal
+        "genpareto": "gpa",      # Generalised Pareto
+        "gumbel_r": "gum",       # Gumbel
+        "kappa4": "kap",         # Kappa
+        "norm": "nor",           # Normal
+        "pearson3": "pe3",       # Pearson III
+        "weibull_min": "wei"     # Weibull
+    }
+    if distribution in scipy_to_lmom.keys():
+        distribution = scipy_to_lmom[distribution]
+    return getattr(lmoments3.distr, distribution)
 
 class Distribution:
     __slots__ = [
@@ -17,7 +38,7 @@ class Distribution:
         "extremes",
         "fixed_parameters",
         "free_parameters",
-        "parameters",
+        "mle_parameters",
         "method",
     ]
 
@@ -61,8 +82,15 @@ class Distribution:
         """
         self.extremes = extremes
 
+        # Set fitting method
         if method not in ['MLE','MOM','LMOM']:
             raise ValueError(f'Method must be MLE, MOM, or LMOM. Got {method}.')
+        if method == "LMOM":
+            for k in kwargs: 
+                if k != "floc": 
+                    raise ValueError("Method LMOM does not allow fixed parameters.")
+            if lmoments3 is None:
+                raise ImportError(f"The lmoments3 package is required to use method LMOM. You may install it with `pip install pyextremes[lmom]`.")
         self.method = method
 
         # Get distribution object
@@ -70,28 +98,7 @@ class Distribution:
             self.distribution = distribution
         elif isinstance(distribution, str):
             if method == 'LMOM':
-                # Help users by converting scipy names to lmoments3 name.
-                scipy_to_lmom = {
-                    "expon": "exp",          # Exponential
-                    "gamma": "gam",          # Gamma
-                    "genextreme": "gev",     # Generalised Extreme Value
-                    "genlogistic": "glo",    # Generalised Logistic
-                    "gennorm": "gno",        # Generalised Normal
-                    "genpareto": "gpa",      # Generalised Pareto
-                    "gumbel_r": "gum",       # Gumbel
-                    "kappa4": "kap",         # Kappa
-                    "norm": "nor",           # Normal
-                    "pearson3": "pe3",       # Pearson III
-                    "weibull_min": "wei"     # Weibull
-                }
-                if distribution in scipy_to_lmom.keys():
-                    distribution = scipy_to_lmom[distribution]
-                self.distribution = getattr(lmoments3.distr, distribution)
-
-                for k in kwargs: 
-                    if k != "floc": 
-                        raise ValueError("L-moments does not allow fixed parameters.")
-
+                self.distribution = _get_lmoments3_distr(distribution)
             else:
                 self.distribution = getattr(scipy.stats, distribution)
             if not isinstance(self.distribution, scipy.stats.rv_continuous):
@@ -147,9 +154,9 @@ class Distribution:
                 self.free_parameters.append(parameter)
 
         # Fit distribution
-        self.parameters = self.fit(data=self.extremes.values)
+        self.mle_parameters = self.fit(data=self.extremes.values)
         free_parameters = ", ".join(
-            [f"{key}={value}" for key, value in self.parameters.items()]
+            [f"{key}={value}" for key, value in self.mle_parameters.items()]
         )
         logger.debug(
             "calculated free distribution parameters in: %s",
@@ -214,7 +221,7 @@ class Distribution:
             )
 
         parameters = ", ".join(
-            [f"{key}={value:,.3f}" for key, value in self.parameters.items()]
+            [f"{key}={value:,.3f}" for key, value in self.mle_parameters.items()]
         )
 
         summary = [
@@ -292,7 +299,7 @@ class Distribution:
 
         """
         logger.debug("getting initial positions for %s walkers", n_walkers)
-        parameters = [self.parameters[key] for key in self.free_parameters]
+        parameters = [self.mle_parameters[key] for key in self.free_parameters]
         return scipy.stats.norm.rvs(
             loc=parameters,
             scale=0.01,
