@@ -49,6 +49,7 @@ dependencies = [
 
 [project.optional-dependencies]
 full = ["tqdm>=4.0.0,<5.0.0"]
+lmom = ["lmoments3"]
 
 [dependency-groups]
 dev = ["pre-commit>=4.3.0"]
