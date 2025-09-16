@@ -68,7 +68,7 @@ def get_model(
             MOM - Method of Moments (MOM) model.
                 Based on 'scipy' package (scipy.stats.rv_continuous.fit).
             LMOM - L-moments (LMOM) model.
-                Based on 'lmoments3' package, https://github.com/OpenHydrology/lmoments3
+                Based on 'lmoments3' package, https://github.com/Ouranosinc/lmoments3
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
