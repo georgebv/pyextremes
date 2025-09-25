@@ -6,14 +6,14 @@ import pandas as pd
 import scipy.stats
 try:
     import lmoments3
-except:
+except ModuleNotFoundError:
     lmoments3 = None
 
 logger = logging.getLogger(__name__)
 
 def _get_lmoments3_distr(distribution:str):
-    """Convert scipy distribution name to lmoments3."""
-    scipy_to_lmom = {
+    """Convert scipy distribution name to lmoments3 distribution."""
+    scipy_to_lmoments3 = {
         "expon": "exp",          # Exponential
         "gamma": "gam",          # Gamma
         "genextreme": "gev",     # Generalised Extreme Value
@@ -26,8 +26,7 @@ def _get_lmoments3_distr(distribution:str):
         "pearson3": "pe3",       # Pearson III
         "weibull_min": "wei"     # Weibull
     }
-    if distribution in scipy_to_lmom.keys():
-        distribution = scipy_to_lmom[distribution]
+    distribution = scipy_to_lmoments3.get(distribution,distribution)
     return getattr(lmoments3.distr, distribution)
 
 class Distribution:
@@ -66,8 +65,8 @@ class Distribution:
         method : str, default 'MLE'
             Fit method. One of:
              - Maximum Likelihood Estimation, from scipy: 'MLE'
+             - L-moments, from lmoments3: 'Lmoments'
              - Method of Moments, from scipy: 'MOM'
-             - L-moments, from lmoments3: 'LMOM'
         kwargs
             Special keyword arguments, passed to the `.fit` method of the distribution.
             These keyword arguments represent parameters to be held fixed.
@@ -75,28 +74,31 @@ class Distribution:
                 - shape(s): 'fc', e.g. fc=0
                 - location: 'floc', e.g. floc=0
                 - scale: 'fscale', e.g. fscale=1
+            
             By default, no parameters are fixed.
             See documentation of a specific scipy.stats distribution
             for names of available parameters.
+            Lmoments does not allow fixed parameters.
 
         """
         self.extremes = extremes
 
         # Set fitting method
-        if method not in ['MLE','MOM','LMOM']:
-            raise ValueError(f'Method must be MLE, MOM, or LMOM. Got {method}.')
-        if method == "LMOM":
+        if method not in ['MLE','MOM','Lmoments']:
+            raise ValueError(f'Method must be MLE, MOM, or Lmoments. Got {method}.')
+        if method == "Lmoments":
             if kwargs:
-                raise ValueError("Method LMOM does not allow fixed parameters.")
+                raise ValueError("Method Lmoments does not allow fixed parameters.")
             if lmoments3 is None:
-                raise ImportError("The lmoments3 package is required to use method LMOM. You may install it with `pip install pyextremes[lmom]`.")
+                raise ModuleNotFoundError("The lmoments3 package is required to use method Lmoments."
+                                          "You may install it with `pip install pyextremes[lmoments]`.")
         self.method = method
 
         # Get distribution object
         if isinstance(distribution, scipy.stats.rv_continuous):
             self.distribution = distribution
         elif isinstance(distribution, str):
-            if method == 'LMOM':
+            if method == 'Lmoments':
                 self.distribution = _get_lmoments3_distr(distribution)
             else:
                 self.distribution = getattr(scipy.stats, distribution)
@@ -183,7 +185,7 @@ class Distribution:
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mle')
         if self.method == 'MOM':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
-        if self.method == 'LMOM':
+        if self.method == 'Lmoments':
             parameters = self.distribution.lmom_fit(data=data)
             parameters = list(parameters.values())
             

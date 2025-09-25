@@ -876,7 +876,7 @@ class EVA:
 
     def fit_model(
         self,
-        model: typing.Literal["MLE", "Emcee"] = "MLE",
+        model: typing.Literal["MLE", "Emcee", "Lmoments", "MOM"] = "MLE",
         distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
         distribution_kwargs: typing.Optional[dict] = None,
         **kwargs,
@@ -894,6 +894,10 @@ class EVA:
                     Based on 'scipy' package (scipy.stats.rv_continuous.fit).
                 Emcee - Markov Chain Monte Carlo (MCMC) model.
                     Based on 'emcee' package by Daniel Foreman-Mackey.
+                Lmoments - L-moments (Lmoments) model.
+                    Based on 'lmoments3' package, https://github.com/Ouranosinc/lmoments3
+                MOM - Method of Moments (MOM) model.
+                    Based on 'scipy' package (scipy.stats.rv_continuous.fit).
         distribution : str or scipy.stats.rv_continuous, optional
             Distribution name compatible with scipy.stats
             or a subclass of scipy.stats.rv_continuous.
@@ -1025,7 +1029,7 @@ class EVA:
             )
 
         # Freeze (fix) location parameter for genpareto/expon distributions
-        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"] and model != "LMOM":
+        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"] and model != "Lmoments":
             distribution_kwargs = {
                 "floc": self.extremes_kwargs.get(
                     "threshold", self.extremes_transformer.transformed_extremes.min()

@@ -6,7 +6,7 @@ import scipy.stats
 from pyextremes.models.model_emcee import Emcee
 from pyextremes.models.model_mle import MLE
 from pyextremes.models.model_mom import MOM
-from pyextremes.models.model_lmom import LMOM
+from pyextremes.models.model_lmoments import Lmoments
 
 
 @overload
@@ -27,11 +27,11 @@ def get_model(
 
 @overload
 def get_model(
-    model: Literal["LMOM"],
+    model: Literal["Lmoments"],
     extremes: pd.Series,
     distribution: Union[str, scipy.stats.rv_continuous],
     distribution_kwargs: Optional[dict] = None,
-) -> LMOM: ...
+) -> Lmoments: ...
 
 @overload
 def get_model(
@@ -47,12 +47,12 @@ def get_model(
 
 
 def get_model(
-    model: Literal["MLE", "Emcee", "MOM", "LMOM"],
+    model: Literal["MLE", "Emcee", "Lmoments", "MOM"],
     extremes: pd.Series,
     distribution: Union[str, scipy.stats.rv_continuous],
     distribution_kwargs: Optional[dict] = None,
     **kwargs,
-) -> Union[MLE, Emcee, MOM, LMOM]:
+) -> Union[MLE, Emcee, Lmoments, MOM]:
     """
     Get distribution fitting model and fit it to given extreme values.
 
@@ -65,10 +65,10 @@ def get_model(
                 Based on 'scipy' package (scipy.stats.rv_continuous.fit).
             Emcee - Markov Chain Monte Carlo (MCMC) model.
                 Based on 'emcee' package by Daniel Foreman-Mackey.
+            Lmoments - L-moments (Lmoments) model.
+                Based on 'lmoments3' package, https://github.com/Ouranosinc/lmoments3
             MOM - Method of Moments (MOM) model.
                 Based on 'scipy' package (scipy.stats.rv_continuous.fit).
-            LMOM - L-moments (LMOM) model.
-                Based on 'lmoments3' package, https://github.com/Ouranosinc/lmoments3
     extremes : pandas.Series
         Time series of extreme events.
     distribution : str or scipy.stats.rv_continuous
@@ -104,7 +104,7 @@ def get_model(
 
     Returns
     -------
-    model : MLE, Emcee, MOM, or LMOM
+    model : MLE, Emcee, Lmoments, or MOM
     Distribution fitting model fitted to the `extremes`.
 
     """
@@ -121,9 +121,9 @@ def get_model(
         return Emcee(**distribution_model_kwargs)
     if model == "MOM":
         return MOM(**distribution_model_kwargs)
-    if model == "LMOM":
-        return LMOM(**distribution_model_kwargs)
+    if model == "Lmoments":
+        return Lmoments(**distribution_model_kwargs)
     raise ValueError(
         f"invalid value in '{model}' for the 'model' argument, "
-        f"available model: 'MLE', 'Emcee', 'MOM', 'LMOM'"
+        f"available models: 'MLE', 'Emcee', 'Lmoments', 'MOM'"
     )

@@ -37,7 +37,7 @@ class ScipyModel(AbstractModelBaseClass):
     ) -> None:
         """
         General model built around the scipy.stats.rv_continuous object.
-        This should be subclassed based on the fitting method used (MLE, MOM or LMOM).
+        This should be subclassed based on the fitting method used (MLE, MOM or Lmoments).
         """
         super().__init__(
             extremes=extremes,
