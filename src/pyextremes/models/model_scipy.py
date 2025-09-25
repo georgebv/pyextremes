@@ -50,10 +50,6 @@ class ScipyModel(AbstractModelBaseClass):
         self.fit_parameter_cache: typing.List[typing.Tuple[float, ...]] = []
         self.seed_cache: typing.Set[int] = set()
 
-    @property
-    def name(self) -> str:
-        raise ValueError("Property 'name' should be overwritten.")
-
     def fit(self, **kwargs) -> None:
         if len(kwargs) != 0:
             raise TypeError(

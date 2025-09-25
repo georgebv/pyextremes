@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 try:
-    import lmoments3
+    from lmoments3 import distr as lmoments
 except ModuleNotFoundError:
-    lmoments3 = None
+    lmoments = None
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def _get_lmoments3_distr(distribution:str):
         "weibull_min": "wei"     # Weibull
     }
     distribution = scipy_to_lmoments3.get(distribution,distribution)
-    return getattr(lmoments3.distr, distribution)
+    return getattr(lmoments, distribution)
 
 class Distribution:
     __slots__ = [
@@ -89,7 +89,7 @@ class Distribution:
         if method == "Lmoments":
             if kwargs:
                 raise ValueError("Method Lmoments does not allow fixed parameters.")
-            if lmoments3 is None:
+            if lmoments is None:
                 raise ModuleNotFoundError("The lmoments3 package is required to use method Lmoments."
                                           "You may install it with `pip install pyextremes[lmoments]`.")
         self.method = method

@@ -54,7 +54,7 @@ lmom = ["lmoments3"]
 [dependency-groups]
 dev = ["pre-commit>=4.3.0"]
 lint = ["mypy>=1.17.1", "ruff>=0.12.9"]
-test = ["pytest>=8.4.1", "pytest-cov>=6.2.1"]
+test = ["pytest>=8.4.1", "pytest-cov>=6.2.1", "lmoments3"]
 docs = [
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.6.17",
