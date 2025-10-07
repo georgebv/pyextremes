@@ -41,6 +41,9 @@ class AbstractModelBaseClass(abc.ABC):
             By default, no parameters are fixed.
             See documentation of a specific scipy.stats distribution
             for names of available parameters.
+            Lmoments method does not allow any fixed parameters.
+        method : str
+            The fitting method: MLE, Emcee, Lmoments or MOM.
         kwargs
             Keyword arguments passed to a model .fit method.
             MLE model:

@@ -183,11 +183,13 @@ class Distribution:
         # Calculate full distribution parameters
         if self.method == 'MLE':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mle')
-        if self.method == 'MOM':
+        elif self.method == 'MOM':
             parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
-        if self.method == 'Lmoments':
+        elif self.method == 'Lmoments':
             parameters = self.distribution.lmom_fit(data=data)
             parameters = list(parameters.values())
+        else:
+            raise ValueError(f'Method must be MLE, MOM, or Lmoments. Got {self.method}.')
             
         # Package distribution parameters into ordered free distribution parameters
         free_parameters = {}

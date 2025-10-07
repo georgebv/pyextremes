@@ -285,7 +285,7 @@ class ScipyModel(AbstractModelBaseClass):
             fixed_parameters = "all parameters are free"
 
         summary = [
-            f"{self.distribution.method} model",
+            f"{self.name} model",
             "",
             f"free parameters: {free_parameters}",
             f"fixed parameters: {fixed_parameters}",
