@@ -4,9 +4,9 @@ import pandas as pd
 import scipy.stats
 
 from pyextremes.models.model_emcee import Emcee
+from pyextremes.models.model_lmoments import Lmoments
 from pyextremes.models.model_mle import MLE
 from pyextremes.models.model_mom import MOM
-from pyextremes.models.model_lmoments import Lmoments
 
 
 @overload
@@ -17,6 +17,7 @@ def get_model(
     distribution_kwargs: Optional[dict] = None,
 ) -> MLE: ...
 
+
 @overload
 def get_model(
     model: Literal["MOM"],
@@ -25,6 +26,7 @@ def get_model(
     distribution_kwargs: Optional[dict] = None,
 ) -> MOM: ...
 
+
 @overload
 def get_model(
     model: Literal["Lmoments"],
@@ -32,6 +34,7 @@ def get_model(
     distribution: Union[str, scipy.stats.rv_continuous],
     distribution_kwargs: Optional[dict] = None,
 ) -> Lmoments: ...
+
 
 @overload
 def get_model(

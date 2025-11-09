@@ -14,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class Emcee(AbstractModelBaseClass):
+    """
+    Markov Chain Monte Carlo (MCMC) model.
+
+    Built around the 'emcee' package by Daniel Foreman-Mackey
+
+    """
+
     def __init__(
         self,
         extremes: pd.Series,
@@ -23,12 +30,6 @@ class Emcee(AbstractModelBaseClass):
         n_samples: int = 500,
         progress: bool = False,
     ) -> None:
-        """
-        Markov Chain Monte Carlo (MCMC) model.
-
-        Built around the 'emcee' package by Daniel Foreman-Mackey
-
-        """
         super().__init__(
             extremes=extremes,
             distribution=distribution,

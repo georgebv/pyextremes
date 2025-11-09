@@ -4,30 +4,41 @@ import typing
 import numpy as np
 import pandas as pd
 import scipy.stats
+
 try:
-    from lmoments3 import distr as lmoments
+    from lmoments3 import distr as lmoments3_distr
 except ModuleNotFoundError:
-    lmoments = None
+    lmoments3_distr = None
 
 logger = logging.getLogger(__name__)
 
-def _get_lmoments3_distr(distribution:str):
-    """Convert scipy distribution name to lmoments3 distribution."""
-    scipy_to_lmoments3 = {
-        "expon": "exp",          # Exponential
-        "gamma": "gam",          # Gamma
-        "genextreme": "gev",     # Generalised Extreme Value
-        "genlogistic": "glo",    # Generalised Logistic
-        "gennorm": "gno",        # Generalised Normal
-        "genpareto": "gpa",      # Generalised Pareto
-        "gumbel_r": "gum",       # Gumbel
-        "kappa4": "kap",         # Kappa
-        "norm": "nor",           # Normal
-        "pearson3": "pe3",       # Pearson III
-        "weibull_min": "wei"     # Weibull
-    }
-    distribution = scipy_to_lmoments3.get(distribution,distribution)
-    return getattr(lmoments, distribution)
+# Maps scipy distribution names to lmoments3 distribution names
+_SCIPY_TO_LMOMENTS3: typing.Dict[str, str] = {
+    # Exponential
+    "expon": "exp",
+    # Gamma
+    "gamma": "gam",
+    # Generalised Extreme Value
+    "genextreme": "gev",
+    # Generalised Logistic
+    "genlogistic": "glo",
+    # Generalised Normal
+    "gennorm": "gno",
+    # Generalised Pareto
+    "genpareto": "gpa",
+    # Gumbel
+    "gumbel_r": "gum",
+    # Kappa
+    "kappa4": "kap",
+    # Normal
+    "norm": "nor",
+    # Pearson III
+    "pearson3": "pe3",
+    # Weibull
+    "weibull_min": "wei",
+}
+_SUPPORTED_FIT_METHODS: typing.Set[str] = {"MLE", "MOM", "Lmoments"}
+
 
 class Distribution:
     __slots__ = [
@@ -35,9 +46,9 @@ class Distribution:
         "distribution",
         "distribution_parameters",
         "extremes",
+        "fit_method",
         "fixed_parameters",
         "free_parameters",
-        "method",
         "mle_parameters",
     ]
 
@@ -45,7 +56,7 @@ class Distribution:
         self,
         extremes: pd.Series,
         distribution: typing.Union[str, scipy.stats.rv_continuous],
-        method: str = "MLE",
+        fit_method: str = "MLE",
         **kwargs,
     ) -> None:
         """
@@ -62,19 +73,21 @@ class Distribution:
             Distribution name compatible with scipy.stats
             or a subclass of scipy.stats.rv_continuous.
             See https://docs.scipy.org/doc/scipy/reference/stats.html
-        method : str, default 'MLE'
-            Fit method. One of:
-             - Maximum Likelihood Estimation, from scipy: 'MLE'
-             - L-moments, from lmoments3: 'Lmoments'
-             - Method of Moments, from scipy: 'MOM'
+        fit_method : str, default 'MLE'
+            Distribution fit method.
+            Controls which method is used when fitting this distribution to data.
+            Supported fit methods:
+             - MLE: Maximum Likelihood Estimation, from scipy
+             - Lmoments: L-moments, from lmoments3
+             - MOM: Method of Moments, from scipy
         kwargs
-            Special keyword arguments, passed to the `.fit` method of the distribution.
+            Special keyword arguments, passed to the `.fit` method of the distribution
+            (specifics depend on the `fit_method` parameter).
             These keyword arguments represent parameters to be held fixed.
             Names of parameters to be fixed must have 'f' prefixes. Valid parameters:
                 - shape(s): 'fc', e.g. fc=0
                 - location: 'floc', e.g. floc=0
                 - scale: 'fscale', e.g. fscale=1
-            
             By default, no parameters are fixed.
             See documentation of a specific scipy.stats distribution
             for names of available parameters.
@@ -83,23 +96,38 @@ class Distribution:
         """
         self.extremes = extremes
 
-        # Set fitting method
-        if method not in ['MLE','MOM','Lmoments']:
-            raise ValueError(f'Method must be MLE, MOM, or Lmoments. Got {method}.')
-        if method == "Lmoments":
+        # Validate and set fit method
+        if fit_method not in _SUPPORTED_FIT_METHODS:
+            raise ValueError(
+                f"Unsupported fit method '{fit_method}'. "
+                f"Must be one of: {_SUPPORTED_FIT_METHODS}."
+            )
+        if fit_method == "Lmoments":
+            if lmoments3_distr is None:
+                raise ModuleNotFoundError(
+                    "The lmoments3 package is required to use method Lmoments."
+                    "You may install it with `pip install pyextremes[lmoments]` or "
+                    "with `pip install pyextremes[full]`."
+                )
             if kwargs:
                 raise ValueError("Method Lmoments does not allow fixed parameters.")
-            if lmoments is None:
-                raise ModuleNotFoundError("The lmoments3 package is required to use method Lmoments."
-                                          "You may install it with `pip install pyextremes[lmoments]`.")
-        self.method = method
+        self.fit_method = fit_method
 
         # Get distribution object
+        self.distribution: scipy.stats.rv_continuous
         if isinstance(distribution, scipy.stats.rv_continuous):
             self.distribution = distribution
         elif isinstance(distribution, str):
-            if method == 'Lmoments':
-                self.distribution = _get_lmoments3_distr(distribution)
+            if self.fit_method == "Lmoments":
+                try:
+                    distribution = _SCIPY_TO_LMOMENTS3[distribution]
+                except KeyError as exc:
+                    raise ValueError(
+                        f"Unsupported distribution for {self.fit_method}: "
+                        f"'{distribution}'; "
+                        f"must be one of: {', '.join(_SCIPY_TO_LMOMENTS3.keys())}."
+                    ) from exc
+                self.distribution = getattr(lmoments3_distr, distribution)
             else:
                 self.distribution = getattr(scipy.stats, distribution)
             if not isinstance(self.distribution, scipy.stats.rv_continuous):
@@ -115,7 +143,7 @@ class Distribution:
         )
 
         # Get a list of distribution parameter names
-        self.distribution_parameters = []
+        self.distribution_parameters: typing.List[str] = []
         if self.distribution.shapes is not None:
             # Shape parameters must go first due to argument order in scipy.stats
             # (self.distribution_parameters is unpacked using *)
@@ -130,7 +158,7 @@ class Distribution:
         )
 
         # Collect fixed parameters
-        self.fixed_parameters = {}
+        self.fixed_parameters: typing.Dict[str, float] = {}
         for key, value in kwargs.items():
             if key in valid_kwargs:
                 self.fixed_parameters[key] = value
@@ -149,7 +177,7 @@ class Distribution:
             )
 
         # Collect free parameters
-        self.free_parameters = []
+        self.free_parameters: typing.List[str] = []
         for parameter in self.distribution_parameters:
             if parameter not in self._fixed_parameters:
                 self.free_parameters.append(parameter)
@@ -164,7 +192,7 @@ class Distribution:
             free_parameters,
         )
 
-    def fit(self, data: np.ndarray) -> dict:
+    def fit(self, data: np.ndarray) -> typing.Dict[str, float]:
         """
         Fit distribution to data using the scipy.stats.rv_continuous.fit method.
 
@@ -172,7 +200,7 @@ class Distribution:
         ----------
         data : numpy.ndarray
             Array with data to which the distribution is fit.
-            
+
         Returns
         -------
         parameters : dict
@@ -181,18 +209,25 @@ class Distribution:
         """
 
         # Calculate full distribution parameters
-        if self.method == 'MLE':
-            parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mle')
-        elif self.method == 'MOM':
-            parameters = self.distribution.fit(data=data, **self.fixed_parameters, method='mm')
-        elif self.method == 'Lmoments':
+        if self.fit_method == "MLE":
+            parameters = self.distribution.fit(
+                data=data, **self.fixed_parameters, method="mle"
+            )
+        elif self.fit_method == "MOM":
+            parameters = self.distribution.fit(
+                data=data, **self.fixed_parameters, method="mm"
+            )
+        elif self.fit_method == "Lmoments":
             parameters = self.distribution.lmom_fit(data=data)
             parameters = list(parameters.values())
         else:
-            raise ValueError(f'Method must be MLE, MOM, or Lmoments. Got {self.method}.')
-            
+            raise RuntimeError(  # pragma: no cover
+                f"Invalid fit method '{self.fit_method}'. "
+                f"Must be one of: {', '.join(_SUPPORTED_FIT_METHODS)}."
+            )
+
         # Package distribution parameters into ordered free distribution parameters
-        free_parameters = {}
+        free_parameters: typing.Dict[str, float] = {}
         for i, parameter in enumerate(self.distribution_parameters):
             if parameter in self.free_parameters:
                 free_parameters[parameter] = parameters[i]
@@ -240,7 +275,7 @@ class Distribution:
 
         return "\n".join(summary)
 
-    def log_probability(self, theta: tuple) -> float:
+    def log_probability(self, theta: typing.Tuple[float, ...]) -> float:
         """
         Calculate log-probability for given free distribution parameters.
 
@@ -304,7 +339,10 @@ class Distribution:
             size=(n_walkers, self.number_of_parameters),
         )
 
-    def free2full_parameters(self, free_parameters) -> np.ndarray:
+    def free2full_parameters(
+        self,
+        free_parameters: typing.Union[typing.Dict[str, float], np.ndarray],
+    ) -> np.ndarray:
         """
         Convert container with free parameters to an array with full parameters.
 

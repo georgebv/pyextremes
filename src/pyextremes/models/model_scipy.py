@@ -28,22 +28,23 @@ def get_fit_parameters(params) -> typing.List[tuple]:
 
 
 class ScipyModel(AbstractModelBaseClass):
+    """
+    General model built around the scipy.stats.rv_continuous object.
+
+    This should be subclassed based on the fitting method used (MLE, MOM or Lmoments).
+
+    """
+
     def __init__(
         self,
         extremes: pd.Series,
         distribution: typing.Union[str, scipy.stats.rv_continuous],
         distribution_kwargs: typing.Optional[dict] = None,
-        method="MLE",
     ) -> None:
-        """
-        General model built around the scipy.stats.rv_continuous object.
-        This should be subclassed based on the fitting method used (MLE, MOM or Lmoments).
-        """
         super().__init__(
             extremes=extremes,
             distribution=distribution,
             distribution_kwargs=distribution_kwargs,
-            method=method,
         )
 
         # Initialize 'fit_parameter_cache' and 'seed_cache'

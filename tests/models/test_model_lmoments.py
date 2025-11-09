@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import scipy.stats
 
-from pyextremes.models import Lmoments, get_model, Distribution
+from pyextremes.models import Distribution, Lmoments, get_model
 
 
 @pytest.fixture(scope="function")
@@ -37,7 +37,9 @@ class TestLmoments:
         assert len(lmoments_model.fit_parameters) == 3
         for key, value in {"loc": 10, "scale": 2}.items():
             assert key in lmoments_model.fit_parameters
-            assert np.isclose(lmoments_model.fit_parameters[key], value, rtol=0, atol=0.1)
+            assert np.isclose(
+                lmoments_model.fit_parameters[key], value, rtol=0, atol=0.1
+            )
 
         # Test trace attribute
         with pytest.raises(TypeError, match=r"trace property is not"):
@@ -92,7 +94,9 @@ class TestLmoments:
         with pytest.raises(TypeError, match=r"unrecognized arguments.*bad_argument"):
             lmoments_model.get_return_value(exceedance_probability=0.1, bad_argument=1)
         with pytest.raises(ValueError, match=r"invalid shape.*exceedance_probability"):
-            lmoments_model.get_return_value(exceedance_probability=[[1, 2, 3], [1, 2, 3]])
+            lmoments_model.get_return_value(
+                exceedance_probability=[[1, 2, 3], [1, 2, 3]]
+            )
         with pytest.raises(
             ValueError, match=r"invalid value.*n_samples.*must be positive"
         ):
@@ -364,18 +368,16 @@ class TestLmoments:
         seed_cahe_size = min(2, os.cpu_count())
         assert len(model.seed_cache) == seed_cahe_size
 
+
 @pytest.mark.parametrize(
-        "distribution_name",[
-            "genextreme",
-            "gumbel_r",
-            "genpareto",
-            "expon",
-            "weibull_min"])
-def test_lmoments_distribution_init(distribution_name,extremes):
-    assert get_model("Lmoments",extremes,distribution_name)
+    "distribution_name", ["genextreme", "gumbel_r", "genpareto", "expon", "weibull_min"]
+)
+def test_lmoments_distribution_init(distribution_name, extremes):
+    assert get_model("Lmoments", extremes, distribution_name)
+
 
 def test_lmoments_raises(extremes):
-    with pytest.raises(ValueError,match="Method must be"):
-        Distribution(extremes,"genextreme","TestMethod")
-    with pytest.raises(ValueError,match="does not allow fixed parameters"):
-        get_model("Lmoments",extremes,"genextreme",{"floc":0})
+    with pytest.raises(ValueError, match="Method must be"):
+        Distribution(extremes, "genextreme", "TestMethod")
+    with pytest.raises(ValueError, match="does not allow fixed parameters"):
+        get_model("Lmoments", extremes, "genextreme", {"floc": 0})

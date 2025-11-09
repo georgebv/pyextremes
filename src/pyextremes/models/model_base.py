@@ -17,7 +17,6 @@ class AbstractModelBaseClass(abc.ABC):
         extremes: pd.Series,
         distribution: typing.Union[str, scipy.stats.rv_continuous],
         distribution_kwargs: typing.Optional[dict] = None,
-        method="MLE",
         **kwargs,
     ) -> None:
         """
@@ -41,13 +40,15 @@ class AbstractModelBaseClass(abc.ABC):
             By default, no parameters are fixed.
             See documentation of a specific scipy.stats distribution
             for names of available parameters.
-            Lmoments method does not allow any fixed parameters.
-        method : str
-            The fitting method: MLE, Emcee, Lmoments or MOM.
+            Lmoments does not allow fixed parameters.
         kwargs
             Keyword arguments passed to a model .fit method.
             MLE model:
                 MLE model takes no additional arguments.
+            MOM model:
+                MOM model takes no additional arguments.
+            Lmoments model:
+                Lmoments model takes no additional arguments.
             Emcee model:
                 n_walkers : int, optional
                     The number of walkers in the ensemble (default=100).
@@ -67,7 +68,9 @@ class AbstractModelBaseClass(abc.ABC):
         # Declare extreme value distribution
         distribution_kwargs = distribution_kwargs or {}
         self.distribution = Distribution(
-            extremes=self.extremes, distribution=distribution, **distribution_kwargs, method=method
+            extremes=self.extremes,
+            distribution=distribution,
+            **distribution_kwargs,
         )
 
         # Fit the distribution to extremes
