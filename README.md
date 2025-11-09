@@ -35,14 +35,14 @@ It provides tools necessary to perform a wide range of tasks required to
 perform EVA, such as:
 
 - extraction of extreme events from time series using methods such as
-Block Maxima (BM) or Peaks Over Threshold (POT)
+  Block Maxima (BM) or Peaks Over Threshold (POT)
 - fitting continuous distributions, such as GEVD, GPD, or user-specified
-continous distributions to the extracted extreme events
+  continous distributions to the extracted extreme events
 - visualization of model inputs, results, and goodness-of-fit statistics
 - estimation of extreme events of given probability or return period
-(e.g. 100-year event) and of corresponding confidence intervals
+  (e.g. 100-year event) and of corresponding confidence intervals
 - tools assisting with model selection and tuning, such as selection of
-block size in BM and threshold in POT
+  block size in BM and threshold in POT
 
 Check out [this repository](https://github.com/georgebv/pyextremes-notebooks)
 with Jupyter notebooks used to produce figures for this readme
@@ -105,4 +105,6 @@ conda install -c conda-forge pyextremes
 </p>
 
 # Acknowledgements
-I wanted to give kudos to [Jean Toilliez](https://github.com/jtoilliez) who has inspired me to develop this open-source project and who taught me a lot about the extreme value theory. Also big thanks to Max Larson who has introduced me to software development and statistics.
+
+I wanted to thank Max Larson who has inspired me to start this project
+and who taught me a lot about extreme value theory.

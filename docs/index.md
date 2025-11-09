@@ -62,6 +62,8 @@ Multiple ways of fitting the continuous distributions to the data are supported:
 - `MLE` (default model) - Maximum Likelihood Estimate, uses [SciPy](https://www.scipy.org)
 - `Emcee` - Markov Chain Monte Calro, see [Emcee](https://emcee.readthedocs.io/en/stable/)
   package by Dan Foreman-Mackey
+- `MOM` - Method of Moments, uses SciPy
+- `Lmoments` - L-moment, see [lmoments3][https://github.com/Ouranosinc/lmoments3/] package
 
 ## Installation
 
@@ -103,9 +105,10 @@ conda install -c conda-forge pyextremes
 
 Optional dependencies can be installed using the `full` tag as shown above or manually:
 
-|                 Package                  | Description                     |
-| :--------------------------------------: | :------------------------------ |
-| [**tqdm**](https://github.com/tqdm/tqdm) | progress bar for slow processes |
+|                 Package                                | Description                     |
+| :----------------------------------------------------: | :------------------------------ |
+| [**tqdm**](https://github.com/tqdm/tqdm)               | progress bar for slow processes |
+| [**lmoments3](https://github.com/Ouranosinc/lmoments3) | support for Lmoments model      |
 
 ## License
 
