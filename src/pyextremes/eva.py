@@ -859,7 +859,29 @@ class EVA:
     def fit_model(
         self,
         model: typing.Literal["MLE"] = "MLE",
-        distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
+        distribution: typing.Optional[
+            typing.Union[str, scipy.stats.rv_continuous]
+        ] = None,
+        distribution_kwargs: typing.Optional[dict] = None,
+    ) -> None: ...
+
+    @typing.overload
+    def fit_model(
+        self,
+        model: typing.Literal["Lmoments"] = "Lmoments",
+        distribution: typing.Optional[
+            typing.Union[str, scipy.stats.rv_continuous]
+        ] = None,
+        distribution_kwargs: typing.Optional[dict] = None,
+    ) -> None: ...
+
+    @typing.overload
+    def fit_model(
+        self,
+        model: typing.Literal["MOM"] = "MOM",
+        distribution: typing.Optional[
+            typing.Union[str, scipy.stats.rv_continuous]
+        ] = None,
         distribution_kwargs: typing.Optional[dict] = None,
     ) -> None: ...
 
@@ -867,8 +889,11 @@ class EVA:
     def fit_model(
         self,
         model: typing.Literal["Emcee"] = "Emcee",
-        distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
+        distribution: typing.Optional[
+            typing.Union[str, scipy.stats.rv_continuous]
+        ] = None,
         distribution_kwargs: typing.Optional[dict] = None,
+        *,
         n_walkers: int = 100,
         n_samples: int = 500,
         progress: bool = False,
@@ -877,7 +902,9 @@ class EVA:
     def fit_model(
         self,
         model: typing.Literal["MLE", "Emcee", "Lmoments", "MOM"] = "MLE",
-        distribution: typing.Union[str, scipy.stats.rv_continuous] = None,
+        distribution: typing.Optional[
+            typing.Union[str, scipy.stats.rv_continuous]
+        ] = None,
         distribution_kwargs: typing.Optional[dict] = None,
         **kwargs,
     ) -> None:
@@ -922,6 +949,10 @@ class EVA:
             Keyword arguments passed to a model .fit method.
             MLE model:
                 MLE model takes no additional arguments.
+            Lmoments model:
+                Lmoments model takes no additional arguments.
+            MOM model:
+                MOM model takes no additional arguments.
             Emcee model:
                 n_walkers : int, optional
                     The number of walkers in the ensemble (default=100).
@@ -1029,7 +1060,11 @@ class EVA:
             )
 
         # Freeze (fix) location parameter for genpareto/expon distributions
-        if distribution_kwargs is None and distribution_name in ["genpareto", "expon"] and model != "Lmoments":
+        if (
+            distribution_kwargs is None
+            and distribution_name in ["genpareto", "expon"]
+            and model != "Lmoments"
+        ):
             distribution_kwargs = {
                 "floc": self.extremes_kwargs.get(
                     "threshold", self.extremes_transformer.transformed_extremes.min()
