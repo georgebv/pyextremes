@@ -1,6 +1,6 @@
 [project]
 name = "pyextremes"
-version = "2.3.3"
+version = "2.4.0"
 description = "Extreme Value Analysis (EVA) in Python"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -48,22 +48,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-full = [
-    "lmoments3>=1.0.8",
-    "tqdm>=4.0.0,<5.0.0",
-]
-lmoments = [
-    "lmoments3>=1.0.8",
-]
+full = ["lmoments3>=1.0.8", "tqdm>=4.0.0,<5.0.0"]
+lmoments = ["lmoments3>=1.0.8"]
 
 [dependency-groups]
 dev = ["pre-commit>=4.3.0"]
 lint = ["mypy>=1.17.1", "ruff>=0.12.9"]
-test = [
-    "lmoments3>=1.0.8",
-    "pytest>=8.4.1",
-    "pytest-cov>=6.2.1",
-]
+test = ["lmoments3>=1.0.8", "pytest>=8.4.1", "pytest-cov>=6.2.1"]
 docs = [
     "mkdocs>=1.6.1",
     "mkdocs-material>=9.6.17",

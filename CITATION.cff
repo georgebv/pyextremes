@@ -8,8 +8,8 @@ authors:
   - given-names: Georgii
     family-names: Bocharov
     email: bocharovgeorgii@gmail.com
-repository-code: 'https://github.com/georgebv/pyextremes'
-url: 'https://georgebv.github.io/pyextremes'
+repository-code: "https://github.com/georgebv/pyextremes"
+url: "https://georgebv.github.io/pyextremes"
 abstract: >-
   pyextremes is a Python library aimed at performing
   univariate Extreme Value Analysis.
@@ -20,5 +20,5 @@ keywords:
   - Statistics
 license: MIT
 commit: b003286e436db73e7f12c9f7c3298c05773bdf88
-version: 2.3.3
-date-released: '2023-10-14'
+version: 2.4.0
+date-released: "2023-10-14"
