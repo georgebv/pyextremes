@@ -921,6 +921,23 @@ wheels = [
 ]
 
 [[package]]
+name = "lmoments3"
+version = "1.0.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "scipy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "scipy", version = "1.16.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/84/12/a44008bbf71d0bae58e53552478b40b8de61ae034c7c085681ba3e8525ee/lmoments3-1.0.8.tar.gz", hash = "sha256:bb58bfc23c924ebe30852b57a9ac4fe15549bf9376843b7ab67aed79bc06bee1", size = 77689, upload-time = "2024-10-18T20:25:30.821Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/28/a8/88ba989f510c5e0d8889fbc8141ff0ae307dcf743baa2385ebaa6169b43c/lmoments3-1.0.8-py3-none-any.whl", hash = "sha256:984d1f1b0c3feefd57afc7a270931c1d28e4face2df1c2293559faf47681ef5e", size = 48163, upload-time = "2024-10-18T20:25:29.423Z" },
+]
+
+[[package]]
 name = "markdown"
 version = "3.8.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1802,7 +1819,11 @@ dependencies = [
 
 [package.optional-dependencies]
 full = [
+    { name = "lmoments3" },
     { name = "tqdm" },
+]
+lmoments = [
+    { name = "lmoments3" },
 ]
 
 [package.dev-dependencies]
@@ -1820,6 +1841,7 @@ lint = [
     { name = "ruff" },
 ]
 test = [
+    { name = "lmoments3" },
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
@@ -1827,13 +1849,15 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "emcee", specifier = ">=3.0.3,<4.0.0" },
+    { name = "lmoments3", marker = "extra == 'full'", specifier = ">=1.0.8" },
+    { name = "lmoments3", marker = "extra == 'lmoments'", specifier = ">=1.0.8" },
     { name = "matplotlib", specifier = ">=3.3.0,!=3.9.1,<4.0.0" },
     { name = "numpy", specifier = ">=1.19.0,<3.0.0" },
     { name = "pandas", specifier = ">=1.0.0,<3.0.0" },
     { name = "scipy", specifier = ">=1.5.0,<2.0.0" },
     { name = "tqdm", marker = "extra == 'full'", specifier = ">=4.0.0,<5.0.0" },
 ]
-provides-extras = ["full"]
+provides-extras = ["full", "lmoments"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pre-commit", specifier = ">=4.3.0" }]
@@ -1848,6 +1872,7 @@ lint = [
     { name = "ruff", specifier = ">=0.12.9" },
 ]
 test = [
+    { name = "lmoments3", specifier = ">=1.0.8" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
 ]
