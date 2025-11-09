@@ -7,7 +7,7 @@ import scipy.stats
 
 try:
     from lmoments3 import distr as lmoments3_distr
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     lmoments3_distr = None
 
 logger = logging.getLogger(__name__)
@@ -103,7 +103,7 @@ class Distribution:
                 f"Must be one of: {_SUPPORTED_FIT_METHODS}."
             )
         if fit_method == "Lmoments":
-            if lmoments3_distr is None:
+            if lmoments3_distr is None:  # pragma: no cover
                 raise ModuleNotFoundError(
                     "The lmoments3 package is required to use method Lmoments."
                     "You may install it with `pip install pyextremes[lmoments]` or "

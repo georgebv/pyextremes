@@ -30,6 +30,22 @@ class TestDistribution:
                 fscale=1,
             )
 
+    def test_unsupported_fit_method(self):
+        with pytest.raises(ValueError, match=r"Unsupported fit method"):
+            Distribution(
+                extremes=pd.Series([1, 2, 3]),
+                distribution="genextreme",
+                fit_method="NOT_SUPPORTED",
+            )
+
+    def test_unsupported_lmoments_distribution(self):
+        with pytest.raises(ValueError, match=r"Unsupported distribution for Lmoments"):
+            Distribution(
+                extremes=pd.Series([1, 2, 3]),
+                distribution="NOT_SUPPORTED",
+                fit_method="Lmoments",
+            )
+
     @pytest.mark.parametrize(
         "distribution_input, theta, kwargs, scipy_parameters",
         [
