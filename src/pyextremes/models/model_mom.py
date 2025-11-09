@@ -33,7 +33,7 @@ class MOM(ScipyModel):
             extremes=self.extremes,
             distribution=distribution,
             fit_method="MOM",
-            **distribution_kwargs,
+            **(distribution_kwargs or {}),
         )
         self.fit()
 
