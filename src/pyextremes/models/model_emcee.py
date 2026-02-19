@@ -20,6 +20,7 @@ class PoolType(typing.Protocol):
         /,
     ) -> typing.Iterable[typing.Any]: ...
 
+
 logger = logging.getLogger(__name__)
 
 

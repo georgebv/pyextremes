@@ -54,25 +54,25 @@ data["THIS_KEY_DOES_NOT_EXIST"]
 2002-12-31 17:27:36    2.025562
 2003-12-31 23:16:48    1.486252
 Freq: 31556952s, dtype: float64
-                           Univariate Extreme Value Analysis                            
+                           Univariate Extreme Value Analysis
 ========================================================================================
-                                      Source Data                                       
+                                      Source Data
 ----------------------------------------------------------------------------------------
 Data label:                          None      Size:                                 100
 Start:                       January 2000      End:                        December 2098
 ========================================================================================
-                                     Extreme Values                                     
+                                     Extreme Values
 ----------------------------------------------------------------------------------------
 Count:                                100      Extraction method:                     BM
 Type:                                high      Block size:             365 days 05:49:12
 ========================================================================================
-                                         Model                                          
+                                         Model
 ----------------------------------------------------------------------------------------
 Model:                                MLE      Distribution:                    gumbel_r
 Log-likelihood:                    42.268      AIC:                              -80.412
 ----------------------------------------------------------------------------------------
 Free parameters:                loc=1.379      Fixed parameters: All parameters are free
-                              scale=0.132                                               
+                              scale=0.132
 ========================================================================================
 Traceback (most recent call last):
   File "/workspaces/pyextremes/.venv/lib/python3.13/site-packages/pandas/core/indexes/datetimes.py", line 603, in get_loc
