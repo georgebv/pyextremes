@@ -10,6 +10,16 @@ import scipy.stats
 
 from pyextremes.models.model_base import AbstractModelBaseClass
 
+
+@typing.runtime_checkable
+class PoolType(typing.Protocol):
+    def map(
+        self,
+        func: typing.Callable[..., typing.Any],
+        iterable: typing.Iterable[typing.Any],
+        /,
+    ) -> typing.Iterable[typing.Any]: ...
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,6 +39,7 @@ class Emcee(AbstractModelBaseClass):
         n_walkers: int = 100,
         n_samples: int = 500,
         progress: bool = False,
+        pool: typing.Optional[PoolType] = None,
     ) -> None:
         super().__init__(
             extremes=extremes,
@@ -37,6 +48,7 @@ class Emcee(AbstractModelBaseClass):
             n_walkers=n_walkers,
             n_samples=n_samples,
             progress=progress,
+            pool=pool,
         )
         self.n_walkers = n_walkers
         self.n_samples = n_samples
@@ -50,6 +62,7 @@ class Emcee(AbstractModelBaseClass):
         n_walkers: int = kwargs.pop("n_walkers")
         n_samples: int = kwargs.pop("n_samples")
         progress: bool = kwargs.pop("progress")
+        pool: typing.Optional[PoolType] = kwargs.pop("pool", None)
         if len(kwargs) != 0:
             raise TypeError(
                 f"unrecognized arguments passed in: {', '.join(kwargs.keys())}"
@@ -60,6 +73,7 @@ class Emcee(AbstractModelBaseClass):
             nwalkers=n_walkers,
             ndim=self.distribution.number_of_parameters,
             log_prob_fn=self.distribution.log_probability,
+            pool=pool,
         )
 
         # Run the ensemble sampler

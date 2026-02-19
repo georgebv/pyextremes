@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -63,6 +65,31 @@ class TestEmcee:
                 progress=False,
                 bad_argument=1,
             )
+
+    def test_fit_with_pool(self, emcee_model):
+        # We need to patch emcee.EnsembleSampler where it is used in pyextremes.models.model_emcee
+        with patch(
+            "pyextremes.models.model_emcee.emcee.EnsembleSampler"
+        ) as mock_sampler:
+            # Configure the mock to return a mock sampler instance with a run_mcmc method
+            mock_sampler_instance = MagicMock()
+            # We need to set get_chain to return something valid because it's called after run_mcmc
+            # shape: (n_samples, n_walkers, ndim)
+            mock_sampler_instance.get_chain.return_value = np.random.rand(100, 20, 2)
+            mock_sampler.return_value = mock_sampler_instance
+
+            pool = MagicMock()
+            emcee_model.fit(
+                n_walkers=20,
+                n_samples=100,
+                progress=False,
+                pool=pool,
+            )
+
+            # Verify EnsembleSampler was called with pool
+            mock_sampler.assert_called_once()
+            _, kwargs = mock_sampler.call_args
+            assert kwargs["pool"] == pool
 
     def test_trace_map(self, emcee_model):
         assert (

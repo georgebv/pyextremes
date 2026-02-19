@@ -226,7 +226,7 @@ class TestEVA:
                     name="different name",
                 )
             )
-        with pytest.raises(ValueError, match=".+time range must fit within.+"):
+        with pytest.raises(ValueError, match=r".+time range must fit within.+"):
             eva_model.set_extremes(
                 pd.Series(
                     data=[1, 2, 3],

@@ -13,6 +13,7 @@ import scipy.stats
 
 from pyextremes.extremes import ExtremesTransformer, get_extremes, get_return_periods
 from pyextremes.models import MLE, Distribution, Emcee, get_model
+from pyextremes.models.model_emcee import PoolType
 from pyextremes.plotting import (
     plot_corner,
     plot_extremes,
@@ -897,6 +898,7 @@ class EVA:
         n_walkers: int = 100,
         n_samples: int = 500,
         progress: bool = False,
+        pool: typing.Optional[PoolType] = None,
     ) -> None: ...
 
     def fit_model(
@@ -965,6 +967,10 @@ class EVA:
                     suitable for Jupyter notebooks.
                     If False (default), no progress bar will be shown.
                     This progress bar is a part of the `emcee` package.
+                pool : PoolType, optional
+                    A pool object from the multiprocessing module or similar.
+                    If provided, the sampler will use this pool to parallelize
+                    computations.
 
         """
         # Select default distribution
