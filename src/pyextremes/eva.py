@@ -85,7 +85,7 @@ class EVA:
         data = data.copy(deep=True)
 
         # Ensure that `data` has correct index and value dtypes
-        if not np.issubdtype(data.dtype, np.number):
+        if not pd.api.types.is_numeric_dtype(data):
             try:
                 message = "`data` values are not numeric - converting to numeric"
                 logger.debug(message)
@@ -621,7 +621,7 @@ class EVA:
         extremes = extremes.copy(deep=True)
         if not isinstance(extremes.index, pd.DatetimeIndex):
             raise TypeError("invalid index type for `extremes`, must be date-time")
-        if not np.issubdtype(extremes.dtype, np.number):
+        if not pd.api.types.is_numeric_dtype(extremes):
             raise TypeError("`extremes` must have numeric values")
         if extremes.name is None:
             extremes.name = self.data.name
