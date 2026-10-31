@@ -1,6 +1,10 @@
-<p align="center" style="font-size:50px; margin:-20px 10px -20px 10px">
+---
+title: pyextremes
+---
+
+<h1 align="center" style="font-size:50px; margin:-20px 10px -20px 10px; color:var(--md-typeset-color)">
     <em>pyextremes</em>
-</p>
+</h1>
 <p align="center">
     <em>Extreme Value Analysis (EVA) in Python</em>
 </p>
