@@ -1,6 +1,6 @@
 [project]
 name = "pyextremes"
-version = "2.6.0"
+version = "2.6.1"
 description = "Extreme Value Analysis (EVA) in Python"
 readme = "README.md"
 requires-python = ">=3.9"
