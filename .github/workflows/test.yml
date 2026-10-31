@@ -75,3 +75,17 @@ jobs:
         run: uv pip install "pandas==${{ matrix.pandas-version }}" "${{ matrix.numpy-spec }}"
       - name: Run tests
         run: uv run --no-sync pytest
+  tests-passed:
+    # Single, stable check name to require in branch rulesets (matrix job names are dynamic).
+    # `always()` ensures this job reports failure, rather than "skipped", when a matrix job fails.
+    name: All tests passed
+    if: always()
+    needs: [test-linux, test-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check matrix results
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        run: |
+          echo "test-linux: ${{ needs.test-linux.result }}"
+          echo "test-windows: ${{ needs.test-windows.result }}"
+          exit 1
