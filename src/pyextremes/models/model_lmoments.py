@@ -14,7 +14,8 @@ class Lmoments(ScipyModel):
     """
     L-Moments (Lmoments) model.
 
-    Built around the scipy.stats.rv_continuous.fit method.
+    Built around the lmom_fit method provided by the lmoments3 package,
+    which must be installed (e.g. pip install "pyextremes[lmoments]").
 
     """
 

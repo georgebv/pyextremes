@@ -1,15 +1,15 @@
 Block Maxima or Minima (BM) extreme values are extracted from time series
-by partitioning it into blocks (segments) of equal duration (e.g. 1 year)
+by partitioning them into blocks (segments) of equal duration (e.g. 1 year)
 and locating maximum or minimum values within each block.
 Block maxima extreme values asymptotically follow the
 [Generalized Extreme Value Distribution](https://en.wikipedia.org/wiki/Generalized_extreme_value_distribution)
 family, according to the
 [Fisher–Tippett–Gnedenko theorem](https://en.wikipedia.org/wiki/Fisher%E2%80%93Tippett%E2%80%93Gnedenko_theorem).
 This theorem demonstrates that the GEVD family is the only possible
-limit for the block maxima extreme values.
+non-degenerate limit for the block maxima extreme values.
 
-<figure>
-  <img src="../../img/bm.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](../img/bm.png)
 </figure>
 
 ## Extracting Extremes
@@ -24,7 +24,7 @@ The BM extraction function can be accessed via:
   (extreme values are not returned by this function, but instead are set
   on the `EVA` instance in the `.extremes` attribute)
 
-The simplest way to extract extreme values using BM method is to use the default
+The simplest way to extract extreme values using the BM method is to use the default
 parameters of the `get_extremes` function:
 
 === "Standalone"
@@ -53,14 +53,16 @@ parameters of the `get_extremes` function:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-high-1y.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](../img/extremes/bm-high-1y.png)
 </figure>
 
 ??? note
     You can get the `data` variable referenced above by running the following code:
 
     ```python
+    import pandas as pd
+
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
@@ -74,15 +76,18 @@ parameters of the `get_extremes` function:
         .loc[pd.to_datetime("1980"):pd.to_datetime("1995")]
     )
     data = (
-      data - (data.index.array - pd.to_datetime("1992"))
-    ) / pd.to_timedelta("365.2425D") * 2.87e-3
+        data
+        - (data.index.array - pd.to_datetime("1992"))
+        / pd.to_timedelta("365.2425D")
+        * 2.87e-3
+    )
     ```
 
     `#!python "battery_wl.csv"`
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
     All figures shown in this tutorial section were generated using
-    [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb).
+    [this jupyter notebook](https://nbviewer.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/2%20block%20maxima.ipynb).
 
 The `get_extremes` function uses the following parameters:
 
@@ -92,19 +97,22 @@ The `get_extremes` function uses the following parameters:
 - **extremes_type** - extreme value type:
   `#!python "high"` for maxima (default) and `#!python "low"` for minima
 
-The following paramters are used only when `#!python method="BM"`:
+The following parameters are used only when `#!python method="BM"`:
 
-- **block_size** - block size, by default `#!python "365.2425D"`.
-  Internally is converted using the `#!python pandas.to_timedelta` function.
+- **block_size** - block size as a string or `pandas.Timedelta`,
+  by default `#!python "365.2425D"`.
+  Strings are converted using the `#!python pandas.to_timedelta` function.
 - **errors** - specifies what to do when a block is empty (has no values).
-  `#!python "raise"` (default) raises error, `#!python "ignore"` skips such blocks
-  (not recommended), and `#!python "coerce"` sets values for such blocks as average
-  of extreme values in other blocks.
+  `#!python "raise"` (default) raises an error, `#!python "ignore"` skips such blocks
+  (not recommended), and `#!python "coerce"` sets values for such blocks as the average
+  of extreme values in other blocks, located at the middle of the empty block.
+  When `#!python "ignore"` or `#!python "coerce"` is used, a `NoDataBlockWarning`
+  is issued with the number of empty blocks.
 - **min_last_block** - minimum data availability ratio (0 to 1)
-  in the last block. If the last block is shorter than this ration
+  in the last block. If the last block is shorter than this ratio
   (e.g. 0.25 corresponds to 3 months for a block size of 1 year) then it is not used
   to get extreme values. This argument is useful to avoid situations when the last
-  block is very small. By default this is `#!python None`, which means that last
+  block is very small. By default this is `#!python None`, which means that the last
   block is always used.
 
 If we specify all of these parameters then the function would look as:
@@ -127,15 +135,15 @@ trade-off between bias and variance: blocks that are too small mean that
 approximation by the limit model (GEVD) is likely to be poor,
 leading to bias in estimation and extrapolation; large blocks generate few block
 maxima/minima, leading to large estimation variance. Pragmatic considerations
-often lead to the adoption of blocks of length one year. (Coles, 2004)
+often lead to the adoption of blocks of length one year. (Coles, 2001)
 
-An important thing to consider is also the physical nature of investigated signal.
+Another important consideration is the physical nature of the investigated signal.
 Many meteorological events (e.g. snowfall, rain, waves) are seasonal and, therefore,
-selection of block sizes smaller than 1-year would result in significant bias due to
+selection of block sizes smaller than 1 year would result in significant bias due to
 blocks no longer being equivalent
 (e.g. summer blocks are nearly guaranteed to have no snow).
 
-We can specify different block size using the `block_size` argument. Using the same
+We can specify a different block size using the `block_size` argument. Using the same
 data as above but with a block size of 2 years we get:
 
 === "Standalone"
@@ -163,8 +171,8 @@ data as above but with a block size of 2 years we get:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-high-2y.png" alt="Block Maxima extremes 2 years"/>
+<figure markdown="span">
+  ![Block Maxima extremes 2 years](../img/extremes/bm-high-2y.png)
 </figure>
 
 ## Block Minima
@@ -185,7 +193,7 @@ to `#!python "low"`:
         ts=data,
         extremes=extremes,
         extremes_method="BM",
-        extremes_type="high",
+        extremes_type="low",
         block_size="365.2425D",
     )
     ```
@@ -198,8 +206,8 @@ to `#!python "low"`:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-low-1y.png" alt="Block Minima extremes"/>
+<figure markdown="span">
+  ![Block Minima extremes](../img/extremes/bm-low-1y.png)
 </figure>
 
 !!! tip
@@ -208,7 +216,7 @@ to `#!python "low"`:
     This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-    When analyzing block minima be mindful of your data being censored.
+    When analyzing block minima, be mindful of your data being censored.
     An example of this would be water level time series - water levels cannot go
     below the seabed and will, therefore, be censored by the seabed elevation.
     Such series would no longer follow the GEVD and any results of such analysis

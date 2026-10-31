@@ -1,1 +1,0 @@
-Diagnostic and its components.

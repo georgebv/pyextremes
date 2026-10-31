@@ -83,7 +83,7 @@ def plot_mean_residual_life(
     thresholds : array-like, optional
         An array of thresholds for which the mean residual life plot is plotted.
         If None (default), plots mean residual life for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='high') percentile
+        between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -275,13 +275,13 @@ def plot_parameter_stability(
     ts : pandas.Series
         Time series of the signal.
     thresholds : array-like, optional
-        An array of thresholds for which the mean residual life plot is plotted.
-        If None (default), plots mean residual life for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='high') percentile
+        An array of thresholds for which the parameter stability plot is plotted.
+        If None (default), plots parameter stability for 100 equally-spaced thresholds
+        between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
-        By default r='24H' (24 hours).
+        By default r='24h' (24 hours).
         See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -532,7 +532,7 @@ def plot_return_value_stability(
 
     The return value stability plot shows return values for given return period
     for given thresholds.
-    The purpose of this plot is to investigate statibility and sensitivity of the
+    The purpose of this plot is to investigate stability and sensitivity of the
     Generalized Pareto Distribution model to threshold value.
     Threshold value selection should still be guided by the mean residual life plot
     and the parameter stability plot. This plot should be used as additional check.
@@ -551,11 +551,11 @@ def plot_return_value_stability(
     thresholds : array-like, optional
         An array of thresholds for which the return value plot is plotted.
         If None (default), plots return values for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='high') percentile
+        between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
-        By default r='24H' (24 hours).
+        By default r='24h' (24 hours).
         See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -746,11 +746,11 @@ def plot_aic_scores(
     thresholds : array-like, optional
         An array of thresholds for which the AIC plot is plotted.
         If None (default), plots AIC for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='high') percentile
+        between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
-        By default r='24H' (24 hours).
+        By default r='24h' (24 hours).
         See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -877,12 +877,12 @@ def plot_threshold_stability(
         would be roughly equivalent to a 1 year return period (360 days).
     thresholds : array-like, optional
         An array of thresholds for which the metrics are plotted.
-        If None (default), plots matrics for 100 equally-spaced thresholds
-        between 90th (10th if extremes_type='high') percentile
+        If None (default), plots metrics for 100 equally-spaced thresholds
+        between 90th (10th if extremes_type='low') percentile
         and 10th largest (smallest if extremes_type='low') value in the series.
     r : pandas.Timedelta or value convertible to timedelta, optional
         Duration of window used to decluster the exceedances.
-        By default r='24H' (24 hours).
+        By default r='24h' (24 hours).
         See pandas.to_timedelta for more information.
     extremes_type : str, optional
         high (default) - extreme high values
@@ -902,7 +902,7 @@ def plot_threshold_stability(
         Ignored if `alpha` is None.
     figsize : tuple, optional
         Figure size in inches in format (width, height).
-        By default it is (8, 5).
+        By default it is (8, 10).
     progress : bool, optional
         If True, shows tqdm progress bar.
         By default False.

@@ -10,7 +10,7 @@ the subject of analysis and to properly interpret the model outputs.
     A 1000-year wave height of 100 meters is not physical and
     is an artifact of the underlying statistical model.
     One should always be mindful of the actual process being modeled and
-    remember that the model gives a proabilistic estimate of extreme values
+    remember that the model gives a probabilistic estimate of extreme values
     under the assumption that the selected model (e.g. GEVD or GPD)
     correctly describes the underlying process (in this example, water waves).
 
@@ -20,7 +20,7 @@ Each tutorial section covers a particular area of EVA, such as extreme value
 extraction, fitting a model, or summarizing and visualizing analysis results.
 **pyextremes** was built in a modular fashion where each of these components
 is implemented independently and can be used on its own. In order to make life easier
-a helper class `EVA` was created (located in `pyextremes.eva.EVA`) which chains these
+a helper class `EVA` was created (available as `pyextremes.EVA`) which chains these
 components together to streamline the most common types of EVA workflows and to reduce
 the amount of code a user needs to write when performing analysis.
 

@@ -12,35 +12,45 @@ edit_uri = "edit/master/docs/"
 # Abort the build on warnings (e.g. broken links), so they never get deployed.
 strict = true
 
-# Placeholder pages that are not written yet: shown in `zensical serve`, excluded from builds.
-draft_docs = """
-user-guide/7-models.md
-user-guide/8-mle.md
-user-guide/9-mcmc.md
-user-guide/10-selecting-distribution.md
-user-guide/11-return-values.md
-user-guide/12-confidence-intervals.md
-user-guide/13-visualization.md
-user-guide/14-goodness-of-fit.md
-/user-guide-advanced/
-"""
-
 nav = [
-  { "pyextremes" = "index.md" },
-  { "Quick Start" = "quickstart.md" },
+  { "Home" = [
+    "index.md",
+    { "Quick Start" = "quickstart.md" },
+  ] },
   { "User Guide" = [
     { "Read First" = "user-guide/1-read-first.md" },
-    { "Extreme Value Types" = "user-guide/2-extreme-value-types.md" },
-    { "Block Maxima" = "user-guide/3-block-maxima.md" },
-    { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
-    { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
-    { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+    { "Extreme Values" = [
+      { "Extreme Value Types" = "user-guide/2-extreme-value-types.md" },
+      { "Block Maxima" = "user-guide/3-block-maxima.md" },
+      { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
+      { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
+      { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+    ] },
+    { "Fitting Models" = [
+      { "Overview" = "user-guide/7-models.md" },
+      { "Distributions" = "user-guide/8-distributions.md" },
+      { "Maximum Likelihood" = "user-guide/9-mle.md" },
+      { "Markov Chain Monte Carlo" = "user-guide/10-mcmc.md" },
+      { "Moments and L-moments" = "user-guide/11-moments.md" },
+    ] },
+    { "Results" = [
+      { "Return Values" = "user-guide/12-return-values.md" },
+      { "Confidence Intervals" = "user-guide/13-confidence-intervals.md" },
+      { "Diagnostic Plots" = "user-guide/14-diagnostic-plots.md" },
+      { "Goodness of Fit" = "user-guide/15-goodness-of-fit.md" },
+    ] },
+    { "Advanced" = [
+      { "Extreme Low Values" = "user-guide-advanced/1-extreme-low-values.md" },
+      { "Distribution Class" = "user-guide-advanced/2-distribution-class.md" },
+    ] },
   ] },
   { "API Reference" = [
     { "EVA" = "api/eva.md" },
     { "Extremes" = "api/extremes.md" },
     { "Models" = "api/models.md" },
     { "Plotting" = "api/plotting.md" },
+    { "Threshold Selection" = "api/tuning.md" },
+    { "Goodness of Fit" = "api/tests.md" },
   ] },
 ]
 
@@ -69,6 +79,8 @@ features = [
   "navigation.instant.progress",
   "navigation.path",
   "navigation.sections",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
   "navigation.top",
   "navigation.tracking",
   "search.highlight",

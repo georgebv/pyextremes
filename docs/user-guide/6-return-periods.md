@@ -3,10 +3,10 @@ for extreme values extracted using methods described in earlier sections.
 
 ## What is Return Period
 
-Return period indicates duration of time (typically years) which corresponds to a
+Return period indicates a duration of time (typically years) which corresponds to a
 probability that a given value (e.g. wind speed) would be exceeded at least once within
-a year. This probability is called probability of exceedance and is related to return
-periods as `1/p` where `p` is return period.
+a year. This probability is called probability of exceedance and is related to the
+return period as $1/p$, where $p$ is the probability of exceedance.
 
 !!! quote "Coles (2001, p.49)"
     In common terminology, $z_{p}$ is the **return level** associated with the
@@ -25,7 +25,7 @@ to be exceeded at least once within 50 years - this is calculated using this for
 $$1 - (1 - p) ^ n$$
 
 Where $n$ is number of return period blocks within a time period
-(50 for 50 years with retun period block of size 1 year) and $p$ is 1% (100-year event).
+(50 for 50 years with return period block of size 1 year) and $p$ is 1% (100-year event).
 
 ## Empirical Return Periods
 
@@ -50,14 +50,15 @@ where:
   assigned otherwise if ranked sequentially. For example, array of `[1, 2, 3, 3, 4]`
   would have ranks of `[5, 4, 2.5, 2.5, 1]`.
 - **n** - number of extreme values.
-- $\alpha$ and $\beta$ - empricial plotting position parameters (see further below).
+- $\alpha$ and $\beta$ - empirical plotting position parameters (see further below).
 
 In this context $P$ corresponds to a probability of exceedance of a value with rank
-**r** in a any given time period with duration $t/n$ where $t$ is total duration of
+**r** in any given time period with duration $t/n$ where $t$ is total duration of
 series from which the extreme values were drawn and $n$ is number of extreme events.
 If we measure time in years and we use Block Maxima with block size of 1 year, then
 the formula $t/n$ becomes 1 by definition and the return period in years can be
-calculated as $1/P$. For general rule read this tutorial section further.
+calculated as $1/P$. The general case is described in the
+[Return Period](#return-period) sub-section below.
 
 #### Plotting Positions
 
@@ -73,7 +74,7 @@ probability plots.
     a return value curve for a given model (e.g. GEVD) would be a straight line drawn
     through these points using a pen and a ruler.
 
-    Modern EVA fits models to data by maximimizng likelihood function via methods such
+    Modern EVA fits models to data by maximizing the likelihood function via methods such
     as MLE or MCMC (read more in other sections). This is only feasible due to the use
     of computers and would be prohibitively expensive to do manually. Plotting positions
     are presently used only to show extreme values on return value plots and to
@@ -85,8 +86,8 @@ An example of plotting positions used in `pyextremes` is the diagnostic plot whe
 observed extreme values (black dots) are superimposed against the theoretical
 estimates (by fitting a distribution) as seen in the return value, Q-Q, and P-P plots.
 
-<figure>
-  <img src="../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
+<figure markdown="span">
+  ![Diagnostic plot](../img/extremes/selected-threshold-diagnostic.png)
 </figure>
 
 ### Return Period
@@ -129,7 +130,7 @@ of `return_period_size`.
 goodness-of-fit tests behind the scenes using the Weibull plotting position.
 Return periods can be calculated using the `get_return_periods` function (shown only
 for Block Maxima; Peaks Over Threshold works identically with the only difference
-being the `block_size` argument):
+being that the `block_size` argument is not used):
 
 === "weibull (default)"
 
@@ -257,25 +258,28 @@ The `get_return_periods` function uses the following parameters:
 - **extremes** - time series of extreme values.
 - **extremes_method** - extreme value extraction method, must be `#!python "BM"` or
   `#!python "POT"`.
-- **extremes_type** - extreme value type:
-  `#!python "high"` for above threshold (default)
-  and `#!python "low"` for below threshold.
-- **return_period_size** - size of return period. Same as the `r` argument.
-  By default this is 1 year.
-- **plotting_position** : plotting position name, case-insensitive.
+- **extremes_type** - extreme value type (required):
+  `#!python "high"` for extreme high values
+  and `#!python "low"` for extreme low values.
+- **return_period_size** - size of return period as a string or `pandas.Timedelta`.
+  By default this is 1 year (`#!python "365.2425D"`).
+- **plotting_position** - plotting position name, case-insensitive.
   Supported plotting positions: ecdf, hazen, weibull (default), tukey, blom, median,
   cunnane, gringorten, beard.
 
-The following paramters are used only when `#!python extremes_method="BM"`:
+The following parameters are used only when `#!python extremes_method="BM"`:
 
-- **block_size** - block size, by default `#!python "365.2425D"`.
-  Internally is converted using the `#!python pandas.to_timedelta` function.
-  If not provided, then it is calculated as median distance between extreme values.
+- **block_size** - block size as a string or `pandas.Timedelta`.
+  Strings are converted using the `#!python pandas.to_timedelta` function.
+  If not provided (default), then it is calculated as the median distance
+  between extreme values. Must not be provided when `#!python extremes_method="POT"`.
 
 ??? note
     You can get the `data` variable referenced above by running the following code:
 
     ```python
+    import pandas as pd
+
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
@@ -289,12 +293,15 @@ The following paramters are used only when `#!python extremes_method="BM"`:
         .loc[pd.to_datetime("1925"):]
     )
     data = (
-      data - (data.index.array - pd.to_datetime("1992"))
-    ) / pd.to_timedelta("365.2425D") * 2.87e-3
+        data
+        - (data.index.array - pd.to_datetime("1992"))
+        / pd.to_timedelta("365.2425D")
+        * 2.87e-3
+    )
     ```
 
     `#!python "battery_wl.csv"`
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
     All figures shown in this tutorial section were generated using
-    [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/5%20return%20periods.ipynb).
+    [this jupyter notebook](https://nbviewer.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/5%20return%20periods.ipynb).
