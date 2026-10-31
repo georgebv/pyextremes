@@ -16,14 +16,14 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         pandas-version: ["1.5.3", "2.3.3", "3.0.5"]
         exclude:
-          - python-version: "3.12"
-            pandas-version: "1.5.3"
-          - python-version: "3.13"
-            pandas-version: "1.5.3"
-          - python-version: "3.9"
-            pandas-version: "3.0.5"
-          - python-version: "3.10"
-            pandas-version: "3.0.5"
+          - { python-version: "3.12", pandas-version: "1.5.3" }
+          - { python-version: "3.13", pandas-version: "1.5.3" }
+          - { python-version: "3.9",  pandas-version: "3.0.5" }
+          - { python-version: "3.10", pandas-version: "3.0.5" }
+        include:
+          - { pandas-version: "1.5.3", numpy-spec: "numpy<2" }
+          - { pandas-version: "2.3.3", numpy-spec: "numpy>=2" }
+          - { pandas-version: "3.0.5", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,8 +33,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-groups
-      - name: Install the target pandas version
-        run: uv pip install "pandas==${{ matrix.pandas-version }}"
+      - name: Install the target pandas/numpy pair
+        run: uv pip install "pandas==${{ matrix.pandas-version }}" "${{ matrix.numpy-spec }}"
       - name: Run tests and generate coverage report
         run: uv run --no-sync pytest
       - name: Upload coverage to Codecov
@@ -54,14 +54,14 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         pandas-version: ["1.5.3", "2.3.3", "3.0.5"]
         exclude:
-          - python-version: "3.12"
-            pandas-version: "1.5.3"
-          - python-version: "3.13"
-            pandas-version: "1.5.3"
-          - python-version: "3.9"
-            pandas-version: "3.0.5"
-          - python-version: "3.10"
-            pandas-version: "3.0.5"
+          - { python-version: "3.12", pandas-version: "1.5.3" }
+          - { python-version: "3.13", pandas-version: "1.5.3" }
+          - { python-version: "3.9",  pandas-version: "3.0.5" }
+          - { python-version: "3.10", pandas-version: "3.0.5" }
+        include:
+          - { pandas-version: "1.5.3", numpy-spec: "numpy<2" }
+          - { pandas-version: "2.3.3", numpy-spec: "numpy>=2" }
+          - { pandas-version: "3.0.5", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-groups
-      - name: Install the target pandas version
-        run: uv pip install "pandas==${{ matrix.pandas-version }}"
+      - name: Install the target pandas/numpy pair
+        run: uv pip install "pandas==${{ matrix.pandas-version }}" "${{ matrix.numpy-spec }}"
       - name: Run tests
         run: uv run --no-sync pytest
