@@ -1,5 +1,7 @@
 # Development environment
 .devcontainer
+.claude
+.gh
 .vscode
 .venv
 .idea
