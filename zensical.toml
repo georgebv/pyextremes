@@ -15,7 +15,6 @@ strict = true
 nav = [
   { "Home" = [
     "index.md",
-    { "pyextremes" = "index.md" },
     { "Quick Start" = "quickstart.md" },
   ] },
   { "User Guide" = [
