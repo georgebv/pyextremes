@@ -70,7 +70,7 @@ class TestBase(ABC):
         pass
 
     def __bool__(self) -> bool:
-        return self.success
+        return bool(self.success)
 
     def __repr__(self) -> str:
         summary = [
