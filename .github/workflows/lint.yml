@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install uv
+      - name: Install uv and set the python version
         uses: astral-sh/setup-uv@v5
-      - name: Install python
-        run: uv python install
+        with:
+          python-version: "3.13"
       - name: Install the project
         run: uv sync --all-groups
       - name: Run Ruff linter
