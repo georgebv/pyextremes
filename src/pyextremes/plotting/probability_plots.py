@@ -81,13 +81,14 @@ def plot_probability(
         ax.set_xlabel("Theoretical")
         ax.set_ylabel("Observed")
 
-        # Calculate Pearson R statistic and show it in the figure
-        pearsonr, p_value = scipy.stats.pearsonr(theoretical, observed)
+        # Calculate coefficient of determination (square of Pearson correlation
+        # coefficient) and p-value of the correlation and show them in the figure
+        pearson_r, p_value = scipy.stats.pearsonr(theoretical, observed)
         axes_range = max_value - min_value
         ax.text(
             x=min_value + 0.05 * axes_range,
             y=max_value - 0.05 * axes_range,
-            s=f"$R^2={pearsonr:.3f}$\n$p={p_value:.3f}$",
+            s=f"$R^2={pearson_r**2:.3f}$\n$p={p_value:.3f}$",
             horizontalalignment="left",
             verticalalignment="top",
         )
