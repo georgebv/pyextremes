@@ -30,11 +30,13 @@ nav = [
   { "Quick Start" = "quickstart.md" },
   { "User Guide" = [
     { "Read First" = "user-guide/1-read-first.md" },
-    { "Extreme Value Types" = "user-guide/2-extreme-value-types.md" },
-    { "Block Maxima" = "user-guide/3-block-maxima.md" },
-    { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
-    { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
-    { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+    { "Extreme Values" = [
+      { "Extreme Value Types" = "user-guide/2-extreme-value-types.md" },
+      { "Block Maxima" = "user-guide/3-block-maxima.md" },
+      { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
+      { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
+      { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+    ] },
   ] },
   { "API Reference" = [
     { "EVA" = "api/eva.md" },
