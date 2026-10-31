@@ -1,17 +1,16 @@
-
 Traditionally EVA recognizes two types of extreme values:
 
 - Block maxima (BM)
 - Peaks over threshold (POT)
 
 The BM and POT extreme values are used to apply a statistical model
-(GEVD or GPD accordingly) to allow for estimation of extreme events of an arbitrary
+(GEVD or GPD, respectively) to allow for estimation of extreme events of an arbitrary
 probability of exceedance (return period).
 Both of these extreme value types represent a valid path of performing EVA and
-neither of these is generally better than another.
+neither of these is generally better than the other.
 
 !!! info
-    GEVD and GPD models used for BM and POT extreme value types accordingly
+    GEVD and GPD models used for BM and POT extreme value types, respectively,
     have a common theoretical basis and should be treated as complementary models,
     not as either/or. More information about why only the GEVD and GPD models
     are recommended to be used is provided in subsequent sections of this tutorial.
@@ -20,8 +19,8 @@ neither of these is generally better than another.
 
 The Block Maxima extreme values are extracted by selecting a block size
 (typically 1 year, also the default in pyextremes), then partitioning time series
-of your signal into equal consequtive blocks of this size, and for each block getting
-single maximum value (thus, block maxima). The resulting BM time series are then used
+of your signal into equal consecutive blocks of this size, and for each block getting
+a single maximum value (thus, block maxima). The resulting BM time series are then used
 to model extreme value behavior using the GEVD model family.
 See figure below illustrating this concept:
 
@@ -35,7 +34,7 @@ The Peaks Over Threshold extreme values are extracted by choosing a threshold
 and selecting values higher or lower (depends on which extreme process is analyzed)
 than the threshold value. The selected values are then declustered by specifying
 minimum distance between adjacent clusters (e.g. 24 hours, which means that the model
-assumes that clusters of exceedances separater by this distiance or larger are
+assumes that clusters of exceedances separated by this distance or larger are
 independent). Selection of threshold and declustering distance is not a trivial task
 and has a strong effect on the EVA results.
 pyextremes provides a series of tools which help with threshold selection,
@@ -48,30 +47,31 @@ See figure below illustrating POT extremes:
 
 ## Which Method to Use
 
-One of the most important concepts of EVA is convergenece. What this means practically
+One of the most important concepts of EVA is convergence. What this means practically
 is that different models and approaches (as long as they are correctly applied)
 should be converging to the same answer (within reasonable confidence limits).
 Because of this, we cannot say that one method is better than another.
-Therefore, for a thorough analysis, user is advised to investigate both routes
+Therefore, for a thorough analysis, the user is advised to investigate both routes
 to make sure that the final answer of the analysis provides a robust estimate.
 
 A general rule of thumb, which is based on years of author's (subjective) experience,
 when performing EVA is to do the following:
 
 - Use BM with a reasonable block size to avoid capturing seasonality
-  (read more in the next section) to get the first estimates and to see how the extremes
+  (read more in the [Block Maxima](3-block-maxima.md) section) to get the first estimates and to see how the extremes
   behave. Generally, BM is a "simpler" and more stable model which requires very little
   input from the user.
 - Use POT with a reasonable threshold and declustering parameters
-  (read more in the next section) to investigate how stable the model is in the region
+  (read more in the [Peaks Over Threshold](4-peaks-over-threshold.md) and
+  [Threshold Selection](5-threshold-selection.md) sections) to investigate how stable the model is in the region
   of target exceedance probabilities (return periods)
   and to gain more confidence in your results.
 
 !!! warning "Attention"
-    User is **strongly discouraged** from "playing" with the model parameters until
+    The user is **strongly discouraged** from "playing" with the model parameters until
     a desired answer is achieved. EVA is not about getting a perfect estimate
     and a lack of a definitive answer is an answer in itself - it signifies that
-    underlying process may be not random
+    the underlying process may not be random
     (e.g. seasonality or some trends were not removed prior to performing EVA),
     that the model is poorly behaved for the data, or that there is simply not enough
     data to provide an accurate answer for a given probability.

@@ -8,7 +8,7 @@ that these values are IID (independent and identically distributed) which is req
 for the corresponding limit distribution to be applicable.
 The POT extreme values asymptotically follow the
 [Generalized Pareto Distribution](https://en.wikipedia.org/wiki/Generalized_Pareto_distribution)
-famliy, according to the
+family, according to the
 [Pickands–Balkema–De Haan theorem](https://en.wikipedia.org/wiki/Pickands%E2%80%93Balkema%E2%80%93De_Haan_theorem).
 
 <figure>
@@ -27,8 +27,8 @@ The POT extraction function can be accessed via:
   (extreme values are not returned by this function, but instead are set
   on the `EVA` instance in the `.extremes` attribute)
 
-The simplest way to extract extreme values using BM method is to use the default
-parameters of the `get_extremes` function:
+To extract extreme values using the POT method, the `threshold` argument must be
+provided to the `get_extremes` function (`r` defaults to 24 hours):
 
 === "Standalone"
 
@@ -58,13 +58,15 @@ parameters of the `get_extremes` function:
     ```
 
 <figure>
-  <img src="../../img/extremes/pot-high-12H.png" alt="Peasks Over Threshold extremes 12 hours"/>
+  <img src="../../img/extremes/pot-high-12H.png" alt="Peaks Over Threshold extremes 12 hours"/>
 </figure>
 
 ??? note
     You can get the `data` variable referenced above by running the following code:
 
     ```python
+    import pandas as pd
+
     data = pd.read_csv(
         "battery_wl.csv",
         index_col=0,
@@ -78,15 +80,18 @@ parameters of the `get_extremes` function:
         .loc[pd.to_datetime("1980/01/01"):pd.to_datetime("1980/01/20")]
     )
     data = (
-      data - (data.index.array - pd.to_datetime("1992"))
-    ) / pd.to_timedelta("365.2425D") * 2.87e-3
+        data
+        - (data.index.array - pd.to_datetime("1992"))
+        / pd.to_timedelta("365.2425D")
+        * 2.87e-3
+    )
     ```
 
     `#!python "battery_wl.csv"`
     [can be downloaded here](https://github.com/georgebv/pyextremes-notebooks/tree/master/data).
 
     All figures shown in this tutorial section were generated using
-    [this jupyter notebook](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/3%20peaks%20over%20threshold.ipynb).
+    [this jupyter notebook](https://nbviewer.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/documentation/extremes/3%20peaks%20over%20threshold.ipynb).
 
 The `get_extremes` function uses the following parameters:
 
@@ -97,13 +102,15 @@ The `get_extremes` function uses the following parameters:
   `#!python "high"` for above threshold (default)
   and `#!python "low"` for below threshold.
 
-The following paramters are used only when `#!python method="POT"`:
+The following parameters are used only when `#!python method="POT"`:
 
-- **threshold** - threshold value.
+- **threshold** - threshold value (required).
 - **r** - minimum time distance (window duration) between adjacent clusters. Used
   to decluster exceedances by locating clusters where all exceedances are separated
   by distances no more than `r` and then locating maximum or minimum
   (depends on `extremes_type`) values within each cluster.
+  Accepts a `pandas.Timedelta` or any value convertible to one
+  using `#!python pandas.to_timedelta`.
   By default `#!python r="24h"` (24 hours).
 
 If we specify all of these parameters then the function would look as:
@@ -149,20 +156,20 @@ extracted from the same data and using the same threshold as above, but with a l
     ```
 
 <figure>
-  <img src="../../img/extremes/pot-high-24H.png" alt="Peasks Over Threshold extremes 24 hours"/>
+  <img src="../../img/extremes/pot-high-24H.png" alt="Peaks Over Threshold extremes 24 hours"/>
 </figure>
 
 !!! tip
     Declustering value of `#!python r="24h"` was selected as a default value because
     `pyextremes` was developed when working with meteorological phenomena - namely,
     storms. Extreme storm surge and waves are generally caused by a storm event which
-    generally doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
+    typically doesn't exceed 12-24 hours and, because of this, the assumption of 24-hour
     inter-cluster distance results in a reasonably good separation of independent
     storm events.
 
-    User is advised to select this parameter based on the properties of studied
+    The user is advised to select this parameter based on the properties of studied
     phenomena. For example, extreme precipitation events in some regions of the world
-    can last for more than several days and, because of this, the default value of
+    can last for several days or more and, because of this, the default value of
     24 hours would not be adequate for such analysis.
 
 ## Peaks Below Threshold
@@ -200,7 +207,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
     ```
 
 <figure>
-  <img src="../../img/extremes/pot-low.png" alt="Peasks Below Threshold extremes"/>
+  <img src="../../img/extremes/pot-low.png" alt="Peaks Below Threshold extremes"/>
 </figure>
 
 !!! tip
@@ -210,7 +217,7 @@ by setting the `extremes_type` argument to `#!python "low"`:
     This is true as long as the `extremes_type` argument is correctly specified.
 
 !!! warning
-    When analyzing POT with `#!python extremes_type="low"` be mindful of your data
+    When analyzing POT with `#!python extremes_type="low"`, be mindful of your data
     being censored. An example of this would be water level time series - water levels
     cannot go below the seabed and will, therefore, be censored by the seabed elevation.
     Such series would no longer follow the GPD and any results of such analysis

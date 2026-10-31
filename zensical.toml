@@ -41,6 +41,7 @@ nav = [
     { "Extremes" = "api/extremes.md" },
     { "Models" = "api/models.md" },
     { "Plotting" = "api/plotting.md" },
+    { "Threshold Selection" = "api/tuning.md" },
   ] },
 ]
 

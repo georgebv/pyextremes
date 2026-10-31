@@ -28,7 +28,7 @@
 ---
 
 pyextremes is a Python library aimed at performing univariate
-[Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory)
+[Extreme Value Analysis (EVA)](https://en.wikipedia.org/wiki/Extreme_value_theory).
 
 ---
 
@@ -47,18 +47,18 @@ perform univariate EVA, such as:
 - tools assisting with model selection and tuning, such as selection of
   block size in BM and threshold in POT
 
-Framework provided by the pyextremes library is easy to use and requires
-minimum user input to get production-ready results.
-Its default parameters are configured in compliance with best industry standards
-and underlying models are heavily based in the Extreme Value theory.
+The framework provided by pyextremes is easy to use and requires
+minimal user input to get production-ready results.
+Its default parameters follow established industry practice
+and the underlying models are firmly grounded in Extreme Value Theory.
 The largest source of inspiration for this library was the book
-`"An Introduction to Statistical Modeling of Extreme Values"` by Stuart Coles.
+*An Introduction to Statistical Modeling of Extreme Values* by Stuart Coles (2001).
 
-In addition to the easy-to-use interface, the library provides interface to
+In addition to the easy-to-use interface, the library provides access to the
 underlying tools which can be used to build custom models.
 All [scipy continuous distributions](https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-distributions)
 are supported out-of-the-box.
-Custom distributions can be also provided by subclassing
+Custom distributions can also be provided by subclassing
 [scipy.stats.rv_continuous](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.html).
 Any parameter of a distribution may be frozen to investigate degenerate models
 (e.g. `GEVD -> Gumbel` or `GPD -> Exponential`).
@@ -69,7 +69,7 @@ Multiple ways of fitting the continuous distributions to the data are supported:
 - `Emcee` - Markov Chain Monte Carlo, see [Emcee](https://emcee.readthedocs.io/)
   package by Dan Foreman-Mackey
 - `MOM` - Method of Moments, uses [SciPy](https://scipy.org)
-- `Lmoments` - L-moment, uses [lmoments3](https://github.com/Ouranosinc/lmoments3/)
+- `Lmoments` - L-moments, uses [lmoments3](https://github.com/Ouranosinc/lmoments3/)
 
 ## Installation
 
@@ -87,7 +87,7 @@ Or add it to a project managed by [uv](https://docs.astral.sh/uv/):
 uv add pyextremes
 ```
 
-Install with optional dependencies:
+Install with all optional dependencies:
 
 ```shell
 pip install "pyextremes[full]"
@@ -113,11 +113,13 @@ conda install -c conda-forge pyextremes
 | [**matplotlib**](https://matplotlib.org/)  | produce figures                                              |
 |      [**numpy**](https://numpy.org/)       | perform efficient operations with arrays                     |
 |  [**pandas**](https://pandas.pydata.org/)  | `Series` and `DataFrame` objects for model input and output |
-|    [**scipy**](https://scipy.org/)     | statistical models and mathematic functions                  |
+|    [**scipy**](https://scipy.org/)     | statistical models and mathematical functions                 |
 
 ### Optional Dependencies
 
-Optional dependencies can be installed using the `full` tag as shown above or manually:
+Optional dependencies can be installed all at once using the `full` extra as shown above,
+individually using the `lmoments` extra (`pip install "pyextremes[lmoments]"`),
+or manually:
 
 |                 Package                                  | Description                     |
 | :----------------------------------------------------:   | :------------------------------ |

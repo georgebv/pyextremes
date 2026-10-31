@@ -1,8 +1,8 @@
 ## Read data
 
 Every `pyextremes` model starts with a `pandas.Series`
-(see [pandas documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html)) object,
-which contains timeseries of the data you want to analyze.
+(see [pandas documentation](https://pandas.pydata.org/docs/reference/api/pandas.Series.html)) object,
+which contains the time series you want to analyze.
 This example is based on water level data for
 ["The Battery" station](https://tidesandcurrents.noaa.gov/waterlevels.html?id=8518750)
 located in New York.
@@ -63,15 +63,16 @@ removal of outliers, etc. Let's clean up the data:
     ```
 
 ??? note
-    See [this tutorial](https://nbviewer.jupyter.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb) for more information on why these specific operations were done.
+    See [this tutorial](https://nbviewer.org/github/georgebv/pyextremes-notebooks/blob/master/notebooks/EVA%20basic.ipynb) for more information on why these specific operations were done.
 
 ---
 
 ## Create model
 
 The primary interface to the pyextremes library is provided via the `EVA` class.
-This class is responsible for all major tasks outlined above and is created using
-a simple command:
+This class is responsible for all major steps of the analysis
+(extracting extremes, fitting a model, and summarizing and visualizing results)
+and is created using a simple command:
 
 ```python linenums="17"
 from pyextremes import EVA
@@ -84,10 +85,10 @@ model = EVA(series)
 ## Extract extreme values
 
 The first step of extreme value analysis is extraction of extreme values from the
-timeseries. This is done by using the `get_extremes` method of the `EVA` class.
+time series. This is done by using the `get_extremes` method of the `EVA` class.
 
 In this example extremes will be extracted using the BM `method` and 1-year
-`block_size`, which give us annual maxima series.
+`block_size`, which gives us an annual maxima series.
 
 === "Code"
 
@@ -127,25 +128,28 @@ model.plot_extremes()
 
 ## Fit a model
 
-The next step is selecting a model and fitting to the extracted extreme events.
-What this means practically is that we need to find model parameters
+The next step is selecting a model and fitting it to the extracted extreme events.
+What this means practically is that we need to find distribution parameters
 (such as shape, location and scale for GEVD or GPD)
-that maximize or minimize some metric (likelihood) and give us the best fit possible.
+that optimize some metric (e.g. maximize likelihood) and give us the best fit possible.
 This is done by calling the `fit_model` method:
 
 ```python linenums="21"
 model.fit_model()
 ```
 
-!!! info "Info"
-    By default, the `fit_model` method selects the best model applicable
-    to extracted extremes using the Akaike Information Criterion (AIC).
+!!! info
+    By default, the `fit_model` method uses the `MLE` model and selects
+    the best distribution for the extracted extremes using the
+    Akaike Information Criterion (AIC): GEVD or Gumbel for Block Maxima
+    and GPD or Exponential for Peaks Over Threshold.
+    In this example GEVD (`genextreme`) is selected.
 
 ---
 
 ## Calculate return values
 
-The final goal of most EVA's is estimation of return values.
+The final goal of most EVAs is estimation of return values.
 The simplest way to do this is by using the `get_summary` method:
 
 ```python linenums="22"
@@ -157,7 +161,7 @@ summary = model.get_summary(
 ```
 
 !!! note
-    By default return period size is set to one year,
+    By default, return period size is set to one year,
     which is defined as the mean year from the Gregorian calendar
     ([365.2425 days](https://en.wikipedia.org/wiki/Year)).
     This means that a return period of 100 corresponds to a 100-year event.
@@ -166,7 +170,7 @@ summary = model.get_summary(
     argument. A value of `30D` (30 days) would mean that a return period of 12
     corresponds to approximately one year.
 
-    Print the results:
+Print the results:
 
 ```python
 print(summary)
@@ -187,13 +191,26 @@ return period
 1000.0             4.252220  2.702800  8.036243
 ```
 
+!!! tip
+    Confidence intervals are estimated using bootstrap sampling (`n_samples`),
+    so the `lower ci` and `upper ci` values will differ slightly between runs.
+
+!!! warning "Running as a script"
+    Confidence intervals are calculated in parallel using `multiprocessing`.
+    When running pyextremes from a Python script (as opposed to a Jupyter notebook),
+    protect the entry point of your script with an `#!python if __name__ == "__main__":`
+    block. This has long been required on Windows and macOS and, starting with
+    Python 3.14, is required on Linux as well. See the
+    [Python documentation](https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods)
+    for more details.
+
 ---
 
 ## Investigate model
 
-After model results are obtained, logical questions naturally arise -
+After model results are obtained, logical questions naturally arise:
 how good is the model, are the obtained results meaningful, and
-how confident can I be with the estimated return values.
+how confident can I be in the estimated return values?
 One way to do that is by visually inspecting the model:
 
 ```python linenums="27"
@@ -215,6 +232,5 @@ Following this example you should be able to do the following:
 - fit a model
 - get results
 
-For more in-depth tutorials on features of pyextremes see the User Guide.
-
----
+For more in-depth tutorials on features of pyextremes see the
+[User Guide](user-guide/1-read-first.md).

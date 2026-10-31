@@ -14,7 +14,7 @@ class MOM(ScipyModel):
     """
     Method of Moments (MOM) model.
 
-    Built around the scipy.stats.rv_continuous.fit method.
+    Built around the scipy.stats.rv_continuous.fit method (method="mm").
 
     """
 
