@@ -13,8 +13,10 @@ edit_uri = "edit/master/docs/"
 strict = true
 
 nav = [
-  { "Home" = "index.md" },
-  { "Quick Start" = "quickstart.md" },
+  { "Home" = [
+    { "pyextremes" = "index.md" },
+    { "Quick Start" = "quickstart.md" },
+  ] },
   { "User Guide" = [
     { "Read First" = "user-guide/1-read-first.md" },
     { "Extreme Values" = [

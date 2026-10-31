@@ -70,8 +70,8 @@ For the annual maxima of the Battery water levels, GEVD is clearly preferred:
 | `genextreme` | -29.786 |
 | `gumbel_r`   | -17.695 |
 
-<figure>
-  <img src="../../img/models/bm-gev-vs-gumbel.png" alt="GEVD vs Gumbel return values"/>
+<figure markdown="span">
+  ![GEVD vs Gumbel return values](../img/models/bm-gev-vs-gumbel.png)
 </figure>
 
 For the POT extremes above a threshold of 1.5 m (`#!python r="24h"`, see
@@ -83,8 +83,8 @@ but GPD is still preferred:
 | `genpareto`  | -42.985 |
 | `expon`      | -41.776 |
 
-<figure>
-  <img src="../../img/models/pot-gpd-vs-expon.png" alt="GPD vs Exponential return values"/>
+<figure markdown="span">
+  ![GPD vs Exponential return values](../img/models/pot-gpd-vs-expon.png)
 </figure>
 
 ??? example "Code used to produce the figures above"

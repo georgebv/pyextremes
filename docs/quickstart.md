@@ -120,8 +120,8 @@ In this example extremes will be extracted using the BM `method` and 1-year
 model.plot_extremes()
 ```
 
-<figure>
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20extremes.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](img/quickstart/extremes.png)
 </figure>
 
 ---
@@ -217,8 +217,8 @@ One way to do that is by visually inspecting the model:
 model.plot_diagnostic(alpha=0.95)
 ```
 
-<figure>
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/documentation%20figures/index%20diagnostic.png" alt="Diagnostic plot"/>
+<figure markdown="span">
+  ![Diagnostic plot](img/quickstart/diagnostic.png)
 </figure>
 
 ---

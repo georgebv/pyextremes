@@ -70,8 +70,8 @@ their confidence intervals. The figure below shows the 100-year water level
 and its 95% confidence interval for GEVD fitted to the annual maxima using
 three different models:
 
-<figure>
-  <img src="../../img/results/ci-models.png" alt="100-year return value confidence intervals for different models"/>
+<figure markdown="span">
+  ![100-year return value confidence intervals for different models](../img/results/ci-models.png)
 </figure>
 
 ??? example "Code used to produce the figure above"
@@ -123,8 +123,8 @@ Bootstrap confidence intervals are estimated from a finite number of random
 samples, so the bounds themselves are uncertain. The figure below shows how the
 bounds of the 100-year water level change as `n_samples` increases:
 
-<figure>
-  <img src="../../img/results/ci-n-samples.png" alt="Confidence interval bounds vs. number of bootstrap samples"/>
+<figure markdown="span">
+  ![Confidence interval bounds vs. number of bootstrap samples](../img/results/ci-n-samples.png)
 </figure>
 
 | `n_samples` | Lower bound | Upper bound |

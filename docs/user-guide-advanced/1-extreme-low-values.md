@@ -27,8 +27,8 @@ transformer.transformed_extremes  # reflected extremes
 transformer.transform(-2.0)  # transform any value in either direction
 ```
 
-<figure>
-  <img src="../../img/advanced/low-transformation.png" alt="Block minima and their transformation"/>
+<figure markdown="span">
+  ![Block minima and their transformation](../img/advanced/low-transformation.png)
 </figure>
 
 ??? note
@@ -141,8 +141,8 @@ model.plot_return_values(
 )
 ```
 
-<figure>
-  <img src="../../img/advanced/bm-low-return-values.png" alt="Return values of block minima"/>
+<figure markdown="span">
+  ![Return values of block minima](../img/advanced/bm-low-return-values.png)
 </figure>
 
 !!! warning "Confidence interval columns"

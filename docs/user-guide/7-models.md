@@ -200,6 +200,6 @@ Q-Q and P-P plots (described in more detail in later sections):
 model.plot_diagnostic(alpha=0.95)
 ```
 
-<figure>
-  <img src="../../img/models/bm-mle-diagnostic.png" alt="Diagnostic plot"/>
+<figure markdown="span">
+  ![Diagnostic plot](../img/models/bm-mle-diagnostic.png)
 </figure>

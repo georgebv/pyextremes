@@ -8,8 +8,8 @@ family, according to the
 This theorem demonstrates that the GEVD family is the only possible
 non-degenerate limit for the block maxima extreme values.
 
-<figure>
-  <img src="../../img/bm.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](../img/bm.png)
 </figure>
 
 ## Extracting Extremes
@@ -53,8 +53,8 @@ parameters of the `get_extremes` function:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-high-1y.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](../img/extremes/bm-high-1y.png)
 </figure>
 
 ??? note
@@ -171,8 +171,8 @@ data as above but with a block size of 2 years we get:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-high-2y.png" alt="Block Maxima extremes 2 years"/>
+<figure markdown="span">
+  ![Block Maxima extremes 2 years](../img/extremes/bm-high-2y.png)
 </figure>
 
 ## Block Minima
@@ -206,8 +206,8 @@ to `#!python "low"`:
     model.plot_extremes()
     ```
 
-<figure>
-  <img src="../../img/extremes/bm-low-1y.png" alt="Block Minima extremes"/>
+<figure markdown="span">
+  ![Block Minima extremes](../img/extremes/bm-low-1y.png)
 </figure>
 
 !!! tip

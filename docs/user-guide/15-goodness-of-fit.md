@@ -10,8 +10,8 @@ The [Kolmogorov-Smirnov test](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93S
 extreme values with the CDF of the fitted distribution. The test statistic $D$ is
 the largest vertical distance between the two:
 
-<figure>
-  <img src="../../img/results/ks-ecdf.png" alt="Empirical and model CDF with the KS statistic"/>
+<figure markdown="span">
+  ![Empirical and model CDF with the KS statistic](../img/results/ks-ecdf.png)
 </figure>
 
 If $D$ is larger than a critical value, which depends on the number of

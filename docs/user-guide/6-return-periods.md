@@ -86,8 +86,8 @@ An example of plotting positions used in `pyextremes` is the diagnostic plot whe
 observed extreme values (black dots) are superimposed against the theoretical
 estimates (by fitting a distribution) as seen in the return value, Q-Q, and P-P plots.
 
-<figure>
-  <img src="../../img/extremes/selected-threshold-diagnostic.png" alt="Diagnostic plot"/>
+<figure markdown="span">
+  ![Diagnostic plot](../img/extremes/selected-threshold-diagnostic.png)
 </figure>
 
 ### Return Period

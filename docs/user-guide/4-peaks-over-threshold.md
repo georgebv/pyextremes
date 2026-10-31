@@ -11,8 +11,8 @@ The POT extreme values asymptotically follow the
 family, according to the
 [Pickands–Balkema–De Haan theorem](https://en.wikipedia.org/wiki/Pickands%E2%80%93Balkema%E2%80%93De_Haan_theorem).
 
-<figure>
-  <img src="../../img/pot.png" alt="Peaks Over Threshold extremes"/>
+<figure markdown="span">
+  ![Peaks Over Threshold extremes](../img/pot.png)
 </figure>
 
 ## Extracting Extremes
@@ -57,8 +57,8 @@ provided to the `get_extremes` function (`r` defaults to 24 hours):
     model.plot_extremes(show_clusters=True)
     ```
 
-<figure>
-  <img src="../../img/extremes/pot-high-12H.png" alt="Peaks Over Threshold extremes 12 hours"/>
+<figure markdown="span">
+  ![Peaks Over Threshold extremes 12 hours](../img/extremes/pot-high-12H.png)
 </figure>
 
 ??? note
@@ -155,8 +155,8 @@ extracted from the same data and using the same threshold as above, but with a l
     model.plot_extremes(show_clusters=True)
     ```
 
-<figure>
-  <img src="../../img/extremes/pot-high-24H.png" alt="Peaks Over Threshold extremes 24 hours"/>
+<figure markdown="span">
+  ![Peaks Over Threshold extremes 24 hours](../img/extremes/pot-high-24H.png)
 </figure>
 
 !!! tip
@@ -206,8 +206,8 @@ by setting the `extremes_type` argument to `#!python "low"`:
     model.plot_extremes(show_clusters=True)
     ```
 
-<figure>
-  <img src="../../img/extremes/pot-low.png" alt="Peaks Below Threshold extremes"/>
+<figure markdown="span">
+  ![Peaks Below Threshold extremes](../img/extremes/pot-low.png)
 </figure>
 
 !!! tip

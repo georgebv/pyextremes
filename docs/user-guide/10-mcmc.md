@@ -149,8 +149,8 @@ choose the burn-in value:
 model.plot_trace()
 ```
 
-<figure>
-  <img src="../../img/models/mcmc-trace.png" alt="MCMC trace plot"/>
+<figure markdown="span">
+  ![MCMC trace plot](../img/models/mcmc-trace.png)
 </figure>
 
 Each black line is a walker and the red dashed line is the MAP estimate.
@@ -180,8 +180,8 @@ and the joint distributions of each pair of parameters (off-diagonal):
 model.plot_corner(burn_in=200, levels=5)
 ```
 
-<figure>
-  <img src="../../img/models/mcmc-corner.png" alt="MCMC corner plot"/>
+<figure markdown="span">
+  ![MCMC corner plot](../img/models/mcmc-corner.png)
 </figure>
 
 The posterior of the shape parameter lies almost entirely below zero,
@@ -243,8 +243,8 @@ model.plot_return_values(
 )
 ```
 
-<figure>
-  <img src="../../img/models/mcmc-return-values.png" alt="MCMC return values"/>
+<figure markdown="span">
+  ![MCMC return values](../img/models/mcmc-return-values.png)
 </figure>
 
 The return values are very close to those obtained using [MLE](9-mle.md),

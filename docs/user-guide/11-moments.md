@@ -165,8 +165,8 @@ annual maxima using MLE, MOM, and L-moments
 [Distributions](8-distributions.md#default-distribution),
 with `#!python fit_model(model=..., distribution="gumbel_r")`):
 
-<figure>
-  <img src="../../img/models/bm-gumbel-methods.png" alt="Gumbel fitted using MLE, MOM, and L-moments"/>
+<figure markdown="span">
+  ![Gumbel fitted using MLE, MOM, and L-moments](../img/models/bm-gumbel-methods.png)
 </figure>
 
 | Distribution | Model      | 100-year water level, m |

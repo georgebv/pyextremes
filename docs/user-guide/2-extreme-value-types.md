@@ -24,8 +24,8 @@ a single maximum value (thus, block maxima). The resulting BM time series are th
 to model extreme value behavior using the GEVD model family.
 See figure below illustrating this concept:
 
-<figure>
-  <img src="../../img/bm.png" alt="Block Maxima extremes"/>
+<figure markdown="span">
+  ![Block Maxima extremes](../img/bm.png)
 </figure>
 
 ## Peaks Over Threshold
@@ -41,8 +41,8 @@ pyextremes provides a series of tools which help with threshold selection,
 these are described further in this tutorial.
 See figure below illustrating POT extremes:
 
-<figure>
-  <img src="../../img/pot.png" alt="Peaks Over Threshold extremes"/>
+<figure markdown="span">
+  ![Peaks Over Threshold extremes](../img/pot.png)
 </figure>
 
 ## Which Method to Use

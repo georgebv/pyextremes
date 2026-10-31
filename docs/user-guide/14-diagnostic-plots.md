@@ -16,8 +16,8 @@ model.fit_model()
 model.plot_diagnostic(alpha=0.95)
 ```
 
-<figure>
-  <img src="../../img/results/pot-diagnostic.png" alt="Diagnostic plot for POT extremes"/>
+<figure markdown="span">
+  ![Diagnostic plot for POT extremes](../img/results/pot-diagnostic.png)
 </figure>
 
 ??? note
@@ -104,8 +104,8 @@ see when comparing GEVD and Gumbel fitted to the annual maxima
 model.plot_probability(plot_type="QQ")
 ```
 
-<figure>
-  <img src="../../img/results/qq-gev-vs-gumbel.png" alt="Q-Q plots for GEVD and Gumbel"/>
+<figure markdown="span">
+  ![Q-Q plots for GEVD and Gumbel](../img/results/qq-gev-vs-gumbel.png)
 </figure>
 
 The Gumbel distribution can't represent the heavy upper tail of these data,
@@ -124,8 +124,8 @@ distribution function (horizontal axis):
 model.plot_probability(plot_type="PP")
 ```
 
-<figure>
-  <img src="../../img/results/pp-gev-vs-gumbel.png" alt="P-P plots for GEVD and Gumbel"/>
+<figure markdown="span">
+  ![P-P plots for GEVD and Gumbel](../img/results/pp-gev-vs-gumbel.png)
 </figure>
 
 All probabilities are in the range [0, 1], so the P-P plot emphasizes the center
@@ -134,9 +134,10 @@ a mild departure from the diagonal in the middle of the distribution, nothing
 like the clear misfit of the largest values visible in its Q-Q plot.
 
 !!! note
-    The number in the top left corner of the Q-Q and P-P plots is the Pearson
-    correlation coefficient between the theoretical and observed values
-    (labeled $R^2$), and $p$ is the p-value of the test for zero correlation.
+    The numbers in the top left corner of the Q-Q and P-P plots are the
+    coefficient of determination $R^2$ (the square of the Pearson correlation
+    coefficient between the theoretical and observed values) and the p-value $p$
+    of the test for zero correlation.
     These numbers measure how well the points line up, not how close they are to
     the diagonal, and a small $p$ only means that the points are correlated.
     They are not a goodness-of-fit test - see [Goodness of Fit](15-goodness-of-fit.md).

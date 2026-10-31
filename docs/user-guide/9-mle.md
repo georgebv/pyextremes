@@ -155,14 +155,14 @@ model.plot_return_values(
 
 === "Block Maxima"
 
-    <figure>
-      <img src="../../img/models/bm-mle-return-values.png" alt="MLE return values for Block Maxima"/>
+    <figure markdown="span">
+      ![MLE return values for Block Maxima](../img/models/bm-mle-return-values.png)
     </figure>
 
 === "Peaks Over Threshold"
 
-    <figure>
-      <img src="../../img/models/pot-mle-return-values.png" alt="MLE return values for Peaks Over Threshold"/>
+    <figure markdown="span">
+      ![MLE return values for Peaks Over Threshold](../img/models/pot-mle-return-values.png)
     </figure>
 
 !!! tip "Return periods shorter than the extremes rate"
