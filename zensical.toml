@@ -12,15 +12,6 @@ edit_uri = "edit/master/docs/"
 # Abort the build on warnings (e.g. broken links), so they never get deployed.
 strict = true
 
-# Placeholder pages that are not written yet: shown in `zensical serve`, excluded from builds.
-draft_docs = """
-user-guide/12-return-values.md
-user-guide/13-confidence-intervals.md
-user-guide/14-visualization.md
-user-guide/15-goodness-of-fit.md
-/user-guide-advanced/
-"""
-
 nav = [
   { "Home" = "index.md" },
   { "Quick Start" = "quickstart.md" },
@@ -40,6 +31,16 @@ nav = [
       { "Markov Chain Monte Carlo" = "user-guide/10-mcmc.md" },
       { "Moments and L-moments" = "user-guide/11-moments.md" },
     ] },
+    { "Results" = [
+      { "Return Values" = "user-guide/12-return-values.md" },
+      { "Confidence Intervals" = "user-guide/13-confidence-intervals.md" },
+      { "Diagnostic Plots" = "user-guide/14-diagnostic-plots.md" },
+      { "Goodness of Fit" = "user-guide/15-goodness-of-fit.md" },
+    ] },
+    { "Advanced" = [
+      { "Extreme Low Values" = "user-guide-advanced/1-extreme-low-values.md" },
+      { "Distribution Class" = "user-guide-advanced/2-distribution-class.md" },
+    ] },
   ] },
   { "API Reference" = [
     { "EVA" = "api/eva.md" },
@@ -47,6 +48,7 @@ nav = [
     { "Models" = "api/models.md" },
     { "Plotting" = "api/plotting.md" },
     { "Threshold Selection" = "api/tuning.md" },
+    { "Goodness of Fit" = "api/tests.md" },
   ] },
 ]
 

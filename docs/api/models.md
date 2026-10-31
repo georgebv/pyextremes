@@ -1,5 +1,7 @@
 ::: pyextremes.models.models.get_model
 
+::: pyextremes.models.distribution.Distribution
+
 ::: pyextremes.models.model_base.AbstractModelBaseClass
 
 ::: pyextremes.models.model_mle.MLE
