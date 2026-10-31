@@ -11,8 +11,14 @@
 <a href="https://codecov.io/gh/georgebv/pyextremes" target="_blank">
     <img src="https://codecov.io/gh/georgebv/pyextremes/branch/master/graph/badge.svg" alt="Coverage">
 </a>
+<a href="https://georgebv.github.io/pyextremes/" target="_blank">
+    <img src="https://github.com/georgebv/pyextremes/actions/workflows/docs.yml/badge.svg?branch=master" alt="Docs">
+</a>
 <a href="https://pypi.org/project/pyextremes" target="_blank">
-    <img src="https://badge.fury.io/py/pyextremes.svg" alt="PyPI Package">
+    <img src="https://img.shields.io/pypi/v/pyextremes.svg" alt="PyPI Package">
+</a>
+<a href="https://pypi.org/project/pyextremes" target="_blank">
+    <img src="https://img.shields.io/pypi/pyversions/pyextremes.svg" alt="Python Versions">
 </a>
 <a href="https://anaconda.org/conda-forge/pyextremes" target="_blank">
     <img src="https://img.shields.io/conda/vn/conda-forge/pyextremes.svg" alt="Anaconda Package">
@@ -37,7 +43,7 @@ perform EVA, such as:
 - extraction of extreme events from time series using methods such as
   Block Maxima (BM) or Peaks Over Threshold (POT)
 - fitting continuous distributions, such as GEVD, GPD, or user-specified
-  continous distributions to the extracted extreme events
+  continuous distributions to the extracted extreme events
 - visualization of model inputs, results, and goodness-of-fit statistics
 - estimation of extreme events of given probability or return period
   (e.g. 100-year event) and of corresponding confidence intervals
@@ -50,22 +56,30 @@ and for the official documentation.
 
 # Installation
 
+pyextremes supports Python 3.9 to 3.14 and works with pandas 1.x, 2.x, and 3.x.
+
 Get latest version from PyPI:
 
 ```shell
 pip install pyextremes
 ```
 
+Or add it to a project managed by [uv](https://docs.astral.sh/uv/):
+
+```shell
+uv add pyextremes
+```
+
 Install with optional dependencies:
 
 ```shell
-pip install pyextremes[full]
+pip install "pyextremes[full]"
 ```
 
 Get latest experimental build from GitHub:
 
 ```shell
-pip install "git+https://github.com/georgebv/pyextremes.git#egg=pyextremes"
+pip install "pyextremes @ git+https://github.com/georgebv/pyextremes.git"
 ```
 
 Get pyextremes for the Anaconda Python distribution:

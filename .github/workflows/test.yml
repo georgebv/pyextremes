@@ -13,22 +13,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        pandas-version: ["1.5.3", "2.3.3", "3.0.5"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        pandas-version: ["1.5.3", "2.3.3", "3.1.0"]
         exclude:
           - { python-version: "3.12", pandas-version: "1.5.3" }
           - { python-version: "3.13", pandas-version: "1.5.3" }
-          - { python-version: "3.9",  pandas-version: "3.0.5" }
-          - { python-version: "3.10", pandas-version: "3.0.5" }
+          - { python-version: "3.14", pandas-version: "1.5.3" }
+          - { python-version: "3.9",  pandas-version: "3.1.0" }
+          - { python-version: "3.10", pandas-version: "3.1.0" }
         include:
           - { pandas-version: "1.5.3", numpy-spec: "numpy<2" }
           - { pandas-version: "2.3.3", numpy-spec: "numpy>=2" }
-          - { pandas-version: "3.0.5", numpy-spec: "numpy>=2" }
+          - { pandas-version: "3.1.0", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install the project
@@ -38,8 +39,8 @@ jobs:
       - name: Run tests and generate coverage report
         run: uv run --no-sync pytest
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        if: success() && matrix.python-version == '3.13' && matrix.pandas-version == '3.0.5'
+        uses: codecov/codecov-action@v7
+        if: success() && matrix.python-version == '3.14' && matrix.pandas-version == '3.1.0'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -51,22 +52,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        pandas-version: ["1.5.3", "2.3.3", "3.0.5"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        pandas-version: ["1.5.3", "2.3.3", "3.1.0"]
         exclude:
           - { python-version: "3.12", pandas-version: "1.5.3" }
           - { python-version: "3.13", pandas-version: "1.5.3" }
-          - { python-version: "3.9",  pandas-version: "3.0.5" }
-          - { python-version: "3.10", pandas-version: "3.0.5" }
+          - { python-version: "3.14", pandas-version: "1.5.3" }
+          - { python-version: "3.9",  pandas-version: "3.1.0" }
+          - { python-version: "3.10", pandas-version: "3.1.0" }
         include:
           - { pandas-version: "1.5.3", numpy-spec: "numpy<2" }
           - { pandas-version: "2.3.3", numpy-spec: "numpy>=2" }
-          - { pandas-version: "3.0.5", numpy-spec: "numpy>=2" }
+          - { pandas-version: "3.1.0", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install the project

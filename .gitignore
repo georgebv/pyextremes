@@ -22,3 +22,6 @@ coverage.xml
 
 # Build artifacts
 sdist
+
+# Zensical build output
+site/

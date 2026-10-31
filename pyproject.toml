@@ -23,7 +23,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -33,6 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Hydrology",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -52,18 +52,23 @@ full = ["lmoments3>=1.0.8", "tqdm>=4.0.0,<5.0.0"]
 lmoments = ["lmoments3>=1.0.8"]
 
 [dependency-groups]
-dev = ["pre-commit>=4.3.0"]
-lint = ["mypy>=1.17.1", "ruff>=0.12.9"]
-test = ["lmoments3>=1.0.8", "pytest>=8.4.1", "pytest-cov>=6.2.1"]
+dev = ["pre-commit>=4.7.0; python_full_version >= '3.11'"]
+lint = ["mypy>=2.4.1; python_full_version >= '3.10'", "ruff>=0.17.3"]
+test = [
+    "lmoments3>=1.0.8",
+    "pytest>=9.2.0; python_full_version >= '3.10'",
+    "pytest>=8.4.2; python_full_version < '3.10'",
+    "pytest-cov>=7.1.0",
+]
+# Docs are built on Python 3.14; Zensical and mkdocstrings require Python >=3.11.
 docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.6.17",
-    "mkdocs-material-extensions>=1.3.1",
-    "mkdocstrings[python]>=0.30.0",
+    "zensical>=0.0.74; python_full_version >= '3.11'",
+    "mkdocstrings[python]>=1.0.8; python_full_version >= '3.11'",
+    "mkdocstrings-python>=2.0.10; python_full_version >= '3.11'",
 ]
 
 [build-system]
-requires = ["uv_build>=0.8.11,<0.9.0"]
+requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
 
 [[tool.uv.index]]
@@ -71,6 +76,10 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[tool.ruff.format]
+# Keep code examples in the docs as written (consecutive blocks share line numbering).
+exclude = ["*.md"]
 
 [tool.ruff.lint]
 # https://docs.astral.sh/ruff/rules
@@ -110,6 +119,8 @@ ignore = [
     "PLR0912",
     # Too many arguments
     "PLR0913",
+    # Too many positional arguments (changing would break the public API)
+    "PLR0917",
     # Too many statements
     "PLR0915",
     # Mutable class attributes should be annotated with `typing.ClassVar`
