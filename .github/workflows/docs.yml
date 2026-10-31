@@ -23,11 +23,11 @@ jobs:
       - name: Install uv and set the python version
         uses: astral-sh/setup-uv@v10.3.3
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - name: Install the project
         run: uv sync --group docs
       - name: Build docs
-        run: uv run zensical build --clean --strict
+        run: uv run zensical build --clean
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5

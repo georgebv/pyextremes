@@ -3,14 +3,27 @@ site_name = "pyextremes"
 site_url = "https://georgebv.github.io/pyextremes/"
 site_description = "Extreme Value Analysis (EVA) in Python"
 site_author = "George Bocharov"
-copyright = "Copyright &copy; 2022 George Bocharov"
+copyright = "Copyright &copy; 2021&ndash;2026 George Bocharov"
 
 repo_url = "https://github.com/georgebv/pyextremes"
 repo_name = "georgebv/pyextremes"
 edit_uri = "edit/master/docs/"
 
-docs_dir = "docs"
-site_dir = "site"
+# Abort the build on warnings (e.g. broken links), so they never get deployed.
+strict = true
+
+# Placeholder pages that are not written yet: shown in `zensical serve`, excluded from builds.
+draft_docs = """
+user-guide/7-models.md
+user-guide/8-mle.md
+user-guide/9-mcmc.md
+user-guide/10-selecting-distribution.md
+user-guide/11-return-values.md
+user-guide/12-confidence-intervals.md
+user-guide/13-visualization.md
+user-guide/14-goodness-of-fit.md
+/user-guide-advanced/
+"""
 
 nav = [
   { "pyextremes" = "index.md" },
@@ -125,6 +138,10 @@ pymdownx.tabbed.alternate_style = true
 pymdownx.tabbed.combine_header_slug = true
 pymdownx.tasklist.custom_checkbox = true
 pymdownx.tilde = {}
+
+# Instant previews for links to sections of the User Guide and API Reference.
+[[project.markdown_extensions.zensical.extensions.preview.configurations]]
+targets.include = ["user-guide/*", "api/*"]
 
 [project.plugins.mkdocstrings.handlers.python]
 inventories = [
