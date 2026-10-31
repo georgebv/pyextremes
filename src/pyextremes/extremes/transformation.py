@@ -53,8 +53,8 @@ class ExtremesTransformer:
         return self.__transformed_extremes
 
     def transform(
-        self, value: typing.Union[None, float, pd.Series]
-    ) -> typing.Union[None, float, pd.Series]:
+        self, value: typing.Union[float, pd.Series, None]
+    ) -> typing.Union[float, pd.Series, None]:
         """
         Transform extreme values in either direction.
 
