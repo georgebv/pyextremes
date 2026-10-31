@@ -19,6 +19,6 @@ keywords:
   - Python
   - Statistics
 license: MIT
-commit: b003286e436db73e7f12c9f7c3298c05773bdf88
-version: 2.4.0
-date-released: "2023-10-14"
+commit: 646962c111687f4cee720f154aa3fba858183193
+version: 2.6.0
+date-released: "2026-10-31"
