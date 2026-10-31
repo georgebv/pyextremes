@@ -40,6 +40,47 @@ _SCIPY_TO_LMOMENTS3: typing.Dict[str, str] = {
 _SUPPORTED_FIT_METHODS: typing.Set[str] = {"MLE", "MOM", "Lmoments"}
 
 
+def fit_distribution(
+    distribution: scipy.stats.rv_continuous,
+    data: np.ndarray,
+    fit_method: str,
+    fixed_parameters: typing.Dict[str, float],
+) -> typing.List[float]:
+    """
+    Fit distribution to data using given fit method.
+
+    Parameters
+    ----------
+    distribution : scipy.stats.rv_continuous
+        Distribution object.
+        Must be a 'lmoments3' distribution if `fit_method` is 'Lmoments'.
+    data : numpy.ndarray
+        Array with data to which the distribution is fit.
+    fit_method : str
+        Fit method: MLE, MOM, or Lmoments.
+    fixed_parameters : dict
+        Fixed parameters with names prefixed with 'f' (e.g. {'floc': 0}).
+        Must be empty if `fit_method` is 'Lmoments'.
+
+    Returns
+    -------
+    parameters : list
+        Full distribution parameters (shape(s), loc, scale),
+        including fixed parameters.
+
+    """
+    if fit_method == "MLE":
+        return list(distribution.fit(data=data, **fixed_parameters, method="mle"))
+    if fit_method == "MOM":
+        return list(distribution.fit(data=data, **fixed_parameters, method="mm"))
+    if fit_method == "Lmoments":
+        return list(distribution.lmom_fit(data=data).values())
+    raise RuntimeError(  # pragma: no cover
+        f"Invalid fit method '{fit_method}'. "
+        f"Must be one of: {', '.join(_SUPPORTED_FIT_METHODS)}."
+    )
+
+
 class Distribution:
     __slots__ = [
         "_fixed_parameters",
@@ -194,7 +235,7 @@ class Distribution:
 
     def fit(self, data: np.ndarray) -> typing.Dict[str, float]:
         """
-        Fit distribution to data using the scipy.stats.rv_continuous.fit method.
+        Fit distribution to data using the fit method of this distribution.
 
         Parameters
         ----------
@@ -209,22 +250,12 @@ class Distribution:
         """
 
         # Calculate full distribution parameters
-        if self.fit_method == "MLE":
-            parameters = self.distribution.fit(
-                data=data, **self.fixed_parameters, method="mle"
-            )
-        elif self.fit_method == "MOM":
-            parameters = self.distribution.fit(
-                data=data, **self.fixed_parameters, method="mm"
-            )
-        elif self.fit_method == "Lmoments":
-            parameters = self.distribution.lmom_fit(data=data)
-            parameters = list(parameters.values())
-        else:
-            raise RuntimeError(  # pragma: no cover
-                f"Invalid fit method '{self.fit_method}'. "
-                f"Must be one of: {', '.join(_SUPPORTED_FIT_METHODS)}."
-            )
+        parameters = fit_distribution(
+            distribution=self.distribution,
+            data=data,
+            fit_method=self.fit_method,
+            fixed_parameters=self.fixed_parameters,
+        )
 
         # Package distribution parameters into ordered free distribution parameters
         free_parameters: typing.Dict[str, float] = {}

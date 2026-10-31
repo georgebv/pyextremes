@@ -987,12 +987,7 @@ class EVA:
                 _distribution_kwargs = None
             elif self.extremes_method == "POT":
                 candidate_distributions = ["genpareto", "expon"]
-                _distribution_kwargs = {
-                    "floc": self.extremes_kwargs.get(
-                        "threshold",
-                        self.extremes_transformer.transformed_extremes.min(),
-                    )
-                }
+                _distribution_kwargs = {"floc": self._get_default_floc()}
             else:
                 raise AssertionError
 
@@ -1071,11 +1066,7 @@ class EVA:
             and distribution_name in ["genpareto", "expon"]
             and model != "Lmoments"
         ):
-            distribution_kwargs = {
-                "floc": self.extremes_kwargs.get(
-                    "threshold", self.extremes_transformer.transformed_extremes.min()
-                )
-            }
+            distribution_kwargs = {"floc": self._get_default_floc()}
             logger.debug(
                 "freezing location parameter (floc) at %s for '%s' distribution",
                 distribution_kwargs["floc"],
@@ -1090,6 +1081,21 @@ class EVA:
             distribution_kwargs=distribution_kwargs,
             **kwargs,
         )
+
+    def _get_default_floc(self) -> float:
+        """
+        Get default location parameter for 'genpareto' and 'expon' distributions.
+
+        Models are fit to transformed extremes (see ExtremesTransformer),
+        so the threshold must be transformed the same way as the extremes.
+        If there is no threshold (BM extremes), the smallest transformed
+        extreme value is used instead.
+
+        """
+        threshold = self.extremes_kwargs.get("threshold")
+        if threshold is None:
+            return self.extremes_transformer.transformed_extremes.min()
+        return self.extremes_transformer.transform(threshold)
 
     def _get_mcmc_plot_inputs(
         self,

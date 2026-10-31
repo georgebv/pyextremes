@@ -78,7 +78,7 @@ class KolmogorovSmirnov(TestBase):
 
     @property
     def success(self) -> bool:
-        return self.test_statistic <= self.critical_value
+        return bool(self.test_statistic <= self.critical_value)
 
     @property
     def _repr_body(self) -> typing.List[str]:  # pragma: no cover

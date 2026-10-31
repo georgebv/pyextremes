@@ -8,20 +8,25 @@ import numpy as np
 import pandas as pd
 import scipy.stats
 
+from pyextremes.models.distribution import fit_distribution
 from pyextremes.models.model_base import AbstractModelBaseClass
 
 logger = logging.getLogger(__name__)
 
 
 def get_fit_parameters(params) -> typing.List[tuple]:
-    n, distribution, extremes, fixed_parameters, seed = params
+    n, distribution, extremes, fit_method, fixed_parameters, seed = params
     size = len(extremes)
     rng_generator = np.random.default_rng(seed=seed)
     sampler = rng_generator.choice
     return [
-        distribution.fit(
-            data=sampler(a=extremes, size=size, replace=True),
-            **fixed_parameters,
+        tuple(
+            fit_distribution(
+                distribution=distribution,
+                data=sampler(a=extremes, size=size, replace=True),
+                fit_method=fit_method,
+                fixed_parameters=fixed_parameters,
+            )
         )
         for _ in range(n)
     ]
@@ -190,6 +195,7 @@ class ScipyModel(AbstractModelBaseClass):
         # Prepare local variables used by fit parameter calculator
         extremes = self.extremes.values
         distribution = self.distribution.distribution
+        fit_method = self.distribution.fit_method
         fixed_parameters = self.distribution.fixed_parameters
 
         min_samples_per_core = 50
@@ -212,6 +218,7 @@ class ScipyModel(AbstractModelBaseClass):
                     n,
                     distribution,
                     extremes,
+                    fit_method,
                     fixed_parameters,
                     seed,
                 )
@@ -257,6 +264,7 @@ class ScipyModel(AbstractModelBaseClass):
                                 core_samples,
                                 [distribution for _ in range(n_cores)],
                                 [extremes for _ in range(n_cores)],
+                                [fit_method for _ in range(n_cores)],
                                 [fixed_parameters for _ in range(n_cores)],
                                 seeds,
                             ),
