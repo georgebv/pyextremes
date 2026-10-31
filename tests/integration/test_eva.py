@@ -434,6 +434,45 @@ class TestEVA:
             min(models, key=lambda x: x.AIC).AIC,
         )
 
+    @pytest.mark.parametrize(
+        "model, distribution",
+        [
+            ("MLE", None),
+            ("MLE", "genpareto"),
+            ("MLE", "expon"),
+            ("Emcee", None),
+            # MOM fails for heavy-tailed genpareto (non-finite moments)
+            ("MOM", "expon"),
+        ],
+    )
+    def test_fit_model_pot_low(self, eva_model, model, distribution):
+        threshold = -1.55
+        eva_model.get_extremes(
+            method="POT",
+            extremes_type="low",
+            threshold=threshold,
+            r="24h",
+        )
+        kwargs = {"n_walkers": 10, "n_samples": 20} if model == "Emcee" else {}
+        eva_model.fit_model(model=model, distribution=distribution, **kwargs)
+
+        # Location must be fixed at the threshold transformed the same way
+        # as the extremes, so that all transformed extremes are above it
+        expected_floc = eva_model.extremes_transformer.transform(threshold)
+        assert np.isclose(
+            eva_model.distribution.fixed_parameters["floc"],
+            expected_floc,
+            rtol=0,
+            atol=1e-10,
+        )
+        assert expected_floc < eva_model.extremes_transformer.transformed_extremes.min()
+        assert np.isfinite(eva_model.loglikelihood)
+
+        # Return values of extreme low values are below the threshold
+        return_value, _, _ = eva_model.get_return_value(return_period=100)
+        assert np.isfinite(return_value)
+        assert return_value < threshold
+
     def test_fit_model_errors(self, eva_model_bm, eva_model_pot):
         # Bad distribution type
         with pytest.raises(
