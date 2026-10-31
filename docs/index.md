@@ -114,5 +114,3 @@ Optional dependencies can be installed using the `full` tag as shown above or ma
 
 This project is licensed under the terms of the
 [MIT](https://opensource.org/licenses/MIT) license.
-
---8<-- "docs/includes/abbreviations.md"

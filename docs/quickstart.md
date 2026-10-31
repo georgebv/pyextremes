@@ -218,5 +218,3 @@ Following this example you should be able to do the following:
 For more in-depth tutorials on features of pyextremes see the User Guide.
 
 ---
-
---8<-- "docs/includes/abbreviations.md"

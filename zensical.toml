@@ -1,0 +1,144 @@
+[project]
+site_name = "pyextremes"
+site_url = "https://georgebv.github.io/pyextremes/"
+site_description = "Extreme Value Analysis (EVA) in Python"
+site_author = "George Bocharov"
+copyright = "Copyright &copy; 2022 George Bocharov"
+
+repo_url = "https://github.com/georgebv/pyextremes"
+repo_name = "georgebv/pyextremes"
+edit_uri = "edit/master/docs/"
+
+docs_dir = "docs"
+site_dir = "site"
+
+nav = [
+  { "pyextremes" = "index.md" },
+  { "Quick Start" = "quickstart.md" },
+  { "User Guide" = [
+    { "Read First" = "user-guide/1-read-first.md" },
+    { "Extreme Value Types" = "user-guide/2-extreme-value-types.md" },
+    { "Block Maxima" = "user-guide/3-block-maxima.md" },
+    { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
+    { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
+    { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+  ] },
+  { "API Reference" = [
+    { "EVA" = "api/eva.md" },
+    { "Extremes" = "api/extremes.md" },
+    { "Models" = "api/models.md" },
+    { "Plotting" = "api/plotting.md" },
+  ] },
+]
+
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = [
+  "javascripts/mathjax.js",
+  "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+]
+
+[project.theme]
+language = "en"
+features = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.action.view",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.footnote.tooltips",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.instant.progress",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+]
+
+[project.theme.icon]
+repo = "fontawesome/brands/github"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/georgebv/pyextremes"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/pyextremes/"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/linkedin"
+link = "https://www.linkedin.com/in/gbocharov/"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.arithmatex.generic = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+# Glossary of abbreviations (EVA, POT, GEVD, ...) appended to every page.
+pymdownx.snippets.auto_append = ["includes/abbreviations.md"]
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}
+
+[project.plugins.mkdocstrings.handlers.python]
+inventories = [
+  "https://docs.python.org/3/objects.inv",
+  "https://numpy.org/doc/stable/objects.inv",
+  "https://pandas.pydata.org/docs/objects.inv",
+  "https://docs.scipy.org/doc/scipy/objects.inv",
+  "https://matplotlib.org/stable/objects.inv",
+]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "numpy"
+show_source = true
+show_root_heading = true
+separate_signature = true
+show_signature_annotations = true
+signature_crossrefs = true

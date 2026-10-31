@@ -1,4 +1,3 @@
---8<-- "docs/includes/abbreviations.md"
 
 Traditionally EVA recognizes two types of extreme values:
 
