@@ -26,7 +26,7 @@ user-guide/14-goodness-of-fit.md
 """
 
 nav = [
-  { "pyextremes" = "index.md" },
+  { "Home" = "index.md" },
   { "Quick Start" = "quickstart.md" },
   { "User Guide" = [
     { "Read First" = "user-guide/1-read-first.md" },
@@ -70,6 +70,8 @@ features = [
   "navigation.instant.progress",
   "navigation.path",
   "navigation.sections",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
   "navigation.top",
   "navigation.tracking",
   "search.highlight",
