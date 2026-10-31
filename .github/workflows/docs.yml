@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v10
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.13"
       - name: Install the project
