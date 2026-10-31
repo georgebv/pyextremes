@@ -51,6 +51,8 @@ class TestKolmogorovSmirnov:
         assert scipy_distribution.name in kstest.null_hypothesis
         assert scipy_distribution.name in kstest.alternative_hypothesis
         assert kstest.success
+        assert isinstance(kstest.success, bool)
+        assert bool(kstest) is True
 
         assert np.isclose(kstest.test_statistic, scipy_kstest.statistic)
         assert np.isclose(kstest.pvalue, scipy_kstest.pvalue)
@@ -67,3 +69,4 @@ class TestKolmogorovSmirnov:
             significance_level=0.05,
         )
         assert not kstest.success
+        assert bool(kstest) is False
