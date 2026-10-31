@@ -14,14 +14,10 @@ strict = true
 
 # Placeholder pages that are not written yet: shown in `zensical serve`, excluded from builds.
 draft_docs = """
-user-guide/7-models.md
-user-guide/8-mle.md
-user-guide/9-mcmc.md
-user-guide/10-selecting-distribution.md
-user-guide/11-return-values.md
-user-guide/12-confidence-intervals.md
-user-guide/13-visualization.md
-user-guide/14-goodness-of-fit.md
+user-guide/12-return-values.md
+user-guide/13-confidence-intervals.md
+user-guide/14-visualization.md
+user-guide/15-goodness-of-fit.md
 /user-guide-advanced/
 """
 
@@ -36,6 +32,13 @@ nav = [
       { "Peaks Over Threshold" = "user-guide/4-peaks-over-threshold.md" },
       { "Threshold Selection" = "user-guide/5-threshold-selection.md" },
       { "Estimating Return Periods" = "user-guide/6-return-periods.md" },
+    ] },
+    { "Fitting Models" = [
+      { "Overview" = "user-guide/7-models.md" },
+      { "Distributions" = "user-guide/8-distributions.md" },
+      { "Maximum Likelihood" = "user-guide/9-mle.md" },
+      { "Markov Chain Monte Carlo" = "user-guide/10-mcmc.md" },
+      { "Moments and L-moments" = "user-guide/11-moments.md" },
     ] },
   ] },
   { "API Reference" = [
