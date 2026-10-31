@@ -50,9 +50,12 @@ perform EVA, such as:
 - tools assisting with model selection and tuning, such as selection of
   block size in BM and threshold in POT
 
-Check out [this repository](https://github.com/georgebv/pyextremes-notebooks)
-with Jupyter notebooks used to produce figures for this readme
-and for the official documentation.
+Multiple ways of fitting distributions to the extreme events are supported:
+
+- `MLE` (default) - Maximum Likelihood Estimate, uses [SciPy](https://scipy.org)
+- `Emcee` - Markov Chain Monte Carlo, uses [emcee](https://emcee.readthedocs.io/)
+- `MOM` - Method of Moments, uses [SciPy](https://scipy.org)
+- `Lmoments` - L-moments, uses [lmoments3](https://github.com/Ouranosinc/lmoments3)
 
 # Installation
 
@@ -70,7 +73,7 @@ Or add it to a project managed by [uv](https://docs.astral.sh/uv/):
 uv add pyextremes
 ```
 
-Install with optional dependencies:
+Install with all optional dependencies (`tqdm` progress bars and the `Lmoments` model):
 
 ```shell
 pip install "pyextremes[full]"
@@ -88,34 +91,61 @@ Get pyextremes for the Anaconda Python distribution:
 conda install -c conda-forge pyextremes
 ```
 
+# Quick Start
+
+```python
+import pandas as pd
+from pyextremes import EVA
+
+data = pd.read_csv("battery_wl.csv", index_col=0, parse_dates=True).squeeze()
+
+model = EVA(data)
+model.get_extremes(method="BM", block_size="365.2425D")
+model.fit_model()
+
+summary = model.get_summary(
+    return_period=[1, 2, 5, 10, 25, 50, 100, 250, 500, 1000],
+    alpha=0.95,
+    n_samples=1000,
+)
+model.plot_diagnostic(alpha=0.95)
+```
+
+When running as a script, put this code under `if __name__ == "__main__":`,
+because confidence intervals are calculated in parallel using `multiprocessing`.
+
+See the [Quick Start](https://georgebv.github.io/pyextremes/quickstart/) for the full example
+(including the data and its preparation) and the
+[User Guide](https://georgebv.github.io/pyextremes/user-guide/1-read-first/) for in-depth tutorials.
+
 # Illustrations
 
 <p align="center" style="font-size:20px; margin:10px 10px 0px 10px">
     <em>Model diagnostic</em>
 </p>
 <p align="center" style="font-size:20px; margin:10px 10px 40px 10px">
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/diagnostic.png" alt="Diagnostic plot" width="600px">
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes/master/docs/img/quickstart/diagnostic.png" alt="Diagnostic plot" width="600px">
 </p>
 
 <p align="center" style="font-size:20px; margin:10px 10px 0px 10px">
     <em>Extreme value extraction</em>
 </p>
 <p align="center" style="font-size:20px; margin:10px 10px 40px 10px">
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/extremes.png" alt="Diagnostic plot" width="600px">
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/extremes.png" alt="Extreme value extraction" width="600px">
 </p>
 
 <p align="center" style="font-size:20px; margin:10px 10px 0px 10px">
     <em>Trace plot</em>
 </p>
 <p align="center" style="font-size:20px; margin:10px 10px 40px 10px">
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/trace.png" alt="Diagnostic plot" width="600px">
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes/master/docs/img/models/mcmc-trace.png" alt="Trace plot" width="600px">
 </p>
 
 <p align="center" style="font-size:20px; margin:10px 10px 0px 10px">
     <em>Corner plot</em>
 </p>
 <p align="center" style="font-size:20px; margin:10px 10px 40px 10px">
-  <img src="https://raw.githubusercontent.com/georgebv/pyextremes-notebooks/master/notebooks/documentation/readme%20figures/corner.png" alt="Diagnostic plot" width="600px">
+  <img src="https://raw.githubusercontent.com/georgebv/pyextremes/master/docs/img/models/mcmc-corner.png" alt="Corner plot" width="600px">
 </p>
 
 # Acknowledgements
