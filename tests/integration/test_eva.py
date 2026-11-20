@@ -180,11 +180,12 @@ class TestEVA:
         assert eva_model.extremes_method == input_params["method"]
         assert eva_model.extremes_type == input_params["extremes_type"]
         if input_params["method"] == "BM":
-            assert len(eva_model.extremes_kwargs) == 3
+            assert len(eva_model.extremes_kwargs) == 4
             assert eva_model.extremes_kwargs["block_size"] == pd.to_timedelta(
                 "365.2425D"
             )
             assert eva_model.extremes_kwargs["errors"] == "raise"
+            assert eva_model.extremes_kwargs["min_block_count"] is None
         else:
             assert len(eva_model.extremes_kwargs) == 2
             assert eva_model.extremes_kwargs["threshold"] == 1.35
@@ -365,6 +366,7 @@ class TestEVA:
         assert eva_model.extremes_type == "high"
         assert eva_model.extremes_kwargs["errors"] == "ignore"
         assert eva_model.extremes_kwargs["min_last_block"] is None
+        assert eva_model.extremes_kwargs["min_block_count"] is None
         expected_block_size = (
             pd.to_timedelta(np.quantile(np.diff(index), 0.5)).to_numpy().astype(float),
         )
