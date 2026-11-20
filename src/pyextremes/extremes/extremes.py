@@ -15,6 +15,7 @@ def get_extremes(
     block_size: str = "365.2425D",
     errors: Literal["raise", "ignore", "coerce"] = "raise",
     min_last_block: Optional[float] = None,
+    min_block_count: Optional[int] = None,
 ) -> pd.Series: ...
 
 
@@ -66,6 +67,14 @@ def get_extremes(
                 for it to be used to extract extreme value from.
                 This is used to discard last block when it is too short.
                 If None (default), last block is always used.
+            min_block_count : int, optional
+                Minimum number of observations in a block
+                for it to be used to extract extreme value from.
+                Blocks with fewer observations are treated as empty,
+                so the `errors` handling applies to them and they are counted
+                in NoDataBlockWarning. Set it from the known sampling rate,
+                e.g. 300 for daily data and annual blocks.
+                If None (default), any block with at least one observation is used.
         if method is POT:
             threshold : float
                 Threshold used to find exceedances.

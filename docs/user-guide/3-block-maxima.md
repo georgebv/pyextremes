@@ -114,6 +114,14 @@ The following parameters are used only when `#!python method="BM"`:
   to get extreme values. This argument is useful to avoid situations when the last
   block is very small. By default this is `#!python None`, which means that the last
   block is always used.
+- **min_block_count** - minimum number of observations in a block. Blocks with
+  fewer observations are treated as empty, so `errors` applies to them and they are
+  counted in the `NoDataBlockWarning`. A block that is only partly observed can miss
+  the true maximum, which biases block maxima low, so set this from the known sampling
+  rate of your data (e.g. `#!python 300` for daily data and annual blocks).
+  By default this is `#!python None`, which keeps every block with at least one
+  observation. Note that with `#!python errors="raise"` a short last block also raises;
+  use `#!python errors="ignore"` to drop it.
 
 If we specify all of these parameters then the function would look as:
 
@@ -125,6 +133,7 @@ get_extremes(
     block_size="365.2425D",
     errors="raise",
     min_last_block=None,
+    min_block_count=None,
 )
 ```
 

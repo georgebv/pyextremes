@@ -436,6 +436,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
+        min_block_count: typing.Optional[int] = None,
     ) -> None: ...
 
     @typing.overload
@@ -487,6 +488,14 @@ class EVA:
                     for it to be used to extract extreme value from.
                     This is used to discard last block when it is too short.
                     If None (default), last block is always used.
+                min_block_count : int, optional
+                    Minimum number of observations in a block
+                    for it to be used to extract extreme value from.
+                    Blocks with fewer observations are treated as empty,
+                    so the `errors` handling applies to them and they are counted
+                    in NoDataBlockWarning. Set it from the known sampling rate,
+                    e.g. 300 for daily data and annual blocks.
+                    If None (default), any block with at least one observation is used.
             if method is POT:
                 threshold : float
                     Threshold used to find exceedances.
@@ -518,6 +527,9 @@ class EVA:
             self.__extremes_kwargs["min_last_block"] = kwargs.get(
                 "min_last_block", None
             )
+            self.__extremes_kwargs["min_block_count"] = kwargs.get(
+                "min_block_count", None
+            )
         else:
             self.__extremes_kwargs["threshold"] = kwargs.get("threshold")
             self.__extremes_kwargs["r"] = pd.to_timedelta(kwargs.get("r", "24h"))
@@ -543,6 +555,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
+        min_block_count: typing.Optional[int] = None,
     ) -> None: ...
 
     @typing.overload
@@ -602,6 +615,14 @@ class EVA:
                     for it to be used to extract extreme value from.
                     This is used to discard last block when it is too short.
                     If None (default), last block is always used.
+                min_block_count : int, optional
+                    Minimum number of observations in a block
+                    for it to be used to extract extreme value from.
+                    Blocks with fewer observations are treated as empty,
+                    so the `errors` handling applies to them and they are counted
+                    in NoDataBlockWarning. Set it from the known sampling rate,
+                    e.g. 300 for daily data and annual blocks.
+                    If None (default), any block with at least one observation is used.
             if method is POT:
                 threshold : float, optional
                     Threshold used to find exceedances.
@@ -675,6 +696,18 @@ class EVA:
                         "`min_last_block` must be a number in the [0, 1] range"
                     )
 
+            # Get `min_block_count`
+            extremes_kwargs["min_block_count"] = kwargs.pop("min_block_count", None)
+            if extremes_kwargs["min_block_count"] is not None:
+                if (
+                    isinstance(extremes_kwargs["min_block_count"], bool)
+                    or not isinstance(
+                        extremes_kwargs["min_block_count"], (int, np.integer)
+                    )
+                    or extremes_kwargs["min_block_count"] < 1
+                ):
+                    raise ValueError("`min_block_count` must be a positive integer")
+
         else:
             # Get `threshold`
             extremes_kwargs["threshold"] = kwargs.pop(
@@ -729,6 +762,7 @@ class EVA:
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
+        min_block_count: typing.Optional[int] = None,
     ) -> None: ...
 
     @typing.overload
@@ -787,6 +821,14 @@ class EVA:
                     for it to be used to extract extreme value from.
                     This is used to discard last block when it is too short.
                     If None (default), last block is always used.
+                min_block_count : int, optional
+                    Minimum number of observations in a block
+                    for it to be used to extract extreme value from.
+                    Blocks with fewer observations are treated as empty,
+                    so the `errors` handling applies to them and they are counted
+                    in NoDataBlockWarning. Set it from the known sampling rate,
+                    e.g. 300 for daily data and annual blocks.
+                    If None (default), any block with at least one observation is used.
             if method is POT:
                 threshold : float, optional
                     Threshold used to find exceedances.
