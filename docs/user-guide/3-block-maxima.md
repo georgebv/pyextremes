@@ -103,11 +103,16 @@ The following parameters are used only when `#!python method="BM"`:
   by default `#!python "365.2425D"`.
   Strings are converted using the `#!python pandas.to_timedelta` function.
 - **errors** - specifies what to do when a block is empty (has no values).
-  `#!python "raise"` (default) raises an error, `#!python "ignore"` skips such blocks
-  (not recommended), and `#!python "coerce"` sets values for such blocks as the average
+  `#!python "raise"` (default) raises an error, `#!python "ignore"` skips such blocks,
+  and `#!python "coerce"` sets values for such blocks as the average
   of extreme values in other blocks, located at the middle of the empty block.
   When `#!python "ignore"` or `#!python "coerce"` is used, a `NoDataBlockWarning`
   is issued with the number of empty blocks.
+  `#!python "ignore"` is the unbiased choice: block maxima return periods depend
+  only on `block_size`, so skipping empty blocks does not bias them.
+  `#!python "coerce"` is not recommended for fitting a distribution: the filled
+  values all equal the mean of the other extremes, which shrinks the fitted spread
+  and the confidence intervals and biases return values low.
 - **min_last_block** - minimum data availability ratio (0 to 1)
   in the last block. If the last block is shorter than this ratio
   (e.g. 0.25 corresponds to 3 months for a block size of 1 year) then it is not used
