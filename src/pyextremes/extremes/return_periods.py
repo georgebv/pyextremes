@@ -35,6 +35,7 @@ def get_return_periods(
         "gringorten",
         "beard",
     ] = "weibull",
+    observed_duration: Optional[Union[str, pd.Timedelta]] = None,
 ) -> pd.DataFrame:
     """
     Calculate return periods for given extreme values using given plotting position.
@@ -68,6 +69,12 @@ def get_return_periods(
         Plotting position name (default='weibull'), not case-sensitive.
         Supported plotting positions:
             ecdf, hazen, weibull, tukey, blom, median, cunnane, gringorten, beard
+    observed_duration : str or pandas.Timedelta, optional
+        Total time actually covered by observations in `ts`
+        (used only if `extremes_method` is 'POT').
+        If None (default), the calendar span of `ts` is used,
+        which overstates the observed time when `ts` has gaps.
+        Ignored if `extremes_method` is 'BM'.
 
     Returns
     -------
@@ -108,7 +115,15 @@ def get_return_periods(
     if extremes_method == "BM":
         extremes_rate = return_period_size / block_size
     elif extremes_method == "POT":
-        n_periods = (ts.index.max() - ts.index.min()) / return_period_size
+        if observed_duration is None:
+            duration = ts.index.max() - ts.index.min()
+        else:
+            duration = pd.to_timedelta(observed_duration)
+            if duration <= pd.to_timedelta("0D"):
+                raise ValueError(
+                    f"'observed_duration' must be a positive timedelta, not {duration}"
+                )
+        n_periods = duration / return_period_size
         extremes_rate = len(extremes) / n_periods
     else:
         raise ValueError(
