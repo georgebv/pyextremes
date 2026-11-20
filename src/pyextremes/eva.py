@@ -53,9 +53,11 @@ class EVA:
         "__extremes_transformer",
         "__extremes_type",
         "__model",
+        "__observed_duration",
     ]
 
     __data: pd.Series
+    __observed_duration: typing.Optional[pd.Timedelta]
     __extremes: typing.Optional[pd.Series]
     __extremes_method: typing.Optional[typing.Literal["BM", "POT"]]
     __extremes_type: typing.Optional[typing.Literal["high", "low"]]
@@ -63,7 +65,11 @@ class EVA:
     __extremes_transformer: typing.Optional[ExtremesTransformer]
     __model: typing.Optional[typing.Union[MLE, Emcee]]
 
-    def __init__(self, data: pd.Series) -> None:
+    def __init__(
+        self,
+        data: pd.Series,
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
+    ) -> None:
         """
         Initialize EVA model.
 
@@ -72,6 +78,18 @@ class EVA:
         data : pandas.Series
             Time series to be analyzed.
             Index must be date-time and values must be numeric.
+        observed_duration : str or pandas.Timedelta, optional
+            Total time actually covered by observations in `data`.
+            Used only by the Peaks Over Threshold (POT) method, where the rate
+            of extreme events is the number of extremes divided by this duration.
+            If None (default), the calendar span of `data`
+            (last timestamp minus first timestamp) is used. When `data` has gaps,
+            the calendar span overstates the observed time, which underestimates
+            the rate of extreme events and biases POT return values low;
+            pass the observed duration to avoid this.
+            Ignored by the Block Maxima (BM) method, where the rate depends
+            only on `block_size`.
+            See pandas.to_timedelta for more information.
 
         """
         # Ensure that `data` is pandas Series
@@ -135,6 +153,23 @@ class EVA:
         # Set the `data` attribute
         self.__data: pd.Series = data
 
+        # Parse and set the `observed_duration` attribute
+        if observed_duration is not None:
+            if isinstance(observed_duration, str):
+                observed_duration = pd.to_timedelta(observed_duration)
+            elif not isinstance(observed_duration, pd.Timedelta):
+                raise TypeError(
+                    f"invalid type in {type(observed_duration).__name__} "
+                    f"for the `observed_duration` argument, "
+                    f"must be str or pandas.Timedelta"
+                )
+            if observed_duration <= pd.to_timedelta("0D"):
+                raise ValueError(
+                    f"`observed_duration` must be a positive timedelta, "
+                    f"not {observed_duration}"
+                )
+        self.__observed_duration = observed_duration
+
         # Initialize attributes related to extreme value extraction
         self.__extremes = None
         self.__extremes_method = None
@@ -150,6 +185,10 @@ class EVA:
     @property
     def data(self) -> pd.Series:
         return self.__data
+
+    @property
+    def observed_duration(self) -> typing.Optional[pd.Timedelta]:
+        return self.__observed_duration
 
     @property
     def extremes(self) -> pd.Series:
@@ -725,6 +764,7 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["BM"] = "BM",
         extremes_type: typing.Literal["high", "low"] = "high",
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         *,
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
@@ -738,6 +778,7 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["POT"] = "POT",
         extremes_type: typing.Literal["high", "low"] = "high",
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         *,
         threshold: float,
         r: typing.Union[pd.Timedelta, typing.Any] = "24h",
@@ -749,6 +790,7 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["BM", "POT"] = "BM",
         extremes_type: typing.Literal["high", "low"] = "high",
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         **kwargs,
     ) -> EVA:
         """
@@ -769,6 +811,13 @@ class EVA:
         extremes_type : str, optional
             high (default) - extreme high values
             low - extreme low values
+        observed_duration : str or pandas.Timedelta, optional
+            Total time actually covered by observations (POT only).
+            If None (default), the POT rate uses the span from the first
+            to the last extreme event, which is shorter than the record
+            and so overstates the rate of extreme events.
+            If the record length is known, pass it here.
+            Ignored by the BM method. See `EVA.__init__` for details.
         kwargs:
             if method is BM:
                 block_size : str or pandas.Timedelta, optional
@@ -802,7 +851,7 @@ class EVA:
             EVA model initialized with `extremes`.
 
         """
-        model = cls(data=extremes)
+        model = cls(data=extremes, observed_duration=observed_duration)
         model.set_extremes(
             extremes=model.data,
             method=method,
@@ -1272,7 +1321,11 @@ class EVA:
         if self.extremes_method == "BM":
             extremes_rate = return_period_size / self.extremes_kwargs["block_size"]
         elif self.extremes_method == "POT":
-            n_periods = (self.data.index[-1] - self.data.index[0]) / return_period_size
+            if self.observed_duration is None:
+                duration = self.data.index[-1] - self.data.index[0]
+            else:
+                duration = self.observed_duration
+            n_periods = duration / return_period_size
             extremes_rate = len(self.extremes) / n_periods
         else:
             raise AssertionError
@@ -1445,6 +1498,7 @@ class EVA:
             block_size=self.extremes_kwargs.get("block_size", None),
             return_period_size=return_period_size,
             plotting_position=plotting_position,
+            observed_duration=self.observed_duration,
         )
 
         # Parse the 'return_period' argument
@@ -1546,6 +1600,7 @@ class EVA:
             block_size=self.extremes_kwargs.get("block_size", None),
             return_period_size=return_period_size,
             plotting_position=plotting_position,
+            observed_duration=self.observed_duration,
         )
 
         # Get observed and theoretical values
