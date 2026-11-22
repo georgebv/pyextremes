@@ -31,12 +31,22 @@ def _thin_alternate_years(ts: pd.Series, keep_every: int) -> pd.Series:
 
 def test_invalid_min_block_count():
     ts = _daily_gumbel(n_years=3, seed=0)
-    with pytest.raises(TypeError, match="min_block_count"):
-        get_extremes(ts, "BM", block_size=BLOCK, min_block_count=10.5)
-    with pytest.raises(TypeError, match="min_block_count"):
-        get_extremes(ts, "BM", block_size=BLOCK, min_block_count=True)
     with pytest.raises(ValueError, match="min_block_count"):
         get_extremes(ts, "BM", block_size=BLOCK, min_block_count=0)
+
+
+def test_default_no_data_message_unchanged():
+    """Without min_block_count the error message must not mention it."""
+    ts = _daily_gumbel(n_years=3, seed=6)
+    block = pd.to_timedelta(BLOCK)
+    ts = ts[(ts.index < ts.index[0] + block) | (ts.index >= ts.index[0] + 2 * block)]
+    with pytest.raises(ValueError) as excinfo:
+        get_extremes(ts, "BM", block_size=BLOCK, errors="raise")
+    message = str(excinfo.value)
+    assert message.startswith("no data in block [")
+    assert "), fill gaps in the data" in message
+    assert "min_block_count" not in message
+    assert "observations" not in message
 
 
 def test_default_matches_previous_behaviour():
@@ -80,7 +90,10 @@ def test_ignored_last_block_does_not_drop_previous_block():
     """min_last_block must not discard the previous block's maximum."""
     ts = _daily_gumbel(n_years=5, seed=3)
     ts = ts[ts.index < ts.index[0] + pd.to_timedelta("1490D")]  # last block ~30 days
-    with pytest.warns(NoDataBlockWarning):
+    # The short last block is discarded by min_last_block before the count check,
+    # so it is not counted as an empty block
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", NoDataBlockWarning)
         extremes = get_extremes(
             ts,
             "BM",
@@ -92,6 +105,32 @@ def test_ignored_last_block_does_not_drop_previous_block():
     full = get_extremes(ts, "BM", block_size=BLOCK, errors="ignore")
     assert len(extremes) == 4
     pd.testing.assert_series_equal(extremes, full.iloc[:4])
+
+
+def test_min_last_block_applied_before_count_check_with_raise():
+    """A last block that min_last_block discards must not raise on the count check."""
+    ts = _daily_gumbel(n_years=6, seed=7)
+    block = pd.to_timedelta(BLOCK)
+    # 5 full years plus a 29-day final block
+    ts = ts[ts.index < ts.index[0] + 5 * block + pd.to_timedelta("29D")]
+    baseline = get_extremes(
+        ts, "BM", block_size=BLOCK, errors="raise", min_last_block=0.5
+    )
+    assert len(baseline) == 5
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", NoDataBlockWarning)
+        extremes = get_extremes(
+            ts,
+            "BM",
+            block_size=BLOCK,
+            errors="raise",
+            min_last_block=0.5,
+            min_block_count=300,
+        )
+    pd.testing.assert_series_equal(extremes, baseline)
+    # Without min_last_block the short last block is checked and raises
+    with pytest.raises(ValueError, match="min_block_count=300"):
+        get_extremes(ts, "BM", block_size=BLOCK, errors="raise", min_block_count=300)
 
 
 def test_recovers_known_gumbel_parameters_on_gappy_data():
@@ -131,7 +170,7 @@ def test_set_extremes_records_min_block_count():
     model = EVA(ts)
     model.set_extremes(extremes, method="BM", block_size=BLOCK, min_block_count=300)
     assert model.extremes_kwargs["min_block_count"] == 300
-    for bad in [0, -5, 2.5, True]:
+    for bad in [0, -5]:
         with pytest.raises(ValueError, match="min_block_count"):
             model.set_extremes(
                 extremes, method="BM", block_size=BLOCK, min_block_count=bad

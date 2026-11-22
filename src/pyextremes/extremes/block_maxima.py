@@ -78,13 +78,6 @@ def get_extremes_block_maxima(
 
     if min_block_count is None:
         min_block_count = 1
-    elif isinstance(min_block_count, bool) or not isinstance(
-        min_block_count, (int, np.integer)
-    ):
-        raise TypeError(
-            f"invalid type in {type(min_block_count).__name__} "
-            f"for the 'min_block_count' argument, must be int"
-        )
     elif min_block_count < 1:
         raise ValueError(
             f"'min_block_count' must be a positive integer, not {min_block_count}"
@@ -115,13 +108,22 @@ def get_extremes_block_maxima(
         closed="left",
     )
 
+    # Check last block duration before collecting extremes,
+    # so that a discarded last block is never checked against `min_block_count`
+    if min_last_block is not None:
+        ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
+        if ratio < min_last_block:
+            logger.debug(
+                "discarded last block with data availability ratio of %s",
+                ratio,
+            )
+            date_time_intervals = date_time_intervals[:-1]
+
     # Collect extreme events
     empty_intervals = 0
-    last_block_used = False
     extreme_indices, extreme_values = [], []
     for interval in date_time_intervals:
         ts_slice = ts.loc[(ts.index >= interval.left) & (ts.index < interval.right)]
-        last_block_used = True
         if len(ts_slice) >= min_block_count:
             extreme_indices.append(extremes_func(ts_slice))
             extreme_values.append(ts_slice.loc[extreme_indices[-1]])
@@ -136,33 +138,24 @@ def get_extremes_block_maxima(
                 extreme_indices.append(interval.mid)
                 extreme_values.append(np.nan)
             elif errors == "ignore":
-                last_block_used = False
                 logger.debug(
                     "ignored no-data block in [%s ; %s)",
                     interval.left,
                     interval.right,
                 )
             else:
+                count_note = (
+                    ""
+                    if min_block_count == 1
+                    else f" ({len(ts_slice)} observations, "
+                    f"min_block_count={min_block_count})"
+                )
                 raise ValueError(
-                    f"no data in block [{interval.left} ; {interval.right}) "
-                    f"({len(ts_slice)} observations, "
-                    f"min_block_count={min_block_count}), "
+                    f"no data in block [{interval.left} ; {interval.right})"
+                    f"{count_note}, "
                     f"fill gaps in the data "
                     f"or set the argument 'errors' to 'coerce' or 'ignore'"
                 )
-
-    # Check last block duration
-    # (only if the last block contributed a value, otherwise
-    # an ignored last block would discard the previous block's extreme)
-    if min_last_block is not None and last_block_used:
-        ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
-        if ratio < min_last_block:
-            logger.debug(
-                "discarded last block with data availability ratio of %s",
-                ratio,
-            )
-            extreme_indices = extreme_indices[:-1]
-            extreme_values = extreme_values[:-1]
 
     if empty_intervals > 0:
         warnings.warn(

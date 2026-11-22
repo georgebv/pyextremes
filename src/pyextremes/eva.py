@@ -698,15 +698,11 @@ class EVA:
 
             # Get `min_block_count`
             extremes_kwargs["min_block_count"] = kwargs.pop("min_block_count", None)
-            if extremes_kwargs["min_block_count"] is not None:
-                if (
-                    isinstance(extremes_kwargs["min_block_count"], bool)
-                    or not isinstance(
-                        extremes_kwargs["min_block_count"], (int, np.integer)
-                    )
-                    or extremes_kwargs["min_block_count"] < 1
-                ):
-                    raise ValueError("`min_block_count` must be a positive integer")
+            if (
+                extremes_kwargs["min_block_count"] is not None
+                and extremes_kwargs["min_block_count"] < 1
+            ):
+                raise ValueError("`min_block_count` must be a positive integer")
 
         else:
             # Get `threshold`

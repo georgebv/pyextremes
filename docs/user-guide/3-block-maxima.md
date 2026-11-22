@@ -120,8 +120,8 @@ The following parameters are used only when `#!python method="BM"`:
   the true maximum, which biases block maxima low, so set this from the known sampling
   rate of your data (e.g. `#!python 300` for daily data and annual blocks).
   By default this is `#!python None`, which keeps every block with at least one
-  observation. Note that with `#!python errors="raise"` a short last block also raises;
-  use `#!python errors="ignore"` to drop it.
+  observation. A last block discarded by `min_last_block` is dropped before this
+  check, so it never raises or counts as empty.
 
 If we specify all of these parameters then the function would look as:
 
