@@ -172,6 +172,44 @@ extracted from the same data and using the same threshold as above, but with a l
     can last for several days or more and, because of this, the default value of
     24 hours would not be adequate for such analysis.
 
+## Gappy records
+
+The rate of POT extremes (average number of extremes per year) is the number of
+extremes divided by the duration of the series. By default that duration is the
+calendar span of the series (last timestamp minus first timestamp), which counts
+gaps as observed time. For a record with missing data this underestimates the rate,
+and the return values come out too low: with 40% of a record missing, the reported
+100-year value is roughly a 50-year value. The diagnostic plots use the same rate,
+so they don't reveal the bias.
+
+If your record has gaps, pass the time actually covered by observations as
+`observed_duration`, for example the number of observations times the sampling
+interval:
+
+=== "Using EVA"
+
+    ```python
+    # hourly data with gaps (missing values already dropped)
+    observed_duration = len(data) * pd.Timedelta("1h")
+    model = EVA(data=data, observed_duration=observed_duration)
+    model.get_extremes("POT", threshold=0.5, r="24h")
+    ```
+
+=== "Standalone"
+
+    ```python
+    return_periods = get_return_periods(
+        ts=data,
+        extremes=extremes,
+        extremes_method="POT",
+        extremes_type="high",
+        observed_duration=len(data) * pd.Timedelta("1h"),
+    )
+    ```
+
+`observed_duration` is used only by the POT method. For Block Maxima the rate depends
+only on `block_size`.
+
 ## Peaks Below Threshold
 
 A special case of Peaks Over Threshold is when instead of selecting values above
