@@ -103,7 +103,8 @@ def test_gap_with_observed_duration_matches_contiguous_record():
 
 def test_gappy_record_recovers_known_rate_and_level():
     """With observed_duration, the event rate and 100-year level match truth."""
-    n_years, gap_years = 250, 250
+    # Keep the calendar span under ~292 years: pandas < 3 stores Timedelta in ns
+    n_years, gap_years = 140, 140
     gappy = _with_gap(_synthetic_daily(n_years=n_years, seed=2), gap_years)
     observed = pd.to_timedelta(f"{n_years * 365.2425}D")
     true_rl = THRESHOLD + SCALE * np.log(RATE_PER_YEAR * 100)
@@ -118,12 +119,12 @@ def test_gappy_record_recovers_known_rate_and_level():
     model_fix = _pot_model(gappy, observed_duration=observed)
     model_default = _pot_model(gappy)
 
-    # ~1,250 events: Poisson SD of the rate is ~0.14 per year
+    # ~700 events: Poisson SD of the rate is ~0.19 per year
     assert abs(implied_rate(model_fix) - RATE_PER_YEAR) < 0.5
-    # The default divides by the 500-year calendar span: half the true rate
+    # The default divides by the 280-year calendar span: half the true rate
     assert abs(implied_rate(model_default) - RATE_PER_YEAR / 2) < 0.25
 
-    # Return level: sampling SD is ~0.18 here, so allow a generous tolerance
+    # Return level: sampling SD is ~0.25 here, so allow a generous tolerance
     rv_fix = model_fix.get_return_value(100)[0]
     rv_default = model_default.get_return_value(100)[0]
     assert abs(rv_fix - true_rl) < 0.6
@@ -131,7 +132,7 @@ def test_gappy_record_recovers_known_rate_and_level():
     np.testing.assert_allclose(
         rv_fix - rv_default,
         model_fix.model.fit_parameters["scale"] * np.log(2),
-        rtol=1e-4,  # calendar span is 500 years minus one day
+        rtol=1e-4,  # calendar span is 280 years minus one day
     )
 
 
