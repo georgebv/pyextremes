@@ -518,10 +518,15 @@ class EVA:
                 errors : str, optional
                     raise (default) - raise an exception
                         when encountering a block with no data
-                    ignore - ignore blocks with no data
+                    ignore - ignore blocks with no data.
+                        Unbiased choice: block maxima return periods depend only
+                        on block_size, so skipping empty blocks does not bias them
                     coerce - get extreme values for blocks with no data
                         as mean of all other extreme events in the series
-                        with index being the middle point of corresponding interval
+                        with index being the middle point of corresponding interval.
+                        Not recommended for fitting: the filled values shrink the
+                        fitted spread and confidence intervals and bias return
+                        values low.
                 min_last_block : float, optional
                     Minimum data availability ratio (0 to 1) in the last block
                     for it to be used to extract extreme value from.
@@ -581,7 +586,7 @@ class EVA:
         extremes_type: typing.Literal["high", "low"] = "high",
         *,
         block_size: str = "365.2425D",
-        errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
+        errors: typing.Literal["raise", "ignore", "coerce"] = "ignore",
         min_last_block: typing.Optional[float] = None,
     ) -> None: ...
 
@@ -633,10 +638,15 @@ class EVA:
                 errors : str, optional
                     raise - raise an exception
                         when encountering a block with no data
-                    ignore (default) - ignore blocks with no data
+                    ignore (default) - ignore blocks with no data.
+                        Unbiased choice: block maxima return periods depend only
+                        on block_size, so skipping empty blocks does not bias them
                     coerce - get extreme values for blocks with no data
                         as mean of all other extreme events in the series
-                        with index being the middle point of corresponding interval
+                        with index being the middle point of corresponding interval.
+                        Not recommended for fitting: the filled values shrink the
+                        fitted spread and confidence intervals and bias return
+                        values low.
                 min_last_block : float, optional
                     Minimum data availability ratio (0 to 1) in the last block
                     for it to be used to extract extreme value from.
@@ -768,7 +778,7 @@ class EVA:
         *,
         observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         block_size: str = "365.2425D",
-        errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
+        errors: typing.Literal["raise", "ignore", "coerce"] = "ignore",
         min_last_block: typing.Optional[float] = None,
     ) -> None: ...
 
@@ -829,10 +839,15 @@ class EVA:
                 errors : str, optional
                     raise - raise an exception
                         when encountering a block with no data
-                    ignore (default) - ignore blocks with no data
+                    ignore (default) - ignore blocks with no data.
+                        Unbiased choice: block maxima return periods depend only
+                        on block_size, so skipping empty blocks does not bias them
                     coerce - get extreme values for blocks with no data
                         as mean of all other extreme events in the series
-                        with index being the middle point of corresponding interval
+                        with index being the middle point of corresponding interval.
+                        Not recommended for fitting: the filled values shrink the
+                        fitted spread and confidence intervals and bias return
+                        values low.
                 min_last_block : float, optional
                     Minimum data availability ratio (0 to 1) in the last block
                     for it to be used to extract extreme value from.
