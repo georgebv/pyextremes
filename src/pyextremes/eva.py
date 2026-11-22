@@ -68,6 +68,7 @@ class EVA:
     def __init__(
         self,
         data: pd.Series,
+        *,
         observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
     ) -> None:
         """
@@ -764,8 +765,8 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["BM"] = "BM",
         extremes_type: typing.Literal["high", "low"] = "high",
-        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         *,
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         block_size: str = "365.2425D",
         errors: typing.Literal["raise", "ignore", "coerce"] = "raise",
         min_last_block: typing.Optional[float] = None,
@@ -778,8 +779,8 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["POT"] = "POT",
         extremes_type: typing.Literal["high", "low"] = "high",
-        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         *,
+        observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         threshold: float,
         r: typing.Union[pd.Timedelta, typing.Any] = "24h",
     ) -> None: ...
@@ -790,6 +791,7 @@ class EVA:
         extremes: pd.Series,
         method: typing.Literal["BM", "POT"] = "BM",
         extremes_type: typing.Literal["high", "low"] = "high",
+        *,
         observed_duration: typing.Optional[typing.Union[str, pd.Timedelta]] = None,
         **kwargs,
     ) -> EVA:

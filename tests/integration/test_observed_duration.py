@@ -170,3 +170,26 @@ def test_from_extremes_observed_duration():
     # The first-to-last-extreme span is shorter than the record, so the
     # default rate is too high and the return value too high
     assert rates["default"] >= rates["record"]
+
+
+def test_observed_duration_is_keyword_only():
+    ts = _synthetic_daily(n_years=5, seed=5)
+    extremes = _pot_model(ts).extremes
+    with pytest.raises(TypeError):
+        EVA(ts, "730D")
+    with pytest.raises(TypeError):
+        EVA.from_extremes(extremes, "POT", "high", "730D", threshold=THRESHOLD)
+
+
+def test_get_return_periods_rejects_non_positive_observed_duration():
+    ts = _synthetic_daily(n_years=5, seed=6)
+    extremes = _pot_model(ts).extremes
+    for bad in ["0D", "-1D"]:
+        with pytest.raises(ValueError, match="observed_duration"):
+            get_return_periods(
+                ts=ts,
+                extremes=extremes,
+                extremes_method="POT",
+                extremes_type="high",
+                observed_duration=bad,
+            )
