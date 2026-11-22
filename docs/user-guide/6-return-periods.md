@@ -105,8 +105,11 @@ where:
   `return_period_size`). Calculated as:
     - $\lambda$ = `return_period_size` / `block_size` for **Block Maxima**
     - $\lambda = \frac{n}{t / return\_period\_size}$ for **Peaks Over Threshold**,
-      where $n$ is number of extreme events and $t$ is total duration of series
-      from which the extreme values were drawn
+      where $n$ is number of extreme events and $t$ is the observed duration of the
+      series from which the extreme values were drawn: `observed_duration` when it is
+      given, otherwise the calendar span of the series (last timestamp minus first
+      timestamp). For a series with gaps the calendar span overstates $t$, which
+      underestimates $\lambda$ and biases POT return values low
 
 The resulting return period **R** is, therefore, a real number representing a multiple
 of `return_period_size`.
@@ -273,6 +276,13 @@ The following parameters are used only when `#!python extremes_method="BM"`:
   Strings are converted using the `#!python pandas.to_timedelta` function.
   If not provided (default), then it is calculated as the median distance
   between extreme values. Must not be provided when `#!python extremes_method="POT"`.
+
+The following parameters are used only when `#!python extremes_method="POT"`:
+
+- **observed_duration** - total time actually covered by observations in `ts`, as a
+  string or `pandas.Timedelta`. If not provided (default), the calendar span of `ts`
+  is used. Set it when `ts` has gaps (see
+  [gappy records](4-peaks-over-threshold.md#gappy-records)).
 
 ??? note
     You can get the `data` variable referenced above by running the following code:
