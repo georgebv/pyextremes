@@ -27,9 +27,9 @@ jobs:
           - { pandas-version: "3.1.0", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v10.3.3
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install the project
@@ -39,7 +39,7 @@ jobs:
       - name: Run tests and generate coverage report
         run: uv run --no-sync pytest
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@v7.1.1
         if: success() && matrix.python-version == '3.14' && matrix.pandas-version == '3.1.0'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -66,9 +66,9 @@ jobs:
           - { pandas-version: "3.1.0", numpy-spec: "numpy>=2" }
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v10.3.3
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install the project
