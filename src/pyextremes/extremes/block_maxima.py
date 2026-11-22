@@ -19,6 +19,7 @@ def get_extremes_block_maxima(
     block_size: Union[str, pd.Timedelta] = "365.2425D",
     errors: Literal["raise", "ignore", "coerce"] = "raise",
     min_last_block: Optional[float] = None,
+    min_block_count: Optional[int] = None,
 ) -> pd.Series:
     """
     Get extreme events from time series using the Block Maxima method.
@@ -49,6 +50,14 @@ def get_extremes_block_maxima(
         for it to be used to extract extreme value from.
         This is used to discard last block when it is too short.
         If None (default), last block is always used.
+    min_block_count : int, optional
+        Minimum number of observations in a block
+        for it to be used to extract extreme value from.
+        Blocks with fewer observations are treated as empty,
+        so the `errors` handling applies to them and they are counted
+        in NoDataBlockWarning. Set it from the known sampling rate,
+        e.g. 300 for daily data and annual blocks.
+        If None (default), any block with at least one observation is used.
 
     Returns
     -------
@@ -71,6 +80,13 @@ def get_extremes_block_maxima(
 
     if errors not in ["raise", "ignore", "coerce"]:
         raise ValueError(f"invalid value in '{errors}' for the 'errors' argument")
+
+    if min_block_count is None:
+        min_block_count = 1
+    elif min_block_count < 1:
+        raise ValueError(
+            f"'min_block_count' must be a positive integer, not {min_block_count}"
+        )
 
     # Get extreme value extraction function
     if extremes_type == "high":
@@ -97,12 +113,23 @@ def get_extremes_block_maxima(
         closed="left",
     )
 
+    # Check last block duration before collecting extremes,
+    # so that a discarded last block is never checked against `min_block_count`
+    if min_last_block is not None:
+        ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
+        if ratio < min_last_block:
+            logger.debug(
+                "discarded last block with data availability ratio of %s",
+                ratio,
+            )
+            date_time_intervals = date_time_intervals[:-1]
+
     # Collect extreme events
     empty_intervals = 0
     extreme_indices, extreme_values = [], []
     for interval in date_time_intervals:
         ts_slice = ts.loc[(ts.index >= interval.left) & (ts.index < interval.right)]
-        if len(ts_slice) > 0:
+        if len(ts_slice) >= min_block_count:
             extreme_indices.append(extremes_func(ts_slice))
             extreme_values.append(ts_slice.loc[extreme_indices[-1]])
         else:
@@ -122,26 +149,27 @@ def get_extremes_block_maxima(
                     interval.right,
                 )
             else:
+                count_note = (
+                    ""
+                    if min_block_count == 1
+                    else f" ({len(ts_slice)} observations, "
+                    f"min_block_count={min_block_count})"
+                )
                 raise ValueError(
-                    f"no data in block [{interval.left} ; {interval.right}), "
+                    f"no data in block [{interval.left} ; {interval.right})"
+                    f"{count_note}, "
                     f"fill gaps in the data "
                     f"or set the argument 'errors' to 'coerce' or 'ignore'"
                 )
 
-    # Check last block duration
-    if min_last_block is not None:
-        ratio = (ts.index.max() - date_time_intervals[-1].left) / block_size
-        if ratio < min_last_block:
-            logger.debug(
-                "discarded last block with data availability ratio of %s",
-                ratio,
-            )
-            extreme_indices = extreme_indices[:-1]
-            extreme_values = extreme_values[:-1]
-
     if empty_intervals > 0:
         warnings.warn(
-            message=f"{empty_intervals} blocks contained no data",
+            message=(
+                f"{empty_intervals} blocks contained no data"
+                if min_block_count == 1
+                else f"{empty_intervals} blocks contained fewer than "
+                f"min_block_count={min_block_count} observations"
+            ),
             category=NoDataBlockWarning,
         )
 
